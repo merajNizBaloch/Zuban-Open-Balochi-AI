@@ -1,0 +1,66 @@
+name: Community language contribution
+description: Contribute a Balochi word, sentence, correction, pronunciation, OCR fix, or other language example.
+title: "[Community]: "
+body:
+  - type: dropdown
+    id: contribution
+    attributes:
+      label: Contribution type
+      options:
+        - Word or spelling
+        - Sentence or phrase
+        - Translation correction
+        - Pronunciation or voice
+        - OCR correction
+        - Dialect or regional form
+        - Other language contribution
+    validations:
+      required: true
+
+  - type: textarea
+    id: material
+    attributes:
+      label: Balochi material or correction
+      description: Add the word, sentence, transcription, correction, or other language material.
+    validations:
+      required: true
+
+  - type: textarea
+    id: meaning
+    attributes:
+      label: Meaning, translation, or explanation
+      description: Add an English/Urdu/Persian meaning or explain what should change.
+
+  - type: input
+    id: dialect
+    attributes:
+      label: Dialect or region
+      description: Western, Southern, Eastern, locality, or "unknown" when you are unsure.
+
+  - type: dropdown
+    id: script
+    attributes:
+      label: Script
+      options:
+        - Arabic
+        - Latin
+        - Both
+        - Not applicable
+    validations:
+      required: true
+
+  - type: textarea
+    id: source
+    attributes:
+      label: Source or speaker context
+      description: Book, publication, URL, speaker/region, personal knowledge, or other provenance.
+    validations:
+      required: true
+
+  - type: textarea
+    id: permission
+    attributes:
+      label: License or permission
+      description: Explain whether Zubán may reuse this material. Do not upload copyrighted or private material without permission.
+    validations:
+      required: true
