@@ -127,7 +127,30 @@ export function TranslationWorkbench() {
               <span /><span /><span />
             </div>
           ) : output ? (
-            <p className="translate-output" dir="auto" lang="bal">{output}</p>
+            <>
+              <p className="translate-output" dir="auto" lang="bal">{output}</p>
+              <a
+                className="translate-correction-link"
+                href={
+                  "/community?type=Translation%20correction&title=" +
+                  encodeURIComponent(source + " → " + target + " translation review") +
+                  "&details=" +
+                  encodeURIComponent(
+                    "Source language: " +
+                    source +
+                    "\nTarget language: " +
+                    target +
+                    "\n\nSource text:\n" +
+                    input +
+                    "\n\nCurrent translation:\n" +
+                    output +
+                    "\n\nSuggested correction:\n",
+                  )
+                }
+              >
+                Suggest a better translation →
+              </a>
+            </>
           ) : notice ? (
             <div className="translate-notice">{notice}</div>
           ) : (
