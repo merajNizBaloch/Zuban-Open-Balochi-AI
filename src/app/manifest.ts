@@ -12,7 +12,6 @@ export default function manifest(): MetadataRoute.Manifest {
     icons: [
       {
         src: "/zuban-mark.png",
-        sizes: "any",
         type: "image/png",
       },
     ],
