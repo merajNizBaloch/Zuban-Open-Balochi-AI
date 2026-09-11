@@ -37,17 +37,27 @@ export function ZubanChat() {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
-    try {
-      const saved = window.localStorage.getItem("zuban-chat-v1");
-      if (saved) {
-        const parsed = JSON.parse(saved) as ChatMessage[];
-        if (Array.isArray(parsed)) setMessages(parsed.slice(-40));
+    let cancelled = false;
+
+    queueMicrotask(() => {
+      if (cancelled) return;
+
+      try {
+        const saved = window.localStorage.getItem("zuban-chat-v1");
+        if (saved) {
+          const parsed = JSON.parse(saved) as ChatMessage[];
+          if (Array.isArray(parsed)) setMessages(parsed.slice(-40));
+        }
+      } catch {
+        // Ignore unavailable or malformed local storage.
+      } finally {
+        if (!cancelled) setHydrated(true);
       }
-    } catch {
-      // Ignore unavailable or malformed local storage.
-    } finally {
-      setHydrated(true);
-    }
+    });
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   useEffect(() => {
