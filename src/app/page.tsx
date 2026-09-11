@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { tools } from "@/lib/site";
 
@@ -7,10 +8,9 @@ export default function Home() {
       <section className="home-hero">
         <div className="shell home-hero-grid">
           <div className="home-hero-copy">
-            <h1>Zubán</h1>
-            <p className="home-kicker">Balochi language, built in the open.</p>
+            <h1>Balochi language technology, built in the open.</h1>
             <p className="home-intro">
-              Chat, translate, listen, speak, read and contribute to better Balochi language technology.
+              Chat, translate, speech, OCR, datasets and research for Balochi.
             </p>
             <div className="hero-actions">
               <Link className="button primary" href="/chat">Open Zubán</Link>
@@ -18,14 +18,15 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="home-motif" aria-hidden="true">
-            <div className="motif-frame">
-              <div className="motif-diamond" />
-              <div className="motif-diamond small one" />
-              <div className="motif-diamond small two" />
-              <div className="motif-line horizontal" />
-              <div className="motif-line vertical" />
-            </div>
+          <div className="home-logo-stage">
+            <Image
+              className="home-logo-dark"
+              src="/zuban-dark.svg"
+              alt="Zubán — People · Language · Open Future"
+              width={1254}
+              height={1254}
+              priority
+            />
           </div>
         </div>
       </section>
@@ -34,7 +35,7 @@ export default function Home() {
         <div className="shell">
           <div className="home-section-title">
             <h2>Tools</h2>
-            <p>Start with the language. Everything else stays in the background.</p>
+            <p>Simple tools for using, studying and building with Balochi.</p>
           </div>
 
           <div className="clean-tool-list">
@@ -55,12 +56,11 @@ export default function Home() {
       <section className="home-about">
         <div className="shell home-about-grid">
           <div>
-            <h2>More than a chatbot.</h2>
+            <h2>Open technology. Shared knowledge.</h2>
           </div>
           <div>
             <p>
-              Zubán is being built as open infrastructure for Balochi: language tools, datasets,
-              speech, OCR, research and community contributions in one place.
+              Zubán brings Balochi language tools, datasets, speech, OCR and research into one open project that people can use, study and improve together.
             </p>
             <div className="home-about-links">
               <Link href="/research">Research →</Link>
