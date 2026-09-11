@@ -8,7 +8,7 @@ import {
   useState,
 } from "react";
 import { ZubanLogo } from "@/components/zuban-logo";
-import { browserAiStream, isMissingServerModelMessage } from "@/lib/browser-ai";
+import { browserAiStream, isMissingServerModelMessage, stopBrowserAiGeneration } from "@/lib/browser-ai";
 
 type ChatMessage = {
   id: string;
@@ -209,7 +209,27 @@ export function ZubanChat() {
                   ),
                 );
               },
-              { temperature: 0.25, maxTokens: 1200 },
+              {
+                temperature: 0.25,
+                maxTokens: 1200,
+                onProgress: ({ progress, text }) => {
+                  if (cancelledRef.current) return;
+                  const percent = Math.round(progress * 100);
+                  setMessages((current) =>
+                    current.map((message) =>
+                      message.id === assistantId
+                        ? {
+                            ...message,
+                            content:
+                              "Preparing private on-device AI… " +
+                              (percent > 0 ? percent + "%\n" : "") +
+                              text,
+                          }
+                        : message,
+                    ),
+                  );
+                },
+              },
             );
           } catch (browserError) {
             const detail =
@@ -223,9 +243,9 @@ export function ZubanChat() {
                   ? {
                       ...message,
                       content:
-                        "Zubán could not start browser AI. " +
+                        "Zubán could not start local AI. " +
                         detail +
-                        " If a sign-in or authorization window appears, allow it and try again.",
+                        " No login is required. On-device AI needs WebGPU and enough browser memory.",
                       error: true,
                     }
                   : message,
@@ -331,6 +351,7 @@ export function ZubanChat() {
   function stopGeneration() {
     cancelledRef.current = true;
     abortRef.current?.abort();
+    stopBrowserAiGeneration();
     setStreamingId("");
     setLoading(false);
   }
@@ -349,6 +370,7 @@ export function ZubanChat() {
 
   function newChat() {
     abortRef.current?.abort();
+    stopBrowserAiGeneration();
     setMessages([]);
     setInput("");
 
