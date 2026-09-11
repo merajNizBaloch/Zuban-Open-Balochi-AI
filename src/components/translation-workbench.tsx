@@ -11,7 +11,12 @@ type ApiResult = {
   error?: string;
 };
 
-const languages = ["Balochi", "English", "Urdu", "Persian"] as const;
+const languages = [
+  ["Balochi", "translate.lang.balochi"],
+  ["English", "translate.lang.english"],
+  ["Urdu", "translate.lang.urdu"],
+  ["Persian", "translate.lang.persian"],
+] as const;
 
 export function TranslationWorkbench() {
   const { t } = useExperience();
@@ -71,7 +76,7 @@ export function TranslationWorkbench() {
                 onProgress: ({ progress, text }) => {
                   const percent = Math.round(progress * 100);
                   setNotice(
-                    "Preparing private on-device AI… " +
+                    t("translate.preparing", "Preparing private on-device AI…") + " " +
                     (percent > 0 ? percent + "% · " : "") +
                     text,
                   );
@@ -87,9 +92,8 @@ export function TranslationWorkbench() {
                 ? browserError.message
                 : "Browser AI is unavailable.";
             setNotice(
-              "Zubán could not start local AI. " +
-                detail +
-                " No login is required. On-device AI needs WebGPU and enough browser memory.",
+              t("translate.localError", "Zubán could not start local AI. No login is required. On-device AI needs WebGPU and enough browser memory.") +
+                (detail ? " " + detail : ""),
             );
           }
         } else {
@@ -97,7 +101,7 @@ export function TranslationWorkbench() {
         }
       }
     } catch {
-      setNotice("The translation service could not be reached.");
+      setNotice(t("translate.unreachable", "The translation service could not be reached."));
     } finally {
       setLoading(false);
     }
@@ -136,7 +140,7 @@ export function TranslationWorkbench() {
         <label>
           <span>{t("translate.from", "From")}</span>
           <select value={source} onChange={(event) => setSource(event.target.value)}>
-            {languages.map((language) => <option key={language}>{language}</option>)}
+            {languages.map(([value, labelId]) => <option key={value} value={value}>{t(labelId, value)}</option>)}
           </select>
         </label>
 
@@ -149,7 +153,7 @@ export function TranslationWorkbench() {
         <label>
           <span>{t("translate.to", "To")}</span>
           <select value={target} onChange={(event) => setTarget(event.target.value)}>
-            {languages.map((language) => <option key={language}>{language}</option>)}
+            {languages.map(([value, labelId]) => <option key={value} value={value}>{t(labelId, value)}</option>)}
           </select>
         </label>
       </div>
@@ -157,13 +161,13 @@ export function TranslationWorkbench() {
       <div className="translate-panels">
         <div className="translate-panel source">
           <div className="translate-panel-toolbar">
-            <span>{source}</span>
+            <span>{t("translate.lang." + source.toLowerCase(), source)}</span>
             {input && <button type="button" onClick={clear}>{t("translate.clear", "Clear")}</button>}
           </div>
           <textarea
             value={input}
             onChange={(event) => setInput(event.target.value)}
-            placeholder={"Type " + source + " text…"}
+            placeholder={t("translate.type", "Type text…")}
             maxLength={12000}
             dir="auto"
           />
@@ -172,7 +176,7 @@ export function TranslationWorkbench() {
 
         <div className="translate-panel result" aria-live="polite">
           <div className="translate-panel-toolbar">
-            <span>{target}</span>
+            <span>{t("translate.lang." + target.toLowerCase(), target)}</span>
             {output && <button type="button" onClick={() => void copyOutput()}>{t("translate.copy", "Copy")}</button>}
           </div>
 
