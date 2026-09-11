@@ -3,16 +3,13 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { githubUrl, primaryNav } from "@/lib/site";
 
 export function SiteHeader() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
-  useEffect(() => {
-    setOpen(false);
-  }, [pathname]);
 
   return (
     <header className="site-header">
@@ -56,7 +53,12 @@ export function SiteHeader() {
       <div id="mobile-navigation" className={open ? "mobile-navigation open" : "mobile-navigation"}>
         <nav className="shell" aria-label="Mobile navigation">
           {primaryNav.map((item) => (
-            <Link className={pathname === item.href ? "active" : ""} key={item.href} href={item.href}>
+            <Link
+              className={pathname === item.href ? "active" : ""}
+              key={item.href}
+              href={item.href}
+              onClick={() => setOpen(false)}
+            >
               {item.label}
               <span>↗</span>
             </Link>
