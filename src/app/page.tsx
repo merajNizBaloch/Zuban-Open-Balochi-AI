@@ -1,4 +1,3 @@
-import Image from "next/image";
 import Link from "next/link";
 import { tools } from "@/lib/site";
 
@@ -8,6 +7,12 @@ export default function Home() {
       <section className="home-hero">
         <div className="shell home-hero-grid">
           <div className="home-hero-copy">
+            <div className="hero-brand-lockup" aria-label="Zubán">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/zuban-mark.webp?v=4" alt="" width="112" height="112" />
+              <span>Zubán</span>
+            </div>
+
             <h1>Balochi language technology, built in the open.</h1>
             <p className="home-intro">
               Chat, translate, speech, OCR, datasets and research for Balochi.
@@ -18,15 +23,17 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="home-logo-stage">
-            <Image
-              className="home-logo-mark"
-              src="/zuban-mark.webp"
-              alt="Zubán"
-              width={512}
-              height={512}
-              priority
-            />
+          <div className="home-logo-stage" aria-hidden="true">
+            <div className="home-mark-orbit">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                className="home-logo-mark"
+                src="/zuban-mark.webp?v=4"
+                alt=""
+                width="420"
+                height="420"
+              />
+            </div>
           </div>
         </div>
       </section>
