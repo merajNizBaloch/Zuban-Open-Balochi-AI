@@ -1,14 +1,15 @@
 import { MediaWorkbench } from "@/components/media-workbench";
 import { VoiceWorkbench } from "@/components/voice-workbench";
+import { UiText } from "@/components/ui-text";
 
 export default function SpeechPage() {
   return (
     <section className="section tool-page speech-page">
       <div className="shell">
         <div className="page-intro-center compact-page-intro">
-          <p className="eyebrow">SPEECH</p>
-          <h1>Speech & voice.</h1>
-          <p className="lead">Transcribe Balochi audio or turn Balochi text into speech.</p>
+          <p className="eyebrow"><UiText id="page.speech.eyebrow" fallback="SPEECH" /></p>
+          <h1><UiText id="page.speech.title" fallback="Speech & voice." /></h1>
+          <p className="lead"><UiText id="page.speech.lead" fallback="Transcribe Balochi audio or turn Balochi text into speech." /></p>
         </div>
 
         <div className="lab-stack">
