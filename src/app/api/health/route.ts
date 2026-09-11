@@ -2,7 +2,10 @@ import { NextResponse } from "next/server";
 import { textProviderStatus } from "@/lib/text-provider";
 
 async function sharedModelServer() {
-  const base = process.env.ZUBAN_MODEL_SERVER_URL?.replace(/\/$/, "");
+  const base = (
+    process.env.ZUBAN_MODEL_SERVER_URL ||
+    process.env.NEXT_PUBLIC_ZUBAN_MODEL_SERVER_URL
+  )?.replace(/\/$/, "");
   if (!base) return { configured: false, reachable: false };
 
   try {
@@ -21,13 +24,12 @@ export async function GET() {
   const text = textProviderStatus();
   const media = await sharedModelServer();
 
-  const healthy =
-    Boolean(text.configured || text.dictionaryFallback) &&
-    (media.reachable || true);
+  const degraded = !text.configured || (media.configured && !media.reachable);
 
   return NextResponse.json(
     {
-      ok: healthy,
+      ok: true,
+      degraded,
       web: true,
       text: {
         modelConnected: text.configured,
@@ -41,7 +43,7 @@ export async function GET() {
       },
     },
     {
-      status: healthy ? 200 : 503,
+      status: 200,
       headers: { "Cache-Control": "no-store" },
     },
   );
