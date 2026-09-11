@@ -8,6 +8,7 @@ import {
   useState,
 } from "react";
 import { ZubanLogo } from "@/components/zuban-logo";
+import { browserAiStream, isMissingServerModelMessage } from "@/lib/browser-ai";
 
 type ChatMessage = {
   id: string;
@@ -164,15 +165,80 @@ export function ZubanChat() {
 
       if (!response.ok || contentType.includes("application/json")) {
         const data = (await response.json()) as ApiError;
+        const serverMessage =
+          data.message ||
+          data.error ||
+          "Zubán could not answer that message.";
+
+        if (isMissingServerModelMessage(serverMessage)) {
+          const assistantId = messageId();
+          setStreamingId(assistantId);
+          setMessages((current) => [
+            ...current,
+            { id: assistantId, role: "assistant", content: "" },
+          ]);
+
+          const system = [
+            "You are Zubán, a Balochi language assistant.",
+            "Help with Balochi writing, translation, language learning, and everyday questions.",
+            "Respect dialect and orthographic variation. Do not present one regional form as universally correct.",
+            "If you are uncertain about a Balochi word or grammar point, say so instead of inventing it.",
+            dialect === "auto"
+              ? "Dialect preference: auto."
+              : "Dialect preference: " + dialect + ".",
+            scriptPreference === "auto"
+              ? "Script preference: follow the user's script when possible."
+              : "Use " + scriptPreference + " script for Balochi unless the user asks otherwise.",
+          ].join("\n");
+
+          try {
+            await browserAiStream(
+              [
+                { role: "system", content: system },
+                ...nextMessages.slice(-16).map(({ role, content }) => ({ role, content })),
+              ],
+              (streamedText) => {
+                setMessages((current) =>
+                  current.map((message) =>
+                    message.id === assistantId
+                      ? { ...message, content: streamedText }
+                      : message,
+                  ),
+                );
+              },
+              { temperature: 0.25, maxTokens: 1200 },
+            );
+          } catch (browserError) {
+            const detail =
+              browserError instanceof Error
+                ? browserError.message
+                : "Browser AI is unavailable.";
+
+            setMessages((current) =>
+              current.map((message) =>
+                message.id === assistantId
+                  ? {
+                      ...message,
+                      content:
+                        "Zubán could not start browser AI. " +
+                        detail +
+                        " If a sign-in or authorization window appears, allow it and try again.",
+                      error: true,
+                    }
+                  : message,
+              ),
+            );
+          }
+
+          return;
+        }
+
         setMessages((current) => [
           ...current,
           {
             id: messageId(),
             role: "assistant",
-            content:
-              data.message ||
-              data.error ||
-              "Zubán could not answer that message.",
+            content: serverMessage,
             error: true,
           },
         ]);
