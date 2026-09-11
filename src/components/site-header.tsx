@@ -6,9 +6,15 @@ export function SiteHeader() {
   return (
     <header className="site-header">
       <div className="shell header-inner">
-        <Link className="brand" href="/" aria-label="Zubán home">
-          <Image src="/zuban-mark.svg" alt="" width={30} height={30} />
-          <span>Zubán</span>
+        <Link className="brand brand-logo-link" href="/" aria-label="Zubán home">
+          <Image
+            className="brand-logo brand-logo-light"
+            src="/zuban-light.svg"
+            alt="Zubán"
+            width={1254}
+            height={1254}
+            priority
+          />
         </Link>
 
         <nav className="main-nav" aria-label="Primary navigation">
