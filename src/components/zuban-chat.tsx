@@ -27,11 +27,11 @@ type ApiError = {
 };
 
 const suggestions = [
-  "What does آپ mean?",
-  "What does دوست mean?",
-  "Translate water into Balochi",
-  "Write a short greeting in Balochi",
-];
+  ["tool.chat.s1", "What does آپ mean?"],
+  ["tool.chat.s2", "What does دوست mean?"],
+  ["tool.chat.s3", "Translate water into Balochi"],
+  ["tool.chat.s4", "Write a short greeting in Balochi"],
+] as const;
 
 function messageId() {
   return Math.random().toString(36).slice(2) + Date.now().toString(36);
@@ -223,7 +223,7 @@ export function ZubanChat() {
                         ? {
                             ...message,
                             content:
-                              "Preparing private on-device AI… " +
+                              t("tool.chat.preparing", "Preparing private on-device AI…") + " " +
                               (percent > 0 ? percent + "%\n" : "") +
                               text,
                           }
@@ -245,9 +245,8 @@ export function ZubanChat() {
                   ? {
                       ...message,
                       content:
-                        "Zubán could not start local AI. " +
-                        detail +
-                        " No login is required. On-device AI needs WebGPU and enough browser memory.",
+                        t("tool.chat.localError", "Zubán could not start local AI. No login is required. On-device AI needs WebGPU and enough browser memory.") +
+                        (detail ? " " + detail : ""),
                       error: true,
                     }
                   : message,
@@ -322,7 +321,7 @@ export function ZubanChat() {
             message.id === assistantId
               ? {
                   ...message,
-                  content: "The model returned an empty response.",
+                  content: t("tool.chat.empty", "The model returned an empty response."),
                   error: true,
                 }
               : message,
@@ -339,7 +338,7 @@ export function ZubanChat() {
         {
           id: messageId(),
           role: "assistant",
-          content: "The chat service could not be reached. Please try again.",
+          content: t("tool.chat.unreachable", "The chat service could not be reached. Please try again."),
           error: true,
         },
       ]);
@@ -423,9 +422,11 @@ export function ZubanChat() {
             <p>{t("tool.chat.subtitle", "Ask in Balochi, English, Urdu or Persian.")}</p>
 
             <div className="chat-suggestions">
-              {suggestions.map((suggestion) => (
+              {suggestions.map(([id, fallback]) => {
+                const suggestion = t(id, fallback);
+                return (
                 <button
-                  key={suggestion}
+                  key={id}
                   type="button"
                   onClick={() => void sendPrompt(suggestion)}
                   disabled={loading}
@@ -433,7 +434,8 @@ export function ZubanChat() {
                   <span>{suggestion}</span>
                   <span aria-hidden="true">↗</span>
                 </button>
-              ))}
+                );
+              })}
             </div>
           </div>
         ) : (
@@ -530,7 +532,7 @@ export function ZubanChat() {
                   }
                   aria-label="Preferred Balochi script"
                 >
-                  <option value="auto">Auto</option>
+                  <option value="auto">{t("tool.chat.auto", "Auto")}</option>
                   <option value="arabic">{t("tool.chat.arabic", "Arabic")}</option>
                   <option value="latin">{t("tool.chat.latin", "Latin")}</option>
                 </select>
