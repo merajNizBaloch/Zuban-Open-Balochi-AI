@@ -51,7 +51,15 @@ export function CommunityQueue() {
   }
 
   useEffect(() => {
-    void load();
+    let cancelled = false;
+
+    queueMicrotask(() => {
+      if (!cancelled) void load();
+    });
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const visible = useMemo(() => {
