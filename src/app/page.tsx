@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { HomePrompt } from "@/components/home-prompt";
 import { HomeAiAtmosphere } from "@/components/home-ai-atmosphere";
-import { ZubanLogo } from "@/components/zuban-logo";
 import { tools } from "@/lib/site";
 
 export default function Home() {
@@ -10,17 +9,7 @@ export default function Home() {
       <section className="home-hero home-hero-centered">
         <HomeAiAtmosphere />
         <div className="shell home-center-wrap">
-          <div className="home-logo-wrap">
-            <ZubanLogo
-              className="home-primary-logo"
-              alt="Zubán"
-              width={320}
-              height={320}
-              priority
-            />
-          </div>
-
-          <p className="home-brand-name">Zubán</p>
+          <p className="home-brand-name hero-brand-word">Zubán</p>
 
           <h1>Open Balochi language technology.</h1>
 
