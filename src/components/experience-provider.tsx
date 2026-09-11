@@ -408,7 +408,7 @@ const balochiCopy: Record<string, string> = {
   "status.checking": "بررسی…",
 
   "disclaimer.banner.label": "پروجیکٹ ءِ وضاحت",
-  "disclaimer.banner.text": "زُبان آشکار دستیاب بلوچی ڈیٹا و آجو سرچشمگاں ءِ سرا سازگ بوتگ. بلوچی ءِ ڈیجیٹل سرچشمگ هنوز گشنگ ءَ انت، چہ اے سبب غلطی بوہگ بہ کنت.",
+  "disclaimer.banner.text": "زُبان آشکار دستیاب بلوچی ڈیٹا و آجو سرچشمگاں ءِ سرا سازگ بوتگ. غلطی بوہگ بہ کنت؛ ٹیم و آجو contributor پیوستہ بلوچی ءِ ڈیجیٹل سرچشمگ و ابزار بہتر کنت.",
   "disclaimer.banner.link": "وضاحت بخوان",
   "disclaimer.banner.close": "وضاحت بند کن",
 
