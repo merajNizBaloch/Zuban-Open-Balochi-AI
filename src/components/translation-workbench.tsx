@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useState } from "react";
+import { browserAiComplete, isMissingServerModelMessage } from "@/lib/browser-ai";
 
 type ApiResult = {
   configured?: boolean;
@@ -40,8 +41,48 @@ export function TranslationWorkbench() {
       });
 
       const data = (await response.json()) as ApiResult;
-      if (data.output) setOutput(data.output);
-      else setNotice(data.message ?? data.error ?? "Translation is unavailable.");
+      if (data.output) {
+        setOutput(data.output);
+      } else {
+        const serverMessage =
+          data.message ?? data.error ?? "Translation is unavailable.";
+
+        if (isMissingServerModelMessage(serverMessage)) {
+          try {
+            const result = await browserAiComplete(
+              [
+                {
+                  role: "system",
+                  content: [
+                    "You are Zubán Translate, a Balochi language translation assistant.",
+                    "Translate from " + source + " to " + target + ".",
+                    "Return only the translation unless a short dialect note is genuinely necessary.",
+                    "Preserve names, numbers and meaning.",
+                    "Balochi has dialect and orthographic variation. Do not invent forms when uncertain.",
+                  ].join("\n"),
+                },
+                { role: "user", content: input.trim() },
+              ],
+              { temperature: 0.1, maxTokens: 900 },
+            );
+
+            setOutput(result.text);
+            setNotice("");
+          } catch (browserError) {
+            const detail =
+              browserError instanceof Error
+                ? browserError.message
+                : "Browser AI is unavailable.";
+            setNotice(
+              "Zubán could not start browser AI. " +
+                detail +
+                " If a sign-in or authorization window appears, allow it and try again.",
+            );
+          }
+        } else {
+          setNotice(serverMessage);
+        }
+      }
     } catch {
       setNotice("The translation service could not be reached.");
     } finally {
