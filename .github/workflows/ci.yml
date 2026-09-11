@@ -29,3 +29,6 @@ jobs:
 
       - name: Build
         run: npm run build
+
+      - name: Validate Balochi model server Python
+        run: python -m py_compile services/balochi-model-server/app.py
