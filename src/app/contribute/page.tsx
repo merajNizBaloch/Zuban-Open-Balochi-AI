@@ -3,11 +3,11 @@ import { githubUrl } from "@/lib/site";
 import { UiText } from "@/components/ui-text";
 
 const paths = [
-  ["Language", "Correct a translation, add a word, or document a regional form."],
-  ["Voice", "Contribute speech sources, recordings with permission, or pronunciation guidance."],
-  ["Data", "Point Zubán to reusable corpora, dictionaries, archives, or datasets."],
-  ["Research", "Reproduce a result, propose a benchmark, or contribute methodology."],
-  ["Code", "Improve the product, adapters, accessibility, documentation, or evaluation tools."],
+  ["contribute.path.language", "Language", "contribute.path.language.desc", "Correct a translation, add a word, or document a regional form."],
+  ["contribute.path.voice", "Voice", "contribute.path.voice.desc", "Contribute speech sources, recordings with permission, or pronunciation guidance."],
+  ["contribute.path.data", "Data", "contribute.path.data.desc", "Point Zubán to reusable corpora, dictionaries, archives, or datasets."],
+  ["contribute.path.research", "Research", "contribute.path.research.desc", "Reproduce a result, propose a benchmark, or contribute methodology."],
+  ["contribute.path.code", "Code", "contribute.path.code.desc", "Improve the product, adapters, accessibility, documentation, or evaluation tools."],
 ];
 
 export default function ContributePage() {
@@ -21,10 +21,10 @@ export default function ContributePage() {
         </div>
 
         <div className="contribute-paths contribute-paths-clean">
-          {paths.map(([title, text]) => (
-            <article key={title}>
-              <h2>{title}</h2>
-              <p>{text}</p>
+          {paths.map(([titleId, title, textId, text]) => (
+            <article key={titleId}>
+              <h2><UiText id={titleId} fallback={title} /></h2>
+              <p><UiText id={textId} fallback={text} /></p>
             </article>
           ))}
         </div>
