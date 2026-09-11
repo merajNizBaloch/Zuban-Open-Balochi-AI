@@ -11,6 +11,7 @@ type Status = {
   ocr: boolean;
   ocrProvider?: string | null;
   dictionaryFallback?: boolean;
+  browserTextFallback?: boolean;
 };
 
 export function ModelStatus() {
@@ -36,14 +37,16 @@ export function ModelStatus() {
       key: "text",
       type: "Text model",
       label: "Chat + Translate",
-      online: Boolean(status?.text),
-      limited: !status?.text && Boolean(status?.dictionaryFallback),
+      online: Boolean(status?.text || status?.browserTextFallback),
+      limited: !status?.text && Boolean(status?.browserTextFallback || status?.dictionaryFallback),
       detail: status?.text
         ? (status.textProvider === "huggingface" ? "Hugging Face · " : status.textProvider === "ollama" ? "Ollama · " : "") +
           (status.textModel ?? "configured model")
-        : status?.dictionaryFallback
-          ? "Dictionary mode · exact word lookup/translation"
-          : "Add HF_TOKEN, a custom endpoint, or Ollama",
+        : status?.browserTextFallback
+          ? "Browser AI fallback · no developer key required"
+          : status?.dictionaryFallback
+            ? "Dictionary mode · exact word lookup/translation"
+            : "Text AI unavailable",
     },
     {
       key: "stt",
