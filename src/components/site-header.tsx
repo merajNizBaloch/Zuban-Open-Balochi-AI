@@ -8,11 +8,11 @@ export function SiteHeader() {
       <div className="shell header-inner">
         <Link className="brand brand-logo-link" href="/" aria-label="Zubán home">
           <Image
-            className="brand-logo brand-logo-light"
-            src="/zuban-light.svg"
+            className="brand-logo"
+            src="/zuban-mark.webp"
             alt="Zubán"
-            width={1254}
-            height={1254}
+            width={512}
+            height={512}
             priority
           />
         </Link>
