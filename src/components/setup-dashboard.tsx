@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useExperience } from "@/components/experience-provider";
 
 type Status = {
   text: boolean;
@@ -27,6 +28,7 @@ type SetupItem = {
 };
 
 export function SetupDashboard() {
+  const { language, t } = useExperience();
   const [status, setStatus] = useState<Status | null>(null);
 
   useEffect(() => {
@@ -39,7 +41,7 @@ export function SetupDashboard() {
   const items: SetupItem[] = status
     ? [
         {
-          title: "Chat + Translate",
+          title: t("status.chat", "Chat + Translate"),
           state: status.text ? "ready" : status.browserTextFallback ? "limited" : status.dictionaryFallback ? "limited" : "missing",
           detail: status.text
             ? `Connected through ${status.textProvider ?? "custom provider"} · ${status.textModel ?? "configured model"}`
@@ -51,7 +53,7 @@ export function SetupDashboard() {
           env: status.text ? undefined : "Optional: HF_TOKEN or ZUBAN_TEXT_API_URL or OLLAMA_BASE_URL",
         },
         {
-          title: "Balochi model server",
+          title: language === "bal" ? "بلوچی ماڈل سرور" : "Balochi model server",
           state: status.modelServerReachable
             ? "ready"
             : status.modelServerConfigured
@@ -68,7 +70,7 @@ export function SetupDashboard() {
           env: status.modelServerReachable ? undefined : "ZUBAN_MODEL_SERVER_URL",
         },
         {
-          title: "Speech to text",
+          title: t("status.stt", "Speech to text"),
           state: status.speechToText ? "ready" : "missing",
           detail: status.speechToText
             ? "Balochi Whisper transcription is connected" +
@@ -77,7 +79,7 @@ export function SetupDashboard() {
           env: status.speechToText ? undefined : "ZUBAN_MODEL_SERVER_URL",
         },
         {
-          title: "Text to speech",
+          title: t("status.tts", "Text to speech"),
           state: status.textToSpeech ? "ready" : "missing",
           detail: status.textToSpeech
             ? "Balochi SpeechT5 voice generation is connected" +
@@ -86,7 +88,7 @@ export function SetupDashboard() {
           env: status.textToSpeech ? undefined : "ZUBAN_MODEL_SERVER_URL",
         },
         {
-          title: "OCR",
+          title: t("status.ocr", "OCR"),
           state: status.ocrProvider === "model endpoint" ? "ready" : "limited",
           detail: status.ocrProvider === "model endpoint"
             ? "Server OCR is connected."
@@ -95,9 +97,9 @@ export function SetupDashboard() {
       ]
     : [
         {
-          title: "Services",
+          title: language === "bal" ? "سروس" : "Services",
           state: "checking",
-          detail: "Checking this deployment…",
+          detail: language === "bal" ? "اے ڈیپلائمنٹ بررسی بوتگ…" : "Checking this deployment…",
         },
       ];
 
@@ -110,18 +112,18 @@ export function SetupDashboard() {
               <h2>{item.title}</h2>
               <span className={"setup-state " + item.state}>
                 {item.state === "ready"
-                  ? "Ready"
+                  ? t("setup.ready", "Ready")
                   : item.state === "limited"
-                    ? "Fallback"
+                    ? t("setup.fallback", "Fallback")
                     : item.state === "missing"
-                      ? "Needs setup"
-                      : "Checking"}
+                      ? t("setup.needs", "Needs setup")
+                      : t("setup.checking", "Checking")}
               </span>
             </div>
             <p>{item.detail}</p>
             {item.env && (
               <div className="setup-env">
-                <span>Environment</span>
+                <span>{t("setup.environment", "Environment")}</span>
                 <code>{item.env}</code>
               </div>
             )}
@@ -131,9 +133,11 @@ export function SetupDashboard() {
 
       <div className="setup-code">
         <div>
-          <h2>Recommended production configuration</h2>
+          <h2>{t("setup.recommended", "Recommended production configuration")}</h2>
           <p>
-            Chat and Translate can fall back to browser AI without a developer key. For a controlled production deployment, configure Hugging Face, a custom endpoint, or Ollama. One model-server URL enables Balochi STT and TTS.
+            {language === "bal"
+              ? "Chat و Translate بی لاگن WebGPU ءَ مقامی AI کارمرز کنگ بہ کنت. Production ءِ واستہ Hugging Face، custom endpoint یا Ollama کنفیگر کنگ بهتر اِنت."
+              : "Chat and Translate can use on-device WebGPU AI without a login. For a controlled production deployment, configure Hugging Face, a custom endpoint, or Ollama."}
           </p>
         </div>
         <pre>{`HF_TOKEN=hf_...
