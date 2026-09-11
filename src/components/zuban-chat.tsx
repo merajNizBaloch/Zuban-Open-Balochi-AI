@@ -9,6 +9,7 @@ import {
 } from "react";
 import { ZubanLogo } from "@/components/zuban-logo";
 import { browserAiStream, isMissingServerModelMessage, stopBrowserAiGeneration } from "@/lib/browser-ai";
+import { useExperience } from "@/components/experience-provider";
 
 type ChatMessage = {
   id: string;
@@ -38,6 +39,7 @@ function messageId() {
 
 export function ZubanChat() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const { t } = useExperience();
   const [input, setInput] = useState("");
   const [dialect, setDialect] = useState<Dialect>("auto");
   const [scriptPreference, setScriptPreference] =
@@ -396,13 +398,13 @@ export function ZubanChat() {
       <div className="chat-topbar">
         <div className="chat-title">
           <ZubanLogo width={30} height={30} />
-          <span>Zubán Chat</span>
+          <span>{t("nav.chat", "Zubán Chat")}</span>
         </div>
 
         {messages.length > 0 && (
           <button className="new-chat-button" type="button" onClick={newChat}>
             <span aria-hidden="true">＋</span>
-            New chat
+            {t("tool.chat.new", "New chat")}
           </button>
         )}
       </div>
@@ -417,8 +419,8 @@ export function ZubanChat() {
               height={92}
               priority
             />
-            <h1>How can Zubán help?</h1>
-            <p>Ask in Balochi, English, Urdu or Persian.</p>
+            <h1>{t("tool.chat.title", "How can Zubán help?")}</h1>
+            <p>{t("tool.chat.subtitle", "Ask in Balochi, English, Urdu or Persian.")}</p>
 
             <div className="chat-suggestions">
               {suggestions.map((suggestion) => (
@@ -465,7 +467,7 @@ export function ZubanChat() {
                         type="button"
                         onClick={() => void copyMessage(message.content)}
                       >
-                        Copy
+                        {t("tool.chat.copy", "Copy")}
                       </button>
                     )}
                 </div>
@@ -498,7 +500,7 @@ export function ZubanChat() {
             value={input}
             onChange={(event) => setInput(event.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Message Zubán"
+            placeholder={t("tool.chat.placeholder", "Message Zubán")}
             aria-label="Message Zubán"
             dir="auto"
           />
@@ -506,21 +508,21 @@ export function ZubanChat() {
           <div className="chat-composer-bottom">
             <div className="chat-preferences">
               <label>
-                <span>Dialect</span>
+                <span>{t("tool.chat.dialect", "Dialect")}</span>
                 <select
                   value={dialect}
                   onChange={(event) => setDialect(event.target.value as Dialect)}
                   aria-label="Preferred Balochi dialect"
                 >
-                  <option value="auto">Auto</option>
-                  <option value="western">Western</option>
-                  <option value="southern">Southern</option>
-                  <option value="eastern">Eastern</option>
+                  <option value="auto">{t("tool.chat.auto", "Auto")}</option>
+                  <option value="western">{t("tool.chat.western", "Western")}</option>
+                  <option value="southern">{t("tool.chat.southern", "Southern")}</option>
+                  <option value="eastern">{t("tool.chat.eastern", "Eastern")}</option>
                 </select>
               </label>
 
               <label>
-                <span>Script</span>
+                <span>{t("tool.chat.script", "Script")}</span>
                 <select
                   value={scriptPreference}
                   onChange={(event) =>
@@ -529,8 +531,8 @@ export function ZubanChat() {
                   aria-label="Preferred Balochi script"
                 >
                   <option value="auto">Auto</option>
-                  <option value="arabic">Arabic</option>
-                  <option value="latin">Latin</option>
+                  <option value="arabic">{t("tool.chat.arabic", "Arabic")}</option>
+                  <option value="latin">{t("tool.chat.latin", "Latin")}</option>
                 </select>
               </label>
             </div>
@@ -560,7 +562,7 @@ export function ZubanChat() {
         </form>
 
         <p className="chat-disclaimer">
-          Zubán can make mistakes. Check important language and dialect-specific information.
+          {t("tool.chat.disclaimer", "Zubán can make mistakes. Check important language and dialect-specific information.")}
         </p>
       </div>
     </div>
