@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { FormEvent, KeyboardEvent, useEffect, useRef, useState } from "react";
 
 type ChatMessage = {
@@ -171,7 +170,8 @@ export function ZubanChat() {
     <div className="zuban-chat">
       <div className="chat-topbar">
         <div className="chat-title">
-          <Image src="/zuban-mark.webp" alt="" width={30} height={30} />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/zuban-mark.webp?v=4" alt="" width="30" height="30" />
           <span>Zubán Chat</span>
         </div>
         {messages.length > 0 && (
@@ -185,7 +185,8 @@ export function ZubanChat() {
       <div className="chat-scroll-area">
         {messages.length === 0 ? (
           <div className="chat-empty-state">
-            <Image className="chat-empty-logo" src="/zuban-mark.webp" alt="Zubán" width={92} height={92} />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img className="chat-empty-logo" src="/zuban-mark.webp?v=4" alt="Zubán" width="92" height="92" />
             <h1>How can Zubán help?</h1>
             <p>Ask in Balochi, English, Urdu or Persian.</p>
 
@@ -209,7 +210,8 @@ export function ZubanChat() {
               <article className={"chat-message " + message.role} key={message.id}>
                 {message.role === "assistant" && (
                   <div className="assistant-avatar">
-                    <Image src="/zuban-mark.webp" alt="" width={30} height={30} />
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src="/zuban-mark.webp?v=4" alt="" width="30" height="30" />
                   </div>
                 )}
 
@@ -234,7 +236,8 @@ export function ZubanChat() {
             {loading && (
               <article className="chat-message assistant">
                 <div className="assistant-avatar">
-                  <Image src="/zuban-mark.webp" alt="" width={30} height={30} />
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src="/zuban-mark.webp?v=4" alt="" width="30" height="30" />
                 </div>
                 <div className="chat-thinking" aria-label="Zubán is thinking">
                   <span />
