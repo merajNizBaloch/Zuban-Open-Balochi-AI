@@ -13,14 +13,17 @@ export default function DatasetsPage() {
   return (
     <section className="section datasets-page">
       <div className="shell">
-        <h1 className="page-title">Datasets.</h1>
-        <p className="lead wide">
-          Zubán keeps source, license, script and dialect information attached to language data instead of treating a corpus as anonymous text.
-        </p>
+        <div className="page-intro-center">
+          <p className="eyebrow">DATASETS</p>
+          <h1 className="page-title">Open data with a memory.</h1>
+          <p className="lead wide">
+            Every useful record should retain its script, dialect, source, license and verification state.
+          </p>
+        </div>
 
-        <div className="section-heading datasets-heading">
+        <div className="section-heading centered-section-heading datasets-heading">
           <div><h2>Available resources.</h2></div>
-          <p>External work that can be inspected, tested, or considered for reuse. Licensing is reviewed before data is imported into Zubán.</p>
+          <p>External work that can be inspected, tested or considered for reuse.</p>
         </div>
 
         <div className="dataset-resource-grid">
@@ -35,9 +38,9 @@ export default function DatasetsPage() {
           ))}
         </div>
 
-        <div className="section-heading datasets-heading">
+        <div className="section-heading centered-section-heading datasets-heading">
           <div><h2>Zubán datasets.</h2></div>
-          <p>These are the datasets and benchmarks being assembled under the Zubán project itself.</p>
+          <p>Datasets and benchmarks being assembled under the Zubán project itself.</p>
         </div>
 
         <div className="dataset-table" role="table" aria-label="Zubán datasets">
@@ -54,7 +57,7 @@ export default function DatasetsPage() {
           ))}
         </div>
 
-        <div className="schema-box">
+        <div className="schema-box schema-box-centered">
           <p className="eyebrow">MINIMUM RECORD METADATA</p>
           <code>{"{ text, script, dialect, source, license, verification }"}</code>
         </div>
