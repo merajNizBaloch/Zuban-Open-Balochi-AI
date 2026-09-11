@@ -5489,3 +5489,242 @@ html[data-theme="makran"] .chat-disclaimer {
 html[data-theme="makran"] body:has(.zuban-chat) main {
   background: #171425 !important;
 }
+
+
+/* Zubán project disclaimer */
+.disclaimer-banner {
+  position: relative;
+  z-index: 60;
+  width: 100%;
+  border-bottom: 1px solid rgba(3, 159, 171, .16);
+  background:
+    linear-gradient(90deg, rgba(3, 159, 171, .07), rgba(207, 148, 113, .045)),
+    #f7fbfa;
+  color: #244c68;
+}
+
+.disclaimer-banner-inner {
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding-top: 7px;
+  padding-bottom: 7px;
+}
+
+.disclaimer-banner p {
+  margin: 0;
+  text-align: center;
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.disclaimer-banner a {
+  color: #087d89;
+  font-weight: 780;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.disclaimer-banner a:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.disclaimer-banner-close {
+  flex: 0 0 28px;
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(6, 46, 90, .09);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, .62);
+  color: #526a7c;
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+  transition:
+    background .16s ease,
+    color .16s ease,
+    border-color .16s ease,
+    transform .16s ease;
+}
+
+.disclaimer-banner-close:hover {
+  background: #fff;
+  color: #062e5a;
+  border-color: rgba(3, 159, 171, .24);
+  transform: rotate(4deg);
+}
+
+.disclaimer-intro {
+  padding-bottom: 44px;
+}
+
+.disclaimer-content {
+  padding-top: 6px;
+}
+
+.disclaimer-content .narrow {
+  max-width: 900px;
+}
+
+.disclaimer-block {
+  display: grid;
+  grid-template-columns: 52px 1fr;
+  gap: 22px;
+  padding: 28px 0;
+  border-top: 1px solid rgba(6, 46, 90, .1);
+}
+
+.disclaimer-block:last-child {
+  border-bottom: 1px solid rgba(6, 46, 90, .1);
+}
+
+.disclaimer-block > span {
+  color: #039fab;
+  font: 800 10px/1.2 var(--mono);
+  letter-spacing: .08em;
+  padding-top: 4px;
+}
+
+.disclaimer-block h2 {
+  margin: 0;
+  color: #062e5a;
+  font-size: clamp(22px, 3vw, 30px);
+  line-height: 1.1;
+  letter-spacing: -.035em;
+}
+
+.disclaimer-block p {
+  margin: 12px 0 0;
+  color: #627c8e;
+  font-size: 14px;
+  line-height: 1.75;
+}
+
+.disclaimer-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+/* Banner-aware Chat viewport */
+body:has(.disclaimer-banner) .zuban-chat {
+  height: calc(100dvh - 122px);
+}
+
+/* Makran Night disclaimer */
+html[data-theme="makran"] .disclaimer-banner {
+  border-bottom-color: rgba(75, 214, 202, .12);
+  background:
+    linear-gradient(90deg, rgba(75, 214, 202, .07), rgba(207, 148, 113, .055)),
+    #1c182c;
+  color: #c9c1c7;
+}
+
+html[data-theme="makran"] .disclaimer-banner a {
+  color: #68ded4;
+}
+
+html[data-theme="makran"] .disclaimer-banner-close {
+  border-color: rgba(239, 227, 200, .1);
+  background: rgba(239, 227, 200, .055);
+  color: #d9cfbb;
+}
+
+html[data-theme="makran"] .disclaimer-banner-close:hover {
+  background: rgba(239, 227, 200, .1);
+  color: #efe3c8;
+  border-color: rgba(75, 214, 202, .2);
+}
+
+html[data-theme="makran"] .disclaimer-page {
+  background: #171425;
+}
+
+html[data-theme="makran"] .disclaimer-block {
+  border-color: rgba(239, 227, 200, .09);
+}
+
+html[data-theme="makran"] .disclaimer-block > span {
+  color: #4bd6ca;
+}
+
+html[data-theme="makran"] .disclaimer-block h2 {
+  color: #efe3c8;
+}
+
+html[data-theme="makran"] .disclaimer-block p {
+  color: #aaa2b3;
+}
+
+/* Balochi/RTL disclaimer */
+html[data-language="bal"] .disclaimer-banner-inner,
+html[data-language="bal"] .disclaimer-banner p,
+html[data-language="bal"] .disclaimer-page {
+  direction: rtl;
+}
+
+html[data-language="bal"] .disclaimer-block {
+  grid-template-columns: 1fr 52px;
+}
+
+html[data-language="bal"] .disclaimer-block > span {
+  grid-column: 2;
+  grid-row: 1;
+  text-align: left;
+}
+
+html[data-language="bal"] .disclaimer-block > div {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+@media (max-width: 720px) {
+  .disclaimer-banner-inner {
+    min-height: 54px;
+    align-items: flex-start;
+    gap: 8px;
+    padding-top: 9px;
+    padding-bottom: 9px;
+  }
+
+  .disclaimer-banner p {
+    flex: 1;
+    text-align: start;
+    font-size: 10px;
+    line-height: 1.48;
+  }
+
+  .disclaimer-banner-close {
+    margin-top: 1px;
+  }
+
+  body:has(.disclaimer-banner) .zuban-chat {
+    height: calc(100dvh - 136px);
+  }
+
+  .disclaimer-block,
+  html[data-language="bal"] .disclaimer-block {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    padding: 24px 0;
+  }
+
+  .disclaimer-block > span,
+  html[data-language="bal"] .disclaimer-block > span {
+    grid-column: 1;
+    grid-row: auto;
+    text-align: start;
+  }
+
+  .disclaimer-block > div,
+  html[data-language="bal"] .disclaimer-block > div {
+    grid-column: 1;
+    grid-row: auto;
+  }
+}
