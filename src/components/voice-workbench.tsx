@@ -72,6 +72,7 @@ export function VoiceWorkbench() {
           onChange={(event) => setText(event.target.value)}
           placeholder="Enter Latin-script Balochi text for speech synthesis…"
           maxLength={600}
+          dir="auto"
         />
         <span className="voice-count">{text.length} / 600</span>
       </label>
