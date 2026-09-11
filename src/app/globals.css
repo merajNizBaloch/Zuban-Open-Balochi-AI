@@ -3772,3 +3772,70 @@ body {
     font-size: 9px;
   }
 }
+
+
+/* Homepage prompt */
+.home-prompt {
+  width: min(680px, 100%);
+  min-height: 58px;
+  margin-top: 26px;
+  padding: 8px 8px 8px 18px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid rgba(6, 46, 90, .13);
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 12px 30px rgba(6, 46, 90, .055);
+}
+
+.home-prompt:focus-within {
+  border-color: rgba(3, 159, 171, .42);
+  box-shadow: 0 14px 34px rgba(6, 46, 90, .075);
+}
+
+.home-prompt input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: #173d5f;
+  font-size: 15px;
+}
+
+.home-prompt input::placeholder {
+  color: #93a2ad;
+}
+
+.home-prompt button {
+  flex: 0 0 40px;
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: #062e5a;
+  color: #fff;
+  cursor: pointer;
+}
+
+.home-prompt button:disabled {
+  opacity: .24;
+  cursor: default;
+}
+
+.home-prompt button:hover:not(:disabled) {
+  background: #039fab;
+}
+
+.home-prompt svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
