@@ -92,7 +92,7 @@ export function TranslationWorkbench() {
                 ? browserError.message
                 : "Browser AI is unavailable.";
             setNotice(
-              t("translate.localError", "Zubán could not start local AI. No login is required. On-device AI needs WebGPU and enough browser memory.") +
+              t("translate.localError", "Zubán could not start local AI. No login or GPU is required; Zubán can fall back to CPU/WASM in the browser.") +
                 (detail ? " " + detail : ""),
             );
           }
