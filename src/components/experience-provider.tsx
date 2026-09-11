@@ -20,6 +20,16 @@ const balochiCopy: Record<string, string> = {
   "nav.community": "کمیونٹی",
   "nav.research": "تحقیق",
   "nav.github": "GitHub",
+  "nav.makran": "مکران شب",
+  "nav.light": "روشن",
+  "nav.english": "English",
+  "nav.openMenu": "مینو پچ کن",
+  "nav.closeMenu": "مینو بند کن",
+
+  "notfound.title": "صفحہ نہ لوٹ.",
+  "notfound.body": "ممکن اِنت صفحہ منتقل بوتگ یا هنوز موجود نہ بیت.",
+  "notfound.home": "گِہ ءَ برو",
+  "notfound.chat": "زُبان گپ پچ کن",
 
   "home.brand": "زُبان",
   "home.title": "بلوچی زبانءَ آجو ٹیکنالوجی",
