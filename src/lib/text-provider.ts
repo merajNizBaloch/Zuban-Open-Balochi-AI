@@ -71,6 +71,7 @@ function exactBalochiEntry(value: string) {
 
   return dictionaryEntries.find((entry) => {
     if (normalize(entry.word) === q) return true;
+    if (entry.aliases?.some((item) => normalize(item) === q)) return true;
     return entry.latin?.some((item) => normalize(item) === q) ?? false;
   });
 }
@@ -170,6 +171,7 @@ function glossaryContext(input: string) {
   const matches = dictionaryEntries
     .filter((entry) => {
       if (normalized.includes(entry.word.toLocaleLowerCase())) return true;
+      if (entry.aliases?.some((item) => normalized.includes(item.toLocaleLowerCase()))) return true;
       if (entry.latin?.some((item) => normalized.includes(item.toLocaleLowerCase()))) return true;
       return false;
     })
