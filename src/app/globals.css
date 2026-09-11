@@ -4066,3 +4066,159 @@ body {
     min-height: 150px;
   }
 }
+
+
+/* Zubán Bench */
+.bench-table {
+  max-width: 1120px;
+  margin: 0 auto;
+  border: 1px solid rgba(6, 46, 90, .11);
+  border-radius: 18px;
+  overflow: hidden;
+  background: #fff;
+}
+
+.bench-row {
+  min-height: 120px;
+  padding: 18px;
+  display: grid;
+  grid-template-columns: 1fr 1.05fr 1.35fr 1.05fr .8fr;
+  align-items: start;
+  gap: 16px;
+  border-bottom: 1px solid rgba(6, 46, 90, .09);
+}
+
+.bench-row:last-child {
+  border-bottom: 0;
+}
+
+.bench-head {
+  min-height: 44px;
+  padding-top: 13px;
+  padding-bottom: 13px;
+  background: #f7fbfc;
+  color: #7b8e9b;
+  font-size: 9px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .07em;
+}
+
+.bench-row > div {
+  display: grid;
+  gap: 8px;
+}
+
+.bench-row strong,
+.bench-row a {
+  color: #062e5a;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.bench-row a:hover {
+  color: #039fab;
+}
+
+.bench-row p,
+.bench-row > span {
+  margin: 0;
+  color: #637b8d;
+  font-size: 11px;
+  line-height: 1.55;
+}
+
+.bench-row small {
+  grid-column: 1 / -1;
+  color: #83949f;
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.bench-status {
+  width: fit-content;
+  min-height: 22px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 7px;
+  border-radius: 999px;
+  font-size: 8px !important;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+}
+
+.bench-status.reproduce {
+  background: rgba(3, 159, 171, .1);
+  color: #0b6886;
+}
+
+.bench-status.audit {
+  background: rgba(226,166,59,.13);
+  color: #95670d;
+}
+
+.bench-status.planned {
+  background: rgba(6,46,90,.07);
+  color: #6d8291;
+}
+
+.bench-principles {
+  max-width: 980px;
+  margin: 36px auto 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.bench-principles article {
+  padding: 20px;
+  border-radius: 16px;
+  background: #eef7f8;
+}
+
+.bench-principles strong {
+  color: #062e5a;
+  font-size: 12px;
+}
+
+.bench-principles p {
+  margin: 10px 0 0;
+  color: #687f90;
+  font-size: 11px;
+  line-height: 1.55;
+}
+
+.benchmark-strip-centered .metric-list a {
+  color: #05cdc9;
+  font-size: 12px;
+  font-weight: 750;
+}
+
+@media (max-width: 860px) {
+  .bench-head {
+    display: none;
+  }
+
+  .bench-row {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .bench-row small {
+    grid-column: 1 / -1;
+  }
+
+  .bench-principles {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 560px) {
+  .bench-row {
+    grid-template-columns: 1fr;
+  }
+
+  .bench-row small {
+    grid-column: auto;
+  }
+}
