@@ -67,7 +67,7 @@ type PendingJob = {
   startedGenerating: boolean;
 };
 
-const WORKER_VERSION = "5";
+const WORKER_VERSION = "6";
 const LOAD_INACTIVITY_MS = 35_000;
 const GENERATION_INACTIVITY_MS = 25_000;
 const ABSOLUTE_JOB_MS = 150_000;
