@@ -22,13 +22,14 @@ export function DictionaryBrowser() {
         if (!q) return { entry, score: 10 };
 
         const word = normalize(entry.word);
+        const aliases = normalize((entry.aliases ?? []).join(" "));
         const latin = normalize((entry.latin ?? []).join(" "));
         const meanings = normalize(entry.meanings.join(" "));
 
         let score = 99;
-        if (word === q || latin === q) score = 0;
-        else if (word.startsWith(q) || latin.startsWith(q)) score = 1;
-        else if (word.includes(q) || latin.includes(q)) score = 2;
+        if (word === q || aliases === q || latin === q) score = 0;
+        else if (word.startsWith(q) || aliases.startsWith(q) || latin.startsWith(q)) score = 1;
+        else if (word.includes(q) || aliases.includes(q) || latin.includes(q)) score = 2;
         else if (meanings.split(/[,\s]+/).includes(q)) score = 3;
         else if (meanings.includes(q)) score = 4;
 
@@ -79,7 +80,11 @@ export function DictionaryBrowser() {
                 <h2 lang="bal" dir="rtl">{entry.word}</h2>
                 <span>{entry.part}</span>
               </div>
-              {entry.latin?.length ? <p className="dictionary-latin">{entry.latin.join(" · ")}</p> : null}
+              {(entry.latin?.length || entry.aliases?.length) ? (
+                <p className="dictionary-latin">
+                  {[...(entry.aliases ?? []), ...(entry.latin ?? [])].join(" · ")}
+                </p>
+              ) : null}
               <ul>
                 {entry.meanings.map((meaning) => <li key={meaning}>{meaning}</li>)}
               </ul>
