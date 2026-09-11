@@ -40,6 +40,22 @@ export const reusableResources = [
     note: "SpeechT5 Balochi voice baseline with three speaker embeddings.",
   },
   {
+    name: "Balochi Latin Parallel Corpus",
+    type: "Translation dataset",
+    owner: "Aynkader",
+    license: "License audit required",
+    url: "https://huggingface.co/datasets/Aynkader/Balochi-dataset",
+    note: "33,216 English–Balochi Latin sentence pairs. Useful for translation research, but a standard reuse license should be confirmed before importing into Zubán.",
+  },
+  {
+    name: "Balochi Translation Model",
+    type: "Machine translation",
+    owner: "Bakhteyar",
+    license: "MIT",
+    url: "https://huggingface.co/Bakhteyar/Balochi-Model",
+    note: "Marian-style English-to-Balochi Latin model. The model is open, but its training data and evaluation documentation need independent audit before production use.",
+  },
+  {
     name: "Balochi Wordlists",
     type: "Lexical data",
     owner: "Junaid Qadir et al.",
