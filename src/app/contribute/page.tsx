@@ -13,12 +13,15 @@ export default function ContributePage() {
   return (
     <section className="section contribute-page">
       <div className="shell">
-        <h1 className="page-title">Contribute to Zubán.</h1>
-        <p className="lead wide">
-          Speakers, writers, researchers and developers can all improve the project. Useful context and clear sources matter more than volume.
-        </p>
+        <div className="page-intro-center">
+          <p className="eyebrow">CONTRIBUTE</p>
+          <h1 className="page-title">Help build Zubán.</h1>
+          <p className="lead wide">
+            Speakers, writers, researchers and developers can all improve the project. Clear context and reliable sources matter more than volume.
+          </p>
+        </div>
 
-        <div className="contribute-paths">
+        <div className="contribute-paths contribute-paths-clean">
           {paths.map(([title, text]) => (
             <article key={title}>
               <h2>{title}</h2>
@@ -28,14 +31,9 @@ export default function ContributePage() {
         </div>
 
         <div className="contribute-form-section">
-          <div className="section-heading">
-            <div>
-              <h2>Send a contribution.</h2>
-            </div>
-            <p>
-              Fill this out here, then review the generated GitHub issue before submitting it.
-              Files can be attached on GitHub.
-            </p>
+          <div className="section-heading centered-section-heading">
+            <div><h2>Send a contribution.</h2></div>
+            <p>Fill this out here, then review the generated GitHub issue before submitting it.</p>
           </div>
           <ContributionForm />
         </div>
