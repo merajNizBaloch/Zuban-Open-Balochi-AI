@@ -1,7 +1,8 @@
 FROM python:3.11-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1
+    PYTHONUNBUFFERED=1 \
+    HF_HUB_DISABLE_TELEMETRY=1
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ffmpeg \
@@ -22,7 +23,9 @@ ENV HOME=/home/user \
 WORKDIR $HOME/app
 
 COPY --chown=user requirements.txt .
+
 RUN pip install --no-cache-dir --user --upgrade pip && \
+    pip install --no-cache-dir --user torch --index-url https://download.pytorch.org/whl/cpu && \
     pip install --no-cache-dir --user -r requirements.txt
 
 COPY --chown=user app.py .
