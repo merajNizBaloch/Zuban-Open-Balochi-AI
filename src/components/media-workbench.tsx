@@ -16,11 +16,17 @@ export function MediaWorkbench({ mode }: { mode: Mode }) {
   const [recordingSeconds, setRecordingSeconds] = useState(0);
   const [previewUrl, setPreviewUrl] = useState("");
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const mediaStreamRef = useRef<MediaStream | null>(null);
   const chunksRef = useRef<Blob[]>([]);
 
   useEffect(() => {
     return () => {
       if (previewUrl) URL.revokeObjectURL(previewUrl);
+      if (mediaRecorderRef.current?.state === "recording") {
+        mediaRecorderRef.current.stop();
+      }
+      mediaStreamRef.current?.getTracks().forEach((track) => track.stop());
+      mediaStreamRef.current = null;
     };
   }, [previewUrl]);
 
@@ -71,6 +77,11 @@ export function MediaWorkbench({ mode }: { mode: Mode }) {
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!file || loading) return;
+
+    if (file.size > 15 * 1024 * 1024) {
+      setMessage("This file is larger than the 15 MB limit.");
+      return;
+    }
 
     const form = new FormData();
     form.set("mode", mode);
@@ -133,6 +144,7 @@ export function MediaWorkbench({ mode }: { mode: Mode }) {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       const recorder = new MediaRecorder(stream);
       mediaRecorderRef.current = recorder;
+      mediaStreamRef.current = stream;
       chunksRef.current = [];
 
       recorder.ondataavailable = (event) => {
@@ -145,6 +157,8 @@ export function MediaWorkbench({ mode }: { mode: Mode }) {
         const extension = mime.includes("ogg") ? "ogg" : mime.includes("mp4") ? "m4a" : "webm";
         setFile(new File([blob], "zuban-recording." + extension, { type: mime }));
         stream.getTracks().forEach((track) => track.stop());
+        mediaStreamRef.current = null;
+        mediaRecorderRef.current = null;
         setRecording(false);
       };
 
@@ -172,6 +186,14 @@ export function MediaWorkbench({ mode }: { mode: Mode }) {
   }
 
   function reset() {
+    if (mediaRecorderRef.current?.state === "recording") {
+      mediaRecorderRef.current.stop();
+    }
+    mediaStreamRef.current?.getTracks().forEach((track) => track.stop());
+    mediaStreamRef.current = null;
+    mediaRecorderRef.current = null;
+    setRecording(false);
+
     if (previewUrl) URL.revokeObjectURL(previewUrl);
     setPreviewUrl("");
     setFile(null);
