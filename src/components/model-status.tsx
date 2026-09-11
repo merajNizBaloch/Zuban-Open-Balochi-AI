@@ -45,7 +45,7 @@ export function ModelStatus() {
         ? (status.textProvider === "huggingface" ? "Hugging Face · " : status.textProvider === "ollama" ? "Ollama · " : "") +
           (status.textModel ?? "configured model")
         : status?.browserTextFallback
-          ? (language === "bal" ? "WebGPU ءَ مقامی AI · لاگن لازم نہ انت" : "On-device WebGPU AI · no login required")
+          ? (language === "bal" ? "براوزر مقامی AI · GPU یا CPU/WASM · لاگن لازم نہ انت" : "Browser local AI · GPU or CPU/WASM · no login required")
           : status?.dictionaryFallback
             ? (language === "bal" ? "لبزنامگ موڈ · درست لبز درگیج / ترجمه" : "Dictionary mode · exact word lookup/translation")
             : (language === "bal" ? "متن AI دستیاب نہ انت" : "Text AI unavailable"),
