@@ -15,6 +15,7 @@ type GithubIssue = {
 
 const contributionPrefixes = [
   "[Community]",
+  "[Community sentence]",
   "[Language]",
   "[Data]",
   "[Translation correction]",
@@ -24,6 +25,7 @@ const contributionPrefixes = [
   "[Pronunciation / voice]",
   "[OCR correction]",
   "[Research]",
+  "[Code / product idea]",
 ];
 
 function labelNames(issue: GithubIssue) {
