@@ -2,17 +2,19 @@
 
 import { FormEvent, useState } from "react";
 import { useExperience } from "@/components/experience-provider";
+import { useRouter } from "next/navigation";
 
 export function HomePrompt() {
   const [value, setValue] = useState("");
   const { t } = useExperience();
+  const router = useRouter();
 
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const prompt = value.trim();
     if (!prompt) return;
 
-    window.location.href = "/chat?prompt=" + encodeURIComponent(prompt);
+    router.push("/chat?prompt=" + encodeURIComponent(prompt));
   }
 
   return (
