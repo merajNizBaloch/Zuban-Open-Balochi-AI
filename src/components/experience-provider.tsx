@@ -129,18 +129,28 @@ export function ExperienceProvider({ children }: { children: ReactNode }) {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    const storedLanguage = window.localStorage.getItem("zuban-ui-language");
-    const storedTheme = window.localStorage.getItem("zuban-theme");
+    let cancelled = false;
 
-    if (storedLanguage === "bal" || storedLanguage === "en") {
-      setLanguageState(storedLanguage);
-    }
+    queueMicrotask(() => {
+      if (cancelled) return;
 
-    if (storedTheme === "makran" || storedTheme === "light") {
-      setThemeState(storedTheme);
-    }
+      const storedLanguage = window.localStorage.getItem("zuban-ui-language");
+      const storedTheme = window.localStorage.getItem("zuban-theme");
 
-    setReady(true);
+      if (storedLanguage === "bal" || storedLanguage === "en") {
+        setLanguageState(storedLanguage);
+      }
+
+      if (storedTheme === "makran" || storedTheme === "light") {
+        setThemeState(storedTheme);
+      }
+
+      setReady(true);
+    });
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   useEffect(() => {
