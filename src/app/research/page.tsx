@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { reusableResources } from "@/lib/resources";
 
 const tracks = [
@@ -64,7 +65,7 @@ export default function ResearchPage() {
             <span>Speech · WER</span>
             <span>OCR · CER / WER</span>
             <span>NER / POS · F1</span>
-            <span>Retrieval · task-specific evaluation</span>
+            <Link href="/bench">Open benchmark registry →</Link>
           </div>
         </div>
       </div>
