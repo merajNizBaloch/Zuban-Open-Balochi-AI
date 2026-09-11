@@ -4,10 +4,12 @@ import { FormEvent, useMemo, useState } from "react";
 import { githubUrl } from "@/lib/site";
 
 const types = [
-  "Translation correction",
+  "Community sentence",
   "Dictionary word",
+  "Translation correction",
+  "Pronunciation / voice",
+  "OCR correction",
   "Data source",
-  "Speech / voice",
   "Research",
   "Code / product idea",
 ];
