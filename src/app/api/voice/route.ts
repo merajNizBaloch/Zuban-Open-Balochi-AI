@@ -4,7 +4,10 @@ const allowedSpeakers = new Set(["ayn_kader", "doda", "doden"]);
 
 function ttsEndpoint() {
   if (process.env.ZUBAN_TTS_API_URL) return process.env.ZUBAN_TTS_API_URL;
-  const base = process.env.ZUBAN_MODEL_SERVER_URL?.replace(/\/$/, "");
+  const base = (
+    process.env.ZUBAN_MODEL_SERVER_URL ||
+    process.env.NEXT_PUBLIC_ZUBAN_MODEL_SERVER_URL
+  )?.replace(/\/$/, "");
   return base ? base + "/tts" : undefined;
 }
 
