@@ -13,20 +13,19 @@ export default function TechnologyPage() {
   return (
     <section className="section technology-page">
       <div className="shell">
-        <div className="technology-title-row">
-          <div>
-            <h1 className="page-title">Technology.</h1>
-            <p className="lead wide">
-              Zubán keeps the product separate from the underlying models. A better open model can replace an older one without rebuilding the interface.
-            </p>
-          </div>
-          <Link className="button secondary" href="/setup">Check setup →</Link>
+        <div className="page-intro-center">
+          <p className="eyebrow">TECHNOLOGY</p>
+          <h1 className="page-title">Modular by design.</h1>
+          <p className="lead wide">
+            Zubán keeps the product separate from the underlying models so better open models can replace older ones without rebuilding the interface.
+          </p>
+          <Link className="button secondary" href="/setup">Check deployment setup →</Link>
         </div>
 
         <div className="technology-status">
-          <div className="section-heading">
+          <div className="section-heading centered-section-heading">
             <div><h2>Service status.</h2></div>
-            <p>This reflects whether each model adapter is configured on the current deployment.</p>
+            <p>Live status for the model adapters configured on this deployment.</p>
           </div>
           <ModelStatus />
         </div>
@@ -45,7 +44,7 @@ export default function TechnologyPage() {
           <article className="info-card">
             <h3>Text model</h3>
             <p>
-              Chat and Translate support Hugging Face Inference Providers, a custom OpenAI-compatible endpoint, or local Ollama. Without one, exact dictionary lookups still work.
+              Chat and Translate support Hugging Face Inference Providers, a custom OpenAI-compatible endpoint, or local Ollama. Exact dictionary lookup still works without one.
             </p>
           </article>
           <article className="info-card">
