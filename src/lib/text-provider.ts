@@ -1,3 +1,4 @@
+import { generateText, streamText } from "ai";
 import { dictionaryEntries } from "@/lib/dictionary";
 import {
   detectBalochiScript,
@@ -33,7 +34,7 @@ type ProviderConfig = {
   endpoint: string;
   model: string;
   apiKey?: string;
-  provider: "custom" | "huggingface" | "ollama";
+  provider: "custom" | "huggingface" | "ollama" | "vercel";
 };
 
 function resolveProvider(): ProviderConfig | null {
@@ -60,6 +61,18 @@ function resolveProvider(): ProviderConfig | null {
       endpoint: process.env.OLLAMA_BASE_URL.replace(/\/$/, "") + "/v1/chat/completions",
       model: process.env.OLLAMA_MODEL || "qwen3:8b",
       provider: "ollama",
+    };
+  }
+
+  if (
+    process.env.AI_GATEWAY_API_KEY ||
+    process.env.VERCEL_OIDC_TOKEN ||
+    process.env.VERCEL
+  ) {
+    return {
+      endpoint: "",
+      model: process.env.ZUBAN_VERCEL_TEXT_MODEL || "meta/llama-3.3-70b",
+      provider: "vercel",
     };
   }
 
@@ -272,6 +285,48 @@ export async function streamChatModel(request: TextRequest) {
   const resolved = providerPayload({ ...request, mode: "chat" }, true);
   if (!resolved) return null;
 
+  if (resolved.provider.provider === "vercel") {
+    const result = streamText({
+      model: resolved.provider.model,
+      instructions: systemPrompt({ ...request, mode: "chat" }),
+      messages: conversationFor({ ...request, mode: "chat" }),
+      temperature: 0.25,
+      maxOutputTokens: 700,
+    });
+
+    const encoder = new TextEncoder();
+    const iterator = result.textStream[Symbol.asyncIterator]();
+
+    const stream = new ReadableStream<Uint8Array>({
+      async pull(controller) {
+        try {
+          const { value, done } = await iterator.next();
+          if (done) {
+            controller.close();
+            return;
+          }
+
+          if (value) controller.enqueue(encoder.encode(value));
+        } catch (error) {
+          controller.error(error);
+        }
+      },
+      async cancel() {
+        if (iterator.return) await iterator.return();
+      },
+    });
+
+    return new Response(stream, {
+      status: 200,
+      headers: {
+        "Content-Type": "text/plain; charset=utf-8",
+        "Cache-Control": "no-store",
+        "X-Zuban-Stream-Format": "plain",
+        "X-Zuban-Provider": "vercel-ai-gateway",
+      },
+    });
+  }
+
   const response = await fetch(resolved.provider.endpoint, {
     method: "POST",
     headers: {
@@ -282,6 +337,7 @@ export async function streamChatModel(request: TextRequest) {
     },
     body: JSON.stringify(resolved.body),
     cache: "no-store",
+    signal: AbortSignal.timeout(35_000),
   });
 
   return response;
@@ -319,6 +375,27 @@ export async function runTextModel(request: TextRequest) {
   const resolved = providerPayload(request);
   if (!resolved) throw new Error("Text provider is not configured.");
 
+  if (resolved.provider.provider === "vercel") {
+    const result = await generateText({
+      model: resolved.provider.model,
+      instructions: systemPrompt(request),
+      messages: conversationFor(request),
+      temperature: request.mode === "translate" ? 0.1 : 0.25,
+      maxOutputTokens: request.mode === "translate" ? 500 : 700,
+    });
+
+    const output = result.text.trim();
+    if (!output) throw new Error("Text model returned no text.");
+
+    return {
+      configured: true,
+      output,
+      message: "",
+      provider: resolved.provider.provider,
+      model: resolved.provider.model,
+    };
+  }
+
   const response = await fetch(resolved.provider.endpoint, {
     method: "POST",
     headers: {
@@ -329,6 +406,7 @@ export async function runTextModel(request: TextRequest) {
     },
     body: JSON.stringify(resolved.body),
     cache: "no-store",
+    signal: AbortSignal.timeout(35_000),
   });
 
   if (!response.ok) {
