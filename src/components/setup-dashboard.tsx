@@ -44,7 +44,7 @@ export function SetupDashboard() {
           detail: status.text
             ? `Connected through ${status.textProvider ?? "custom provider"} · ${status.textModel ?? "configured model"}`
             : status.browserTextFallback
-              ? "Chat and Translate can use browser AI fallback. A server-side provider is still recommended for predictable production behavior."
+              ? "Chat and Translate can use private on-device WebGPU AI with no user account. A server-side provider is still recommended for predictable production behavior."
               : status.dictionaryFallback
                 ? "Dictionary lookup and exact English ↔ Balochi words work without a model."
                 : "No text provider is configured.",
