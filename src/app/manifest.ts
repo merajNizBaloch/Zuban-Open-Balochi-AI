@@ -11,9 +11,9 @@ export default function manifest(): MetadataRoute.Manifest {
     theme_color: "#062e5a",
     icons: [
       {
-        src: "/zuban-mark.webp",
+        src: "/zuban-mark.png",
         sizes: "512x512",
-        type: "image/webp",
+        type: "image/png",
       },
     ],
   };
