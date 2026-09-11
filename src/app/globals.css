@@ -2524,3 +2524,271 @@ body:has(.zuban-chat) .site-footer {
     grid-template-columns: 1fr;
   }
 }
+
+
+/* Centered Zubán homepage */
+.home-hero-centered {
+  min-height: 680px;
+  padding: 78px 0 88px;
+  display: grid;
+  place-items: center;
+  background:
+    radial-gradient(circle at 50% 28%, rgba(21, 196, 202, .09), transparent 34%),
+    #fefdfd;
+  border-bottom: 1px solid rgba(6, 46, 90, .1);
+}
+
+.home-center-wrap {
+  max-width: 920px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.home-logo-wrap {
+  width: 178px;
+  height: 178px;
+  display: grid;
+  place-items: center;
+  margin-bottom: 18px;
+}
+
+.home-primary-logo {
+  display: block;
+  width: 168px;
+  height: 168px;
+  object-fit: contain;
+}
+
+.home-brand-name {
+  margin: 0 0 22px;
+  color: #062e5a;
+  font-size: 34px;
+  line-height: 1;
+  font-weight: 800;
+  letter-spacing: -.055em;
+}
+
+.home-hero-centered h1 {
+  max-width: 900px;
+  margin: 0;
+  color: #062e5a;
+  font-size: clamp(52px, 7vw, 88px);
+  line-height: .96;
+  letter-spacing: -.06em;
+  text-wrap: balance;
+}
+
+.home-intro-centered {
+  max-width: 650px;
+  margin: 24px auto 0;
+  color: #557287;
+  font-size: 17px;
+  line-height: 1.65;
+  text-align: center;
+}
+
+.hero-actions-centered {
+  justify-content: center;
+  margin-top: 30px;
+}
+
+.home-tools-centered {
+  padding: 86px 0 96px;
+  background: #fefdfd;
+}
+
+.home-section-title-centered {
+  max-width: 720px;
+  margin: 0 auto 38px;
+  padding-bottom: 0;
+  display: block;
+  border-bottom: 0;
+  text-align: center;
+}
+
+.home-section-title-centered h2 {
+  margin: 0;
+  color: #062e5a;
+  font-size: clamp(36px, 5vw, 54px);
+  letter-spacing: -.05em;
+}
+
+.home-section-title-centered p {
+  margin: 12px auto 0;
+  max-width: 540px;
+  color: #6b8292;
+}
+
+.home-tool-grid {
+  max-width: 980px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.home-tool-card {
+  grid-column: span 2;
+  min-height: 210px;
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  border: 1px solid rgba(6, 46, 90, .11);
+  border-radius: 18px;
+  background: #fff;
+  text-align: center;
+  transition: transform .16s ease, border-color .16s ease, box-shadow .16s ease;
+}
+
+.home-tool-card:nth-child(4) {
+  grid-column: 2 / span 2;
+}
+
+.home-tool-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(3, 159, 171, .34);
+  box-shadow: 0 12px 30px rgba(6, 46, 90, .06);
+}
+
+.home-tool-number {
+  color: #0b6886;
+  font: 700 10px/1 var(--mono);
+  letter-spacing: .08em;
+}
+
+.home-tool-card h3 {
+  margin: 28px 0 8px;
+  color: #062e5a;
+  font-size: 24px;
+  letter-spacing: -.035em;
+}
+
+.home-tool-card p {
+  margin: 0;
+  color: #688091;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.home-tool-open {
+  margin-top: auto;
+  padding-top: 22px;
+  color: #039fab;
+  font-size: 11px;
+  font-weight: 750;
+}
+
+.home-about-centered {
+  padding: 94px 0;
+  background: #081629;
+  color: #f9fafb;
+}
+
+.home-about-center {
+  max-width: 800px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.home-about-center h2 {
+  max-width: 760px;
+  margin: 0;
+  color: #f9fafb;
+  font-size: clamp(38px, 5vw, 60px);
+  line-height: 1;
+  letter-spacing: -.055em;
+}
+
+.home-about-center > p {
+  max-width: 680px;
+  margin: 24px auto 0;
+  color: rgba(249, 250, 251, .68);
+  font-size: 15px;
+  line-height: 1.7;
+}
+
+.home-about-links-centered {
+  justify-content: center;
+  margin-top: 30px;
+}
+
+@media (max-width: 760px) {
+  .home-hero-centered {
+    min-height: 610px;
+    padding: 58px 0 70px;
+  }
+
+  .home-logo-wrap {
+    width: 140px;
+    height: 140px;
+  }
+
+  .home-primary-logo {
+    width: 132px;
+    height: 132px;
+  }
+
+  .home-brand-name {
+    font-size: 29px;
+    margin-bottom: 20px;
+  }
+
+  .home-hero-centered h1 {
+    font-size: clamp(44px, 13vw, 64px);
+  }
+
+  .home-intro-centered {
+    max-width: 520px;
+    font-size: 15px;
+  }
+
+  .home-tool-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .home-tool-card,
+  .home-tool-card:nth-child(4) {
+    grid-column: auto;
+    min-height: 180px;
+  }
+
+  .home-about-centered {
+    padding: 72px 0;
+  }
+}
+
+@media (max-width: 520px) {
+  .home-center-wrap {
+    width: min(100%, calc(100% - 28px));
+  }
+
+  .home-logo-wrap {
+    width: 118px;
+    height: 118px;
+  }
+
+  .home-primary-logo {
+    width: 112px;
+    height: 112px;
+  }
+
+  .hero-actions-centered {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .hero-actions-centered .button {
+    width: 100%;
+  }
+
+  .home-tools-centered {
+    padding: 68px 0 76px;
+  }
+}
