@@ -2,12 +2,12 @@
 
 import { useMemo, useState } from "react";
 import { dictionaryEntries, dictionarySource } from "@/lib/dictionary";
+import { normalizeForBalochiLookup } from "@/lib/balochi-language";
 
 function normalize(value: string) {
-  return value
-    .toLocaleLowerCase()
-    .normalize("NFKD")
-    .replace(/[\u0300-\u036f]/g, "")
+  return normalizeForBalochiLookup(value)
+    .replace(/[“”"'.,!?؟،؛:;()[\]{}]/g, " ")
+    .replace(/\s+/g, " ")
     .trim();
 }
 
@@ -94,7 +94,7 @@ export function DictionaryBrowser() {
       ) : (
         <div className="dictionary-empty">
           <strong>No entry found.</strong>
-          <p>Try another spelling or an English meaning. This dictionary is intentionally small while sources are being reviewed.</p>
+          <p>Try another spelling or an English meaning. Try another spelling, Latin form, or English meaning.</p>
         </div>
       )}
 
@@ -108,7 +108,7 @@ export function DictionaryBrowser() {
         <div>
           <strong>Source</strong>
           <p>
-            This first searchable set is derived from the Baluchi-English Wiktionary dictionary.
+            This searchable lexicon is derived from the Baluchi-English Wiktionary dictionary.
             It may include regional, spelling, or transcription variants.
           </p>
         </div>
