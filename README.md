@@ -1,56 +1,116 @@
 # Zubán — Open Balochi AI
 
-**Free, open-source, community-built AI infrastructure for the Balochi language.**
+Free, open-source language technology for Balochi.
 
-Zubán is an open initiative to build useful Balochi language technology while creating high-quality, traceable datasets and reproducible research for a low-resource language.
+Zubán combines a public product, reusable model adapters, open language resources, research, datasets, and a community contribution workflow.
 
-## First release
+## What works
 
-- **Zubán Chat** — conversational Balochi AI interface
-- **Zubán Translate** — Balochi ↔ English / Urdu / Persian workspace
-- **Zubán Dictionary** — community-reviewed machine-readable lexicon
-- **Zubán Speech** — speech-to-text and voice contribution tools
-- **Zubán Voice** — text-to-speech interface
-- **Zubán OCR** — printed Balochi image-to-text workspace
-- **Zubán Research** — models, experiments, benchmarks and papers
-- **Zubán Datasets** — corpus, speech, lexicon and benchmark releases
-- **Zubán Contribute** — text, voice, translations, words, code and research
+- **Chat** — conversational interface with thread history, local persistence, and OpenAI-compatible model adapter.
+- **Translate** — Balochi / English / Urdu / Persian translation workspace.
+- **Dictionary** — searchable Balochi dictionary seed derived from Wiktionary with source attribution.
+- **Speech-to-text** — file upload and browser microphone recording.
+- **Text-to-speech** — Balochi voice generation through a configurable endpoint, with playback and download.
+- **OCR** — document image upload, preview, extraction, and copy workflow.
+- **Research** — reusable Balochi models/resources registry.
+- **Datasets** — external resources plus Zubán dataset roadmap/status.
+- **Contribute** — structured contribution form that opens a pre-filled GitHub issue.
+- **Technology** — live model-adapter status on the current deployment.
+- Responsive navigation and mobile layouts.
 
-## Principles
-
-1. Free to use.
-2. Open source.
-3. Dialect-aware.
-4. Script-aware.
-5. Provenance-first datasets.
-6. Community review over blind scraping.
-7. Reproducible research.
-8. No fake AI outputs — experimental capabilities are labelled clearly.
+Model-backed tools require a configured model service. The product does not return fake results when a service is missing.
 
 ## Local development
 
-Copy `.env.example` to `.env.local`, then:
-
 ```bash
+git clone https://github.com/merajNizBaloch/Zuban-Open-Balochi-AI.git
+cd Zuban-Open-Balochi-AI
 npm install
+cp .env.example .env.local
 npm run dev
 ```
 
-The text tools accept any OpenAI-compatible or self-hosted chat-completions endpoint through environment variables. No proprietary provider is hard-coded.
+Then open `http://localhost:3000`.
 
-## Project status
+## Model adapters
 
-**Alpha / foundation stage.** The interface, open-source workflow and text-provider adapter are present. Balochi datasets and model adapters will be audited and integrated incrementally.
+Zubán deliberately keeps model hosting separate from the frontend.
+
+### Chat + Translate
+
+Set:
+
+```env
+ZUBAN_TEXT_API_URL=https://your-host/v1/chat/completions
+ZUBAN_TEXT_API_KEY=
+ZUBAN_TEXT_MODEL=your-model-id
+```
+
+The endpoint must accept an OpenAI-compatible chat-completions payload and return:
+
+```json
+{
+  "choices": [
+    {
+      "message": {
+        "content": "..."
+      }
+    }
+  ]
+}
+```
+
+Hugging Face Inference Providers expose an OpenAI-compatible router at `https://router.huggingface.co/v1/chat/completions`; a token with inference permission is required.
+
+### Speech-to-text
+
+Set `ZUBAN_STT_API_URL`. Zubán sends a multipart form with `file` and optional `model`. The service should return:
+
+```json
+{ "text": "transcription" }
+```
+
+The existing Balochi Whisper work can be self-hosted behind this adapter.
+
+### Text-to-speech
+
+Set `ZUBAN_TTS_API_URL`. Zubán sends:
+
+```json
+{ "text": "Balochi text", "model": "optional-model-id" }
+```
+
+The endpoint should return an `audio/*` response.
+
+### OCR
+
+Set `ZUBAN_OCR_API_URL`. Zubán sends an image as multipart form data and expects:
+
+```json
+{ "text": "extracted text" }
+```
+
+## Dictionary data
+
+The initial dictionary seed is derived from the **Baluchi-English Wiktionary dictionary** in Vuizur/Wiktionary-Dictionaries. That dictionary data follows Wiktionary's dual licensing: **CC BY-SA 3.0 / GFDL**. The Zubán software remains Apache-2.0. Data licensing is tracked separately.
+
+## Principles
+
+- Free to use
+- Open source
+- Dialect-aware
+- Script-aware
+- Provenance-first data
+- Reproducible research
+- Community review
+- No fake model outputs
 
 ## Contributing
 
-Contributions from Balochi speakers, linguists, researchers, developers, writers, students and institutions are welcome. See `CONTRIBUTING.md`.
+See `CONTRIBUTING.md`. Speakers, linguists, researchers, students, writers, and developers are all welcome.
 
-## Licensing
+## License
 
-- Software: **Apache-2.0**
-- Datasets: licensed per dataset/source. Zubán preserves source and license provenance rather than applying one blanket license to third-party material.
+Software: **Apache-2.0**
 
----
-
-Built for the Balochi language and its communities.
+External datasets and dictionary material retain their own licenses and attribution requirements.
