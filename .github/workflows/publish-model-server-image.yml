@@ -8,6 +8,10 @@ on:
       - "services/balochi-model-server/**"
       - ".github/workflows/publish-model-server-image.yml"
 
+concurrency:
+  group: zuban-model-server-image
+  cancel-in-progress: true
+
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository_owner }}/zuban-balochi-model-server
