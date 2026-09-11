@@ -8,138 +8,174 @@ type BrowserMessage = {
 type BrowserAiOptions = {
   temperature?: number;
   maxTokens?: number;
-  onProgress?: (progress: { progress: number; text: string }) => void;
+  onProgress?: (progress: {
+    progress: number;
+    text: string;
+    backend?: "webgpu" | "cpu";
+  }) => void;
 };
 
-type CompletionChunk = {
-  choices?: Array<{
-    delta?: { content?: string | null };
-  }>;
-};
-
-type CompletionResponse = {
-  choices?: Array<{
-    message?: { content?: string | null };
-  }>;
-};
-
-type WebLlmModule = {
-  CreateMLCEngine: (
-    model: string,
-    options: {
-      initProgressCallback?: (report: {
-        progress?: number;
-        text?: string;
-      }) => void;
-    },
-  ) => Promise<LocalEngine>;
-};
-
-type LocalEngine = {
-  chat: {
-    completions: {
-      create: (request: {
-        messages: BrowserMessage[];
-        temperature?: number;
-        max_tokens?: number;
-        stream?: boolean;
-        stream_options?: { include_usage?: boolean };
-      }) => Promise<CompletionResponse | AsyncIterable<CompletionChunk>>;
+type WorkerMessage =
+  | {
+      type: "progress";
+      id: string;
+      progress: number;
+      text: string;
+      backend?: "webgpu" | "cpu";
+    }
+  | {
+      type: "backend-fallback";
+      id: string;
+      text: string;
+    }
+  | {
+      type: "ready";
+      id: string;
+      backend: "webgpu" | "cpu";
+      model: string;
+    }
+  | {
+      type: "chunk";
+      id: string;
+      text: string;
+      backend: "webgpu" | "cpu";
+    }
+  | {
+      type: "done";
+      id: string;
+      text: string;
+      backend: "webgpu" | "cpu";
+      model: string;
+    }
+  | {
+      type: "error";
+      id: string;
+      message: string;
     };
-  };
-  interruptGenerate: () => void;
+
+type PendingJob = {
+  resolve: (value: { text: string; model: string; backend: "webgpu" | "cpu" }) => void;
+  reject: (reason?: unknown) => void;
+  onChunk?: (text: string) => void;
+  onProgress?: BrowserAiOptions["onProgress"];
 };
 
-const MODEL_ID = "Llama-3.2-1B-Instruct-q4f16_1-MLC";
-const WEBLLM_CDN = "https://esm.run/@mlc-ai/web-llm@0.2.85";
+let worker: Worker | null = null;
+const jobs = new Map<string, PendingJob>();
 
-let enginePromise: Promise<LocalEngine> | null = null;
-let engineInstance: LocalEngine | null = null;
+function jobId() {
+  return Math.random().toString(36).slice(2) + Date.now().toString(36);
+}
 
-function requireWebGpu() {
+function destroyWorker(reason?: string) {
+  worker?.terminate();
+  worker = null;
+
+  if (jobs.size) {
+    const error = new DOMException(reason || "Local AI generation stopped.", "AbortError");
+    for (const job of jobs.values()) job.reject(error);
+    jobs.clear();
+  }
+}
+
+function getWorker() {
   if (typeof window === "undefined") {
     throw new Error("Local AI is only available in the browser.");
   }
 
-  if (!("gpu" in navigator)) {
-    throw new Error(
-      "This browser does not support WebGPU. Use a recent Chrome, Edge, or Safari browser, or connect a server-side model.",
-    );
-  }
-}
+  if (worker) return worker;
 
-async function loadWebLlmModule() {
-  const importByUrl = new Function(
-    "url",
-    "return import(url)",
-  ) as (url: string) => Promise<WebLlmModule>;
+  worker = new Worker("/local-ai-worker.js");
 
-  try {
-    return await importByUrl(WEBLLM_CDN);
-  } catch (error) {
-    throw new Error(
-      "The on-device AI engine could not be downloaded. Check your internet connection, content blocker, or network policy and try again. " +
-        (error instanceof Error ? error.message : ""),
-    );
-  }
-}
+  worker.addEventListener("message", (event: MessageEvent<WorkerMessage>) => {
+    const message = event.data;
+    const job = jobs.get(message.id);
+    if (!job) return;
 
-async function getEngine(onProgress?: BrowserAiOptions["onProgress"]) {
-  requireWebGpu();
-
-  if (engineInstance) return engineInstance;
-  if (enginePromise) return enginePromise;
-
-  enginePromise = (async () => {
-    try {
-      onProgress?.({
-        progress: 0,
-        text: "Loading the on-device AI engine…",
+    if (message.type === "progress") {
+      job.onProgress?.({
+        progress: message.progress,
+        text: message.text,
+        backend: message.backend,
       });
-
-      const webllm = await loadWebLlmModule();
-
-      const engine = await webllm.CreateMLCEngine(MODEL_ID, {
-        initProgressCallback: (report) => {
-          onProgress?.({
-            progress:
-              typeof report.progress === "number"
-                ? Math.max(0, Math.min(1, report.progress))
-                : 0,
-            text: report.text || "Preparing local AI…",
-          });
-        },
-      });
-
-      engineInstance = engine;
-      return engine;
-    } catch (error) {
-      enginePromise = null;
-      throw error;
+      return;
     }
-  })();
 
-  return enginePromise;
+    if (message.type === "backend-fallback") {
+      job.onProgress?.({
+        progress: 0,
+        text: message.text,
+        backend: "cpu",
+      });
+      return;
+    }
+
+    if (message.type === "chunk") {
+      job.onChunk?.(message.text);
+      return;
+    }
+
+    if (message.type === "error") {
+      jobs.delete(message.id);
+      job.reject(new Error(message.message));
+      return;
+    }
+
+    if (message.type === "done") {
+      jobs.delete(message.id);
+      job.resolve({
+        text: message.text,
+        model: message.model,
+        backend: message.backend,
+      });
+    }
+  });
+
+  worker.addEventListener("error", (event) => {
+    const detail = event.message || "The local AI worker crashed.";
+    destroyWorker(detail);
+  });
+
+  return worker;
+}
+
+async function runLocalAi(
+  messages: BrowserMessage[],
+  options?: BrowserAiOptions,
+  onChunk?: (text: string) => void,
+) {
+  const localWorker = getWorker();
+  const id = jobId();
+
+  const result = new Promise<{
+    text: string;
+    model: string;
+    backend: "webgpu" | "cpu";
+  }>((resolve, reject) => {
+    jobs.set(id, {
+      resolve,
+      reject,
+      onChunk,
+      onProgress: options?.onProgress,
+    });
+  });
+
+  localWorker.postMessage({
+    type: "generate",
+    id,
+    messages,
+    temperature: options?.temperature ?? 0.2,
+    maxTokens: options?.maxTokens ?? 600,
+  });
+
+  return result;
 }
 
 export async function browserAiComplete(
   messages: BrowserMessage[],
   options?: BrowserAiOptions,
 ) {
-  const engine = await getEngine(options?.onProgress);
-
-  const response = (await engine.chat.completions.create({
-    messages,
-    temperature: options?.temperature ?? 0.25,
-    max_tokens: options?.maxTokens ?? 900,
-    stream: false,
-  })) as CompletionResponse;
-
-  const text = response.choices?.[0]?.message?.content?.trim() ?? "";
-
-  if (!text) throw new Error("Local AI returned no text.");
-
-  return { text, model: MODEL_ID };
+  return runLocalAi(messages, options);
 }
 
 export async function browserAiStream(
@@ -147,47 +183,15 @@ export async function browserAiStream(
   onChunk: (text: string) => void,
   options?: BrowserAiOptions,
 ) {
-  const engine = await getEngine(options?.onProgress);
-
-  const response = await engine.chat.completions.create({
-    messages,
-    temperature: options?.temperature ?? 0.25,
-    max_tokens: options?.maxTokens ?? 1200,
-    stream: true,
-    stream_options: { include_usage: true },
-  });
-
-  let text = "";
-
-  if (
-    response &&
-    typeof response === "object" &&
-    Symbol.asyncIterator in response
-  ) {
-    for await (const chunk of response as AsyncIterable<CompletionChunk>) {
-      const delta = chunk.choices?.[0]?.delta?.content ?? "";
-      if (!delta) continue;
-
-      text += delta;
-      onChunk(text);
-    }
-  } else {
-    const complete = response as CompletionResponse;
-    text = complete.choices?.[0]?.message?.content?.trim() ?? "";
-    if (text) onChunk(text);
-  }
-
-  if (!text.trim()) throw new Error("Local AI returned no text.");
-
-  return { text: text.trim(), model: MODEL_ID };
+  return runLocalAi(messages, options, onChunk);
 }
 
 export function stopBrowserAiGeneration() {
-  engineInstance?.interruptGenerate();
+  destroyWorker("Local AI generation stopped.");
 }
 
 export function browserAiModelName() {
-  return MODEL_ID;
+  return "onnx-community/Qwen2.5-0.5B-Instruct";
 }
 
 export function isMissingServerModelMessage(value: string) {
