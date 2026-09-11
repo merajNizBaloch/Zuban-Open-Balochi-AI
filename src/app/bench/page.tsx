@@ -1,12 +1,13 @@
 import { benchmarkRecords } from "@/lib/benchmarks";
+import { UiText } from "@/components/ui-text";
 
 export default function BenchPage() {
   return (
     <section className="section bench-page">
       <div className="shell">
         <div className="page-intro-center">
-          <p className="eyebrow">ZUBÁN BENCH</p>
-          <h1 className="page-title">Reproduce before we claim.</h1>
+          <p className="eyebrow"><UiText id="page.bench.eyebrow" fallback="ZUBÁN BENCH" /></p>
+          <h1 className="page-title"><UiText id="page.bench.title" fallback="Reproduce before we claim." /></h1>
           <p className="lead wide">
             Upstream model-card numbers are useful context, but they do not become Zubán results until the model is evaluated on an independent, versioned test set.
           </p>
