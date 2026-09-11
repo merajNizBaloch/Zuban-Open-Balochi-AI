@@ -1,17 +1,32 @@
 import { NextResponse } from "next/server";
 
+const allowedSpeakers = new Set(["ayn_kader", "doda", "doden"]);
+
 export async function POST(request: Request) {
-  const body = (await request.json()) as { text?: string };
-  if (!body.text?.trim()) return NextResponse.json({ error: "Text is required." }, { status: 400 });
-  if (body.text.length > 3000) return NextResponse.json({ error: "Text is too long for the alpha voice interface." }, { status: 400 });
+  const body = (await request.json()) as { text?: string; speaker?: string };
+
+  if (!body.text?.trim()) {
+    return NextResponse.json({ error: "Text is required." }, { status: 400 });
+  }
+
+  if (body.text.length > 600) {
+    return NextResponse.json(
+      { error: "The current Balochi TTS model is intended for short text. Keep input below 600 characters." },
+      { status: 400 },
+    );
+  }
 
   const endpoint = process.env.ZUBAN_TTS_API_URL;
   const key = process.env.ZUBAN_TTS_API_KEY;
-  const model = process.env.ZUBAN_TTS_MODEL;
+  const model = process.env.ZUBAN_TTS_MODEL || "Aynkader/Balochi-TTS-Three-Speakers";
+  const speaker = allowedSpeakers.has(body.speaker ?? "") ? body.speaker : "ayn_kader";
 
   if (!endpoint) {
     return NextResponse.json(
-      { message: "The open TTS adapter is not configured yet. Add ZUBAN_TTS_API_URL to connect a Balochi speech model." },
+      {
+        message:
+          "Balochi voice needs the open model server. Deploy services/balochi-model-server and set ZUBAN_TTS_API_URL to its /tts endpoint.",
+      },
       { status: 503 },
     );
   }
@@ -22,12 +37,20 @@ export async function POST(request: Request) {
       "Content-Type": "application/json",
       ...(key ? { Authorization: "Bearer " + key } : {}),
     },
-    body: JSON.stringify({ text: body.text.trim(), model }),
+    body: JSON.stringify({
+      text: body.text.trim(),
+      model,
+      speaker,
+    }),
     cache: "no-store",
   });
 
   if (!response.ok) {
-    return NextResponse.json({ error: "Configured TTS endpoint returned " + response.status + "." }, { status: 502 });
+    const detail = await response.text().catch(() => "");
+    return NextResponse.json(
+      { error: "Balochi TTS returned " + response.status + (detail ? ": " + detail.slice(0, 180) : "") },
+      { status: 502 },
+    );
   }
 
   const contentType = response.headers.get("content-type") ?? "audio/wav";
