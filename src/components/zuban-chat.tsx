@@ -216,7 +216,11 @@ export function ZubanChat() {
                 )}
 
                 <div className="chat-message-content">
-                  <div className={message.error ? "chat-bubble error" : "chat-bubble"}>
+                  <div
+                    className={message.error ? "chat-bubble error" : "chat-bubble"}
+                    dir="auto"
+                    lang="bal"
+                  >
                     {message.content}
                   </div>
 
@@ -261,6 +265,7 @@ export function ZubanChat() {
             onKeyDown={handleKeyDown}
             placeholder="Message Zubán"
             aria-label="Message Zubán"
+            dir="auto"
           />
 
           <div className="chat-composer-bottom">
