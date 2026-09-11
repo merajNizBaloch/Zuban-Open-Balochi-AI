@@ -381,13 +381,7 @@ export function ZubanChat() {
             {loading && !streamingId && (
               <article className="chat-message assistant">
                 <div className="assistant-avatar">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src="/zuban-mark.png?v=1"
-                    alt=""
-                    width="30"
-                    height="30"
-                  />
+                  <ZubanLogo width={30} height={30} />
                 </div>
                 <div className="chat-thinking" aria-label="Zubán is thinking">
                   <span />
