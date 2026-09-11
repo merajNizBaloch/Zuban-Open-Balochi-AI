@@ -3,7 +3,10 @@ import { NextResponse } from "next/server";
 type MediaMode = "stt" | "ocr";
 
 function serverEndpoint(path: string) {
-  const base = process.env.ZUBAN_MODEL_SERVER_URL?.replace(/\/$/, "");
+  const base = (
+    process.env.ZUBAN_MODEL_SERVER_URL ||
+    process.env.NEXT_PUBLIC_ZUBAN_MODEL_SERVER_URL
+  )?.replace(/\/$/, "");
   return base ? base + path : undefined;
 }
 
