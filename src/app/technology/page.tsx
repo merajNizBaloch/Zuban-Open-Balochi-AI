@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ModelStatus } from "@/components/model-status";
+import { UiText } from "@/components/ui-text";
 
 const layers = [
   ["Interface", "Chat · Translate · Dictionary · Speech · OCR"],
@@ -14,8 +15,8 @@ export default function TechnologyPage() {
     <section className="section technology-page">
       <div className="shell">
         <div className="page-intro-center">
-          <p className="eyebrow">TECHNOLOGY</p>
-          <h1 className="page-title">Modular by design.</h1>
+          <p className="eyebrow"><UiText id="page.technology.eyebrow" fallback="TECHNOLOGY" /></p>
+          <h1 className="page-title"><UiText id="page.technology.title" fallback="Modular by design." /></h1>
           <p className="lead wide">
             Zubán keeps the product separate from the underlying models so better open models can replace older ones without rebuilding the interface.
           </p>
