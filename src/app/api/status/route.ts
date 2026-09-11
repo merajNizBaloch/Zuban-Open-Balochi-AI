@@ -39,6 +39,7 @@ export async function GET() {
       text: text.configured,
       textProvider: text.provider,
       textModel: text.model,
+      dictionaryFallback: text.dictionaryFallback,
 
       modelServerConfigured: modelServer.configured,
       modelServerReachable: modelServer.reachable,
