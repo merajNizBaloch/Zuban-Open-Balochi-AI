@@ -43,7 +43,7 @@ export default function TechnologyPage() {
           <article className="info-card">
             <h3><UiText id="technology.text" fallback="Text model" /></h3>
             <p>
-              <UiText id="technology.text.desc" fallback="Chat and Translate prefer Hugging Face, a custom OpenAI-compatible endpoint, or local Ollama when configured. Without one, the product can run a small model locally through WebGPU with no user login, while exact dictionary lookup remains available." />
+              <UiText id="technology.text.desc" fallback="Chat and Translate prefer a configured server model. Without one, Zubán runs a small model locally in the browser: WebGPU when available, otherwise CPU/WASM, with no user login." />
             </p>
           </article>
           <article className="info-card">
