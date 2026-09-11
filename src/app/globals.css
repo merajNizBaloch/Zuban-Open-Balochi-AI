@@ -3870,3 +3870,199 @@ body {
   display: inline-block;
   margin-top: 12px;
 }
+
+
+/* Developers */
+.developer-endpoints {
+  max-width: 1080px;
+  margin: 0 auto;
+  display: grid;
+  gap: 8px;
+}
+
+.developer-endpoints article {
+  min-height: 86px;
+  padding: 17px 18px;
+  display: grid;
+  grid-template-columns: 56px minmax(190px, .7fr) 1.3fr;
+  align-items: center;
+  gap: 18px;
+  border: 1px solid rgba(6, 46, 90, .1);
+  border-radius: 14px;
+  background: #fff;
+}
+
+.developer-endpoints article > span {
+  color: #039fab;
+  font: 800 9px/1 var(--mono);
+  letter-spacing: .08em;
+}
+
+.developer-endpoints code {
+  color: #062e5a;
+  font: 700 12px/1.45 var(--mono);
+  overflow-wrap: anywhere;
+}
+
+.developer-endpoints p {
+  margin: 0;
+  color: #687f90;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.developer-examples {
+  max-width: 1080px;
+  margin: 54px auto 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.developer-examples article {
+  min-width: 0;
+  border-radius: 18px;
+  overflow: hidden;
+  background: #081629;
+  color: #f9fafb;
+}
+
+.developer-examples h2 {
+  margin: 0;
+  padding: 18px 20px;
+  border-bottom: 1px solid rgba(255,255,255,.08);
+  font-size: 17px;
+}
+
+.developer-examples pre {
+  margin: 0;
+  min-height: 260px;
+  padding: 20px;
+  overflow: auto;
+  color: #73d9d3;
+  font: 600 11px/1.75 var(--mono);
+  white-space: pre-wrap;
+}
+
+.developer-note {
+  max-width: 820px;
+  margin: 40px auto 0;
+  padding: 24px;
+  border-radius: 18px;
+  background: #eef7f8;
+  text-align: center;
+}
+
+.developer-note h2 {
+  margin: 0;
+  color: #062e5a;
+  font-size: 23px;
+}
+
+.developer-note p {
+  max-width: 700px;
+  margin: 10px auto 0;
+  color: #60798b;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+/* Roadmap */
+.roadmap-groups {
+  max-width: 1080px;
+  margin: 0 auto;
+  display: grid;
+  gap: 54px;
+}
+
+.roadmap-group-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.roadmap-group-title h2 {
+  margin: 0;
+  color: #062e5a;
+  font-size: 27px;
+  letter-spacing: -.04em;
+}
+
+.roadmap-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #aebac2;
+}
+
+.roadmap-dot.live {
+  background: #15b8a6;
+  box-shadow: 0 0 0 4px rgba(21,184,166,.12);
+}
+
+.roadmap-dot.building {
+  background: #039fab;
+  box-shadow: 0 0 0 4px rgba(3,159,171,.11);
+}
+
+.roadmap-dot.research {
+  background: #7a8e9b;
+  box-shadow: 0 0 0 4px rgba(122,142,155,.11);
+}
+
+.roadmap-items {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+}
+
+.roadmap-items article {
+  min-height: 190px;
+  padding: 20px;
+  border: 1px solid rgba(6, 46, 90, .1);
+  border-radius: 16px;
+  background: #fff;
+}
+
+.roadmap-items h3 {
+  margin: 0;
+  color: #062e5a;
+  font-size: 17px;
+  letter-spacing: -.025em;
+}
+
+.roadmap-items p {
+  margin: 16px 0 0;
+  color: #6a8191;
+  font-size: 11px;
+  line-height: 1.58;
+}
+
+@media (max-width: 900px) {
+  .roadmap-items {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .developer-examples {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 680px) {
+  .developer-endpoints article {
+    grid-template-columns: 48px 1fr;
+  }
+
+  .developer-endpoints p {
+    grid-column: 1 / -1;
+  }
+
+  .roadmap-items {
+    grid-template-columns: 1fr;
+  }
+
+  .roadmap-items article {
+    min-height: 150px;
+  }
+}
