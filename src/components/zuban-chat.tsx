@@ -50,6 +50,7 @@ export function ZubanChat() {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const abortRef = useRef<AbortController | null>(null);
   const streamTextRef = useRef("");
+  const cancelledRef = useRef(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -144,6 +145,7 @@ export function ZubanChat() {
     setInput("");
     setLoading(true);
     setStreamingId("");
+    cancelledRef.current = false;
 
     const controller = new AbortController();
     abortRef.current = controller;
@@ -198,6 +200,7 @@ export function ZubanChat() {
                 ...nextMessages.slice(-16).map(({ role, content }) => ({ role, content })),
               ],
               (streamedText) => {
+                if (cancelledRef.current) return;
                 setMessages((current) =>
                   current.map((message) =>
                     message.id === assistantId
@@ -326,7 +329,10 @@ export function ZubanChat() {
   }
 
   function stopGeneration() {
+    cancelledRef.current = true;
     abortRef.current?.abort();
+    setStreamingId("");
+    setLoading(false);
   }
 
   function submit(event: FormEvent<HTMLFormElement>) {
