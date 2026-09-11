@@ -1,21 +1,22 @@
 import Link from "next/link";
 import { HomePrompt } from "@/components/home-prompt";
+import { HomeAiAtmosphere } from "@/components/home-ai-atmosphere";
+import { ZubanLogo } from "@/components/zuban-logo";
 import { tools } from "@/lib/site";
 
 export default function Home() {
   return (
     <>
       <section className="home-hero home-hero-centered">
+        <HomeAiAtmosphere />
         <div className="shell home-center-wrap">
           <div className="home-logo-wrap">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
+            <ZubanLogo
               className="home-primary-logo"
-              src="/zuban-mark.png?v=1"
               alt="Zubán"
-              width="320"
-              height="320"
-              fetchPriority="high"
+              width={320}
+              height={320}
+              priority
             />
           </div>
 
