@@ -883,3 +883,90 @@ body {
     height: 108px;
   }
 }
+
+
+/* Transparent Zubán mark */
+.brand-logo-link {
+  width: 58px;
+  height: 58px;
+  overflow: visible;
+}
+
+.brand-logo {
+  width: 52px;
+  height: 52px;
+  object-fit: contain;
+}
+
+.home-logo-stage {
+  min-height: 500px;
+  display: grid;
+  place-items: center;
+  background: transparent;
+}
+
+.home-logo-mark {
+  width: min(100%, 430px);
+  height: auto;
+  display: block;
+  object-fit: contain;
+}
+
+.simple-footer {
+  background: #f7fbfc;
+  color: #062e5a;
+  border-top-color: rgba(6, 46, 90, .12);
+}
+
+.footer-simple {
+  min-height: 132px;
+}
+
+.footer-logo {
+  width: 76px;
+  height: 76px;
+  object-fit: contain;
+}
+
+.simple-footer .footer-links a {
+  color: #0e526f;
+}
+
+.simple-footer .footer-links a:hover {
+  color: #039fab;
+}
+
+@media (max-width: 900px) {
+  .home-logo-stage {
+    min-height: 360px;
+  }
+
+  .home-logo-mark {
+    width: min(100%, 360px);
+  }
+}
+
+@media (max-width: 620px) {
+  .brand-logo-link {
+    width: 50px;
+    height: 50px;
+  }
+
+  .brand-logo {
+    width: 46px;
+    height: 46px;
+  }
+
+  .home-logo-stage {
+    min-height: 280px;
+  }
+
+  .home-logo-mark {
+    width: min(100%, 260px);
+  }
+
+  .footer-logo {
+    width: 64px;
+    height: 64px;
+  }
+}
