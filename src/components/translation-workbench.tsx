@@ -63,7 +63,18 @@ export function TranslationWorkbench() {
                 },
                 { role: "user", content: input.trim() },
               ],
-              { temperature: 0.1, maxTokens: 900 },
+              {
+                temperature: 0.1,
+                maxTokens: 900,
+                onProgress: ({ progress, text }) => {
+                  const percent = Math.round(progress * 100);
+                  setNotice(
+                    "Preparing private on-device AI… " +
+                    (percent > 0 ? percent + "% · " : "") +
+                    text,
+                  );
+                },
+              },
             );
 
             setOutput(result.text);
@@ -74,9 +85,9 @@ export function TranslationWorkbench() {
                 ? browserError.message
                 : "Browser AI is unavailable.";
             setNotice(
-              "Zubán could not start browser AI. " +
+              "Zubán could not start local AI. " +
                 detail +
-                " If a sign-in or authorization window appears, allow it and try again.",
+                " No login is required. On-device AI needs WebGPU and enough browser memory.",
             );
           }
         } else {
@@ -166,6 +177,7 @@ export function TranslationWorkbench() {
           {loading ? (
             <div className="translate-loading">
               <span /><span /><span />
+              {notice && <small>{notice}</small>}
             </div>
           ) : output ? (
             <>
