@@ -1,0 +1,30 @@
+name: Sync Balochi model server to Hugging Face
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["main"]
+    paths:
+      - "services/balochi-model-server/**"
+      - ".github/workflows/sync-model-server-to-hf.yml"
+
+jobs:
+  sync:
+    if: ${{ vars.HF_SPACE_ID != '' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Sync model server directory to Hugging Face Space
+        uses: huggingface/hub-sync@v0.1.0
+        with:
+          github_repo_id: ${{ github.repository }}
+          huggingface_repo_id: ${{ vars.HF_SPACE_ID }}
+          hf_token: ${{ secrets.HF_SPACE_TOKEN }}
+          repo_type: space
+          space_sdk: docker
+          subdirectory: services/balochi-model-server
