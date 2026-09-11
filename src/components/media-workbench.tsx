@@ -15,15 +15,10 @@ export function MediaWorkbench({ mode }: { mode: Mode }) {
   const chunksRef = useRef<Blob[]>([]);
 
   useEffect(() => {
-    if (mode !== "ocr" || !file) {
-      setPreviewUrl("");
-      return;
-    }
-
-    const url = URL.createObjectURL(file);
-    setPreviewUrl(url);
-    return () => URL.revokeObjectURL(url);
-  }, [file, mode]);
+    return () => {
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+    };
+  }, [previewUrl]);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -100,6 +95,8 @@ export function MediaWorkbench({ mode }: { mode: Mode }) {
   }
 
   function reset() {
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+    setPreviewUrl("");
     setFile(null);
     setResult("");
     setMessage("");
@@ -135,7 +132,10 @@ export function MediaWorkbench({ mode }: { mode: Mode }) {
             accept={accepts}
             type="file"
             onChange={(event) => {
-              setFile(event.target.files?.[0] ?? null);
+              const nextFile = event.target.files?.[0] ?? null;
+              if (previewUrl) URL.revokeObjectURL(previewUrl);
+              setFile(nextFile);
+              setPreviewUrl(mode === "ocr" && nextFile ? URL.createObjectURL(nextFile) : "");
               setResult("");
               setMessage("");
             }}
