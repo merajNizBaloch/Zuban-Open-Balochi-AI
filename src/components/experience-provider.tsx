@@ -98,6 +98,8 @@ const balochiCopy: Record<string, string> = {
   "translate.preparing": "شخصی مقامی AI تیار بوتگ…",
   "translate.localError": "زُبان مقامی AI شروع کنگءَ ناکام بوت. لاگن یا GPU لازم نہ انت؛ براوزر CPU/WASM موڈ هم کارمرز کنت.",
   "translate.unreachable": "ترجمه سروسءَ رسگ نہ بوت.",
+  "translate.cancel": "بند کن",
+  "translate.cancelled": "ترجمه بند بوت.",
   "page.translate.eyebrow": "ترجمه",
   "page.translate.title": "بلوچی ترجمه.",
   "page.translate.lead": "بلوچی، انگریزی، اردو و فارسی یکجاہ.",
