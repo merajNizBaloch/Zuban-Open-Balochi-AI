@@ -1,10 +1,16 @@
 type TextMode = "chat" | "translate";
 
+type ConversationMessage = {
+  role: "user" | "assistant";
+  content: string;
+};
+
 type TextRequest = {
   mode: TextMode;
   input: string;
   source?: string;
   target?: string;
+  messages?: ConversationMessage[];
 };
 
 type CompletionPayload = {
@@ -28,7 +34,12 @@ export async function runTextModel(request: TextRequest) {
   const system =
     request.mode === "translate"
       ? `You are Zubán Translate, an experimental assistant for Balochi language technology. Translate from ${request.source ?? "auto"} to ${request.target ?? "Balochi"}. Preserve meaning. Never invent certainty about dialect-specific forms. When a wording may depend on dialect, say so briefly.`
-      : "You are Zubán, an experimental open Balochi language assistant. Be useful and concise. Respect dialect differences, do not present one variety as universally correct, and explicitly acknowledge linguistic uncertainty.";
+      : "You are Zubán, an open Balochi language assistant. Be useful, clear and concise. Respect dialect differences, do not present one variety as universally correct, and acknowledge linguistic uncertainty when it matters.";
+
+  const conversation =
+    request.mode === "chat" && request.messages?.length
+      ? request.messages.slice(-20)
+      : [{ role: "user" as const, content: request.input }];
 
   const response = await fetch(endpoint, {
     method: "POST",
@@ -38,10 +49,7 @@ export async function runTextModel(request: TextRequest) {
     },
     body: JSON.stringify({
       model,
-      messages: [
-        { role: "system", content: system },
-        { role: "user", content: request.input },
-      ],
+      messages: [{ role: "system", content: system }, ...conversation],
       temperature: 0.25,
     }),
     cache: "no-store",
