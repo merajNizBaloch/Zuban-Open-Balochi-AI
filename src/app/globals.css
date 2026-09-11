@@ -4486,3 +4486,435 @@ body {
     animation: none !important;
   }
 }
+
+
+/* Experience controls */
+.experience-controls {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.theme-switch,
+.language-switch {
+  min-height: 34px;
+  border: 1px solid rgba(6, 46, 90, .12);
+  background: rgba(255,255,255,.68);
+  color: #062e5a;
+  cursor: pointer;
+}
+
+.theme-switch {
+  width: 38px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+}
+
+.language-switch {
+  min-width: 52px;
+  padding: 0 10px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.theme-orbit {
+  width: 16px;
+  height: 16px;
+  position: relative;
+  display: block;
+  border: 1.5px solid currentColor;
+  border-radius: 50%;
+}
+
+.theme-orbit::after {
+  content: "";
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  right: -2px;
+  top: -2px;
+  transform: rotate(45deg);
+  background: #039fab;
+}
+
+.theme-orbit i {
+  position: absolute;
+  inset: 4px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.mobile-experience-controls {
+  display: none;
+}
+
+/* Makran Night: indigo sea, moon sand, turquoise and copper */
+html[data-theme="makran"] {
+  --bg: #171425;
+  --paper: #211c33;
+  --ink: #efe3c8;
+  --muted: #aaa2b3;
+  --line: #3d3652;
+  --accent: #4bd6ca;
+  --accent-dark: #7be6dc;
+  --rust: #cf9471;
+  --night: #102536;
+  --night-2: #201838;
+}
+
+html[data-theme="makran"] body {
+  background:
+    radial-gradient(circle at 18% 8%, rgba(75, 214, 202, .075), transparent 27rem),
+    radial-gradient(circle at 85% 18%, rgba(207, 148, 113, .07), transparent 25rem),
+    linear-gradient(rgba(255,255,255,.012) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.012) 1px, transparent 1px),
+    #171425;
+  background-size: auto, auto, 34px 34px, 34px 34px, auto;
+  color: var(--ink);
+}
+
+html[data-theme="makran"] .site-header {
+  background: rgba(26, 22, 42, .84);
+  border-bottom-color: rgba(239, 227, 200, .1);
+  box-shadow: 0 10px 36px rgba(4, 7, 18, .12);
+}
+
+html[data-theme="makran"] .brand-word,
+html[data-theme="makran"] .main-nav a,
+html[data-theme="makran"] .github-link {
+  color: #efe3c8;
+}
+
+html[data-theme="makran"] .main-nav a.active,
+html[data-theme="makran"] .main-nav a:hover,
+html[data-theme="makran"] .github-link:hover {
+  color: #68ded4;
+}
+
+html[data-theme="makran"] .theme-switch,
+html[data-theme="makran"] .language-switch {
+  border-color: rgba(239, 227, 200, .14);
+  background: rgba(239, 227, 200, .055);
+  color: #efe3c8;
+}
+
+html[data-theme="makran"] .theme-orbit {
+  border-color: #cf9471;
+}
+
+html[data-theme="makran"] .theme-orbit i {
+  background: #efe3c8;
+  transform: translate(-2px, 1px);
+}
+
+html[data-theme="makran"] .theme-orbit::after {
+  background: #4bd6ca;
+}
+
+html[data-theme="makran"] .home-hero-centered,
+html[data-theme="makran"] .home-tools-centered,
+html[data-theme="makran"] .dictionary-page,
+html[data-theme="makran"] .translate-page,
+html[data-theme="makran"] .speech-page,
+html[data-theme="makran"] .ocr-page,
+html[data-theme="makran"] .research-page,
+html[data-theme="makran"] .datasets-page,
+html[data-theme="makran"] .technology-page,
+html[data-theme="makran"] .contribute-page,
+html[data-theme="makran"] .language-page,
+html[data-theme="makran"] .community-page {
+  background: transparent;
+}
+
+html[data-theme="makran"] :where(
+  .home-hero-centered h1,
+  .home-brand-name,
+  .home-section-title-centered h2,
+  .page-title,
+  .tool-page h1,
+  .page-intro-center h1,
+  .page-intro-center .page-title,
+  .centered-section-heading h2,
+  .research-card h2,
+  .dataset-resource-card h3,
+  .stack-layer strong,
+  .info-card h3,
+  .contribute-paths-clean h2,
+  .community-principles h2,
+  .community-row h3,
+  .developer-endpoints code,
+  .developer-note h2,
+  .roadmap-group-title h2,
+  .roadmap-items h3,
+  .bench-row strong,
+  .bench-row a,
+  .script-lab-note strong,
+  .script-direction-bar strong,
+  .chat-empty-state h1
+) {
+  color: #efe3c8;
+}
+
+html[data-theme="makran"] :where(
+  .home-intro,
+  .home-section-title-centered p,
+  .page-intro-center .lead,
+  .centered-section-heading > p,
+  .research-card p,
+  .dataset-resource-card p,
+  .stack-layer p,
+  .info-card p,
+  .contribute-paths-clean p,
+  .community-principles p,
+  .community-row p,
+  .developer-endpoints p,
+  .developer-note p,
+  .roadmap-items p,
+  .bench-row p,
+  .bench-row > span,
+  .script-lab-note p,
+  .chat-disclaimer
+) {
+  color: #aaa2b3;
+}
+
+html[data-theme="makran"] :where(
+  .home-tool-card,
+  .research-card,
+  .resource-row,
+  .dataset-resource-card,
+  .dataset-table,
+  .stack-layer,
+  .info-card,
+  .contribute-paths-clean article,
+  .community-principles article,
+  .community-stats,
+  .community-row,
+  .developer-endpoints article,
+  .roadmap-items article,
+  .bench-table,
+  .script-lab,
+  .translate-workspace,
+  .chat-composer,
+  .dictionary-search,
+  .dictionary-entry,
+  .lab-stack > article,
+  .media-workbench,
+  .voice-workbench,
+  .contribution-form
+) {
+  background: rgba(33, 28, 51, .9);
+  border-color: rgba(239, 227, 200, .11);
+  color: #efe3c8;
+  box-shadow: none;
+}
+
+html[data-theme="makran"] :where(
+  input,
+  textarea,
+  select,
+  .translate-panel,
+  .script-panel,
+  .file-drop,
+  .voice-editor,
+  .chat-preferences label
+) {
+  color: #efe3c8;
+  border-color: rgba(239, 227, 200, .12);
+}
+
+html[data-theme="makran"] :where(input, textarea)::placeholder {
+  color: #777183;
+}
+
+html[data-theme="makran"] select,
+html[data-theme="makran"] option {
+  background: #211c33;
+  color: #efe3c8;
+}
+
+html[data-theme="makran"] .home-prompt {
+  background: rgba(37, 31, 57, .86);
+  border-color: rgba(75, 214, 202, .2);
+  box-shadow: 0 18px 52px rgba(3, 6, 17, .18);
+}
+
+html[data-theme="makran"] .home-prompt input {
+  color: #efe3c8;
+}
+
+html[data-theme="makran"] .home-prompt button,
+html[data-theme="makran"] .button.primary {
+  background: #e6cda7;
+  border-color: #e6cda7;
+  color: #171425;
+}
+
+html[data-theme="makran"] .home-prompt button:hover:not(:disabled),
+html[data-theme="makran"] .button.primary:hover {
+  background: #4bd6ca;
+  border-color: #4bd6ca;
+  color: #13222c;
+}
+
+html[data-theme="makran"] .button.secondary {
+  border-color: rgba(239, 227, 200, .22);
+  color: #efe3c8;
+  background: rgba(239, 227, 200, .025);
+}
+
+html[data-theme="makran"] .home-tool-card:hover,
+html[data-theme="makran"] .community-row:hover,
+html[data-theme="makran"] .dataset-resource-card:hover {
+  background: #28213d;
+  border-color: rgba(75, 214, 202, .34);
+}
+
+html[data-theme="makran"] .home-about-centered {
+  background:
+    radial-gradient(circle at 50% 0%, rgba(75,214,202,.08), transparent 22rem),
+    #102a36;
+  border-top: 1px solid rgba(75, 214, 202, .13);
+  border-bottom: 1px solid rgba(207, 148, 113, .12);
+}
+
+html[data-theme="makran"] .simple-footer {
+  background: #151225;
+  border-top-color: rgba(239, 227, 200, .08);
+}
+
+html[data-theme="makran"] .chat-topbar,
+html[data-theme="makran"] .translate-language-bar,
+html[data-theme="makran"] .script-lab-tabs,
+html[data-theme="makran"] .lab-heading,
+html[data-theme="makran"] .bench-head,
+html[data-theme="makran"] .dataset-head {
+  background: rgba(239, 227, 200, .035);
+  border-color: rgba(239, 227, 200, .09);
+}
+
+html[data-theme="makran"] .chat-bubble {
+  color: #efe3c8;
+}
+
+html[data-theme="makran"] .chat-message.user .chat-bubble {
+  background: #2d2741;
+  border-color: rgba(207, 148, 113, .14);
+}
+
+html[data-theme="makran"] .assistant-avatar {
+  background: rgba(75, 214, 202, .08);
+  border-color: rgba(75, 214, 202, .16);
+}
+
+html[data-theme="makran"] .ai-speech-bubble {
+  background: rgba(35, 29, 53, .48);
+  border-color: rgba(239, 227, 200, .09);
+  color: rgba(239, 227, 200, .48);
+  box-shadow: 0 8px 28px rgba(2,4,14,.08);
+}
+
+html[data-theme="makran"] .ai-speech-bubble::after {
+  background: rgba(35, 29, 53, .48);
+  border-color: rgba(239, 227, 200, .07);
+}
+
+html[data-theme="makran"] .neural-cluster {
+  stroke: rgba(75, 214, 202, .22);
+}
+
+html[data-theme="makran"] .neural-cluster circle {
+  fill: rgba(207, 148, 113, .34);
+  stroke: rgba(75, 214, 202, .23);
+}
+
+html[data-theme="makran"] .culture-band,
+html[data-theme="makran"] .home-hero-centered::after {
+  filter: saturate(.85) brightness(1.22);
+}
+
+html[data-theme="makran"] ::selection {
+  background: rgba(75, 214, 202, .28);
+  color: #fff4df;
+}
+
+/* Balochi interface mode */
+html[data-language="bal"] body {
+  direction: rtl;
+}
+
+html[data-language="bal"] :where(
+  .home-hero-centered h1,
+  .home-brand-name,
+  .home-intro,
+  .home-section-title,
+  .page-title,
+  .page-intro-center,
+  .tool-page h1,
+  .lead
+) {
+  letter-spacing: 0;
+}
+
+html[data-language="bal"] .home-hero-centered h1 {
+  line-height: 1.14;
+}
+
+html[data-language="bal"] .main-nav {
+  margin-left: 0;
+  margin-right: auto;
+}
+
+html[data-language="bal"] .github-link {
+  border-left: 0;
+  border-right: 1px solid var(--line);
+  padding-left: 0;
+  padding-right: 22px;
+}
+
+html[data-language="bal"] :where(code, pre, .developer-endpoints code) {
+  direction: ltr;
+  text-align: left;
+}
+
+html[data-language="bal"] :where(
+  .chat-composer textarea,
+  .translate-panel textarea,
+  .script-panel textarea,
+  .voice-editor textarea
+) {
+  text-align: start;
+}
+
+@media (max-width: 900px) {
+  .experience-controls,
+  .desktop-nav,
+  .github-link {
+    display: none;
+  }
+
+  .mobile-experience-controls {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    padding: 12px 0 4px;
+  }
+
+  .mobile-experience-controls button {
+    min-height: 42px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--paper);
+    color: var(--ink);
+    font-size: 11px;
+    font-weight: 750;
+  }
+
+  html[data-theme="makran"] .mobile-experience-controls button {
+    background: #211c33;
+    color: #efe3c8;
+    border-color: rgba(239, 227, 200, .12);
+  }
+}
