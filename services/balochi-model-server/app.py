@@ -142,8 +142,36 @@ def health():
         "stt_model": STT_MODEL,
         "tts_model": TTS_MODEL,
         "ocr_languages": OCR_LANGS,
+        "models": {
+            "stt_loaded": load_stt.cache_info().currsize > 0,
+            "tts_loaded": load_tts.cache_info().currsize > 0,
+        },
         "features": ["Balochi STT", "Balochi TTS", "Arabic-script OCR fallback"],
     }
+
+
+@app.post("/warmup")
+def warmup():
+    result = {
+        "device": DEVICE,
+        "stt_loaded": False,
+        "tts_loaded": False,
+    }
+
+    try:
+        load_stt()
+        result["stt_loaded"] = True
+    except Exception as exc:
+        result["stt_error"] = str(exc)
+
+    try:
+        load_tts()
+        speaker_embedding("ayn_kader")
+        result["tts_loaded"] = True
+    except Exception as exc:
+        result["tts_error"] = str(exc)
+
+    return result
 
 
 @app.post("/stt")
