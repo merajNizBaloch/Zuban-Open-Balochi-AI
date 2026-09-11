@@ -98,10 +98,20 @@ def transcribe(samples: np.ndarray):
         for chunk in chunks:
             if not len(chunk):
                 continue
-            inputs = processor(chunk, sampling_rate=16000, return_tensors="pt")
+            inputs = processor(
+                chunk,
+                sampling_rate=16000,
+                return_tensors="pt",
+                return_attention_mask=True,
+            )
             features = inputs.input_features.to(DEVICE)
-            predicted = model.generate(features)
-            text = processor.batch_decode(predicted, skip_special_tokens=True)[0].strip()
+            attention_mask = inputs.attention_mask.to(DEVICE)
+            predicted = model.generate(
+                features,
+                attention_mask=attention_mask,
+                max_new_tokens=224,
+            )
+            text = processor.batch_decode(predicted.cpu(), skip_special_tokens=True)[0].strip()
             if text:
                 outputs.append(text)
 
@@ -148,7 +158,7 @@ def tts(request: TTSRequest):
     if not text:
         raise HTTPException(status_code=400, detail="Text is empty.")
     if len(text) > 600:
-        raise HTTPException(status_code=400, detail="For best quality, keep TTS input below 600 characters.")
+        raise HTTPException(status_code=400, detail="Keep TTS input below 600 characters.")
 
     processor, model, vocoder = load_tts()
     speaker = speaker_embedding(request.speaker)
@@ -161,18 +171,48 @@ def tts(request: TTSRequest):
             detail="The current Balochi TTS model expects Latin-script Balochi (including á, é and ó).",
         ) from exc
 
-    with _tts_lock, torch.inference_mode():
-        speech = model.generate_speech(
-            inputs["input_ids"],
-            speaker,
-            vocoder=vocoder,
-            threshold=0.62,
-            minlenratio=0.10,
-            maxlenratio=6.0,
+    # SpeechT5 quality is best on short Balochi segments. Break longer text
+    # into small chunks and join them with brief silence.
+    chunks: list[str] = []
+    remaining = text
+    while len(remaining) > 100:
+        split_at = max(
+            remaining.rfind(". ", 0, 100),
+            remaining.rfind("? ", 0, 100),
+            remaining.rfind("! ", 0, 100),
+            remaining.rfind(", ", 0, 100),
+            remaining.rfind(" ", 0, 100),
         )
+        if split_at < 35:
+            split_at = 100
+        chunks.append(remaining[:split_at].strip())
+        remaining = remaining[split_at:].strip()
+
+    if remaining:
+        chunks.append(remaining)
+
+    audio_chunks: list[np.ndarray] = []
+    silence = np.zeros(int(16000 * 0.18), dtype=np.float32)
+
+    with _tts_lock, torch.inference_mode():
+        for index, chunk in enumerate(chunks):
+            chunk_inputs = processor(text=chunk, return_tensors="pt").to(DEVICE)
+            chunk_speech = model.generate_speech(
+                chunk_inputs["input_ids"],
+                speaker,
+                vocoder=vocoder,
+                threshold=0.62,
+                minlenratio=0.10,
+                maxlenratio=6.0,
+            )
+            audio_chunks.append(chunk_speech.detach().cpu().numpy())
+            if index < len(chunks) - 1:
+                audio_chunks.append(silence)
+
+    speech = np.concatenate(audio_chunks)
 
     buffer = io.BytesIO()
-    sf.write(buffer, speech.detach().cpu().numpy(), 16000, format="WAV")
+    sf.write(buffer, speech, 16000, format="WAV")
     return Response(
         buffer.getvalue(),
         media_type="audio/wav",
