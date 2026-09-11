@@ -32,7 +32,7 @@ export function SiteHeader() {
         <nav className="main-nav desktop-nav" aria-label="Primary navigation">
           {primaryNav.map((item) => (
             <Link className={pathname === item.href ? "active" : ""} key={item.href} href={item.href}>
-              {item.label}
+              {navLabels[item.href] ?? item.label}
             </Link>
           ))}
         </nav>
@@ -66,7 +66,7 @@ export function SiteHeader() {
           type="button"
           aria-expanded={open}
           aria-controls="mobile-navigation"
-          aria-label={open ? "Close menu" : "Open menu"}
+          aria-label={open ? t("nav.closeMenu", "Close menu") : t("nav.openMenu", "Open menu")}
           onClick={() => setOpen((value) => !value)}
         >
           <span />
