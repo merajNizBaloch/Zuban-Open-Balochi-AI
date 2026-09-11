@@ -2,16 +2,22 @@ import { NextResponse } from "next/server";
 
 type MediaMode = "stt" | "ocr";
 
+function serverEndpoint(path: string) {
+  const base = process.env.ZUBAN_MODEL_SERVER_URL?.replace(/\/$/, "");
+  return base ? base + path : undefined;
+}
+
 function config(mode: MediaMode) {
   if (mode === "stt") {
     return {
-      endpoint: process.env.ZUBAN_STT_API_URL,
+      endpoint: process.env.ZUBAN_STT_API_URL || serverEndpoint("/stt"),
       key: process.env.ZUBAN_STT_API_KEY,
       model: process.env.ZUBAN_STT_MODEL,
     };
   }
+
   return {
-    endpoint: process.env.ZUBAN_OCR_API_URL,
+    endpoint: process.env.ZUBAN_OCR_API_URL || serverEndpoint("/ocr"),
     key: process.env.ZUBAN_OCR_API_KEY,
     model: process.env.ZUBAN_OCR_MODEL,
   };
@@ -27,13 +33,19 @@ export async function POST(request: Request) {
   }
 
   if (file.size > 15 * 1024 * 1024) {
-    return NextResponse.json({ error: "The alpha currently limits uploads to 15 MB." }, { status: 400 });
+    return NextResponse.json({ error: "Uploads are currently limited to 15 MB." }, { status: 400 });
   }
 
   const { endpoint, key, model } = config(mode);
+
   if (!endpoint) {
     return NextResponse.json(
-      { message: "This open model adapter is not configured yet. Add its endpoint in the Zubán environment settings." },
+      {
+        message:
+          mode === "ocr"
+            ? "No OCR server is configured. The browser can use its local OCR fallback."
+            : "Balochi speech recognition needs the model server. Set ZUBAN_MODEL_SERVER_URL or ZUBAN_STT_API_URL.",
+      },
       { status: 503 },
     );
   }
@@ -50,12 +62,26 @@ export async function POST(request: Request) {
   });
 
   if (!response.ok) {
-    return NextResponse.json({ error: "Configured model endpoint returned " + response.status + "." }, { status: 502 });
+    const detail = await response.text().catch(() => "");
+    return NextResponse.json(
+      {
+        error:
+          "Configured " +
+          mode.toUpperCase() +
+          " endpoint returned " +
+          response.status +
+          (detail ? ": " + detail.slice(0, 180) : ""),
+      },
+      { status: 502 },
+    );
   }
 
   const data = (await response.json()) as { text?: string; output?: string };
   const text = data.text ?? data.output;
-  if (!text) return NextResponse.json({ error: "The configured endpoint returned no text." }, { status: 502 });
+
+  if (!text) {
+    return NextResponse.json({ error: "The configured endpoint returned no text." }, { status: 502 });
+  }
 
   return NextResponse.json({ text });
 }
