@@ -10,6 +10,7 @@ type Status = {
   textToSpeech: boolean;
   ocr: boolean;
   ocrProvider?: string | null;
+  dictionaryFallback?: boolean;
 };
 
 export function ModelStatus() {
@@ -36,16 +37,20 @@ export function ModelStatus() {
       type: "Text model",
       label: "Chat + Translate",
       online: Boolean(status?.text),
+      limited: !status?.text && Boolean(status?.dictionaryFallback),
       detail: status?.text
         ? (status.textProvider === "huggingface" ? "Hugging Face · " : status.textProvider === "ollama" ? "Ollama · " : "") +
           (status.textModel ?? "configured model")
-        : "Add HF_TOKEN, a custom endpoint, or Ollama",
+        : status?.dictionaryFallback
+          ? "Dictionary mode · exact word lookup/translation"
+          : "Add HF_TOKEN, a custom endpoint, or Ollama",
     },
     {
       key: "stt",
       type: "STT",
       label: "Speech to text",
       online: Boolean(status?.speechToText),
+      limited: false,
       detail: status?.speechToText ? "Balochi STT endpoint connected" : "Deploy the Balochi Whisper service",
     },
     {
@@ -53,6 +58,7 @@ export function ModelStatus() {
       type: "TTS",
       label: "Text to speech",
       online: Boolean(status?.textToSpeech),
+      limited: false,
       detail: status?.textToSpeech ? "Balochi TTS endpoint connected" : "Deploy the Balochi SpeechT5 service",
     },
     {
@@ -60,6 +66,7 @@ export function ModelStatus() {
       type: "Vision",
       label: "OCR",
       online: Boolean(status?.ocr),
+      limited: status?.ocrProvider !== "model endpoint",
       detail: status?.ocrProvider === "model endpoint" ? "OCR model endpoint" : "Browser Urdu + Persian + Arabic OCR",
     },
   ];
@@ -72,7 +79,7 @@ export function ModelStatus() {
             <span>{service.type}</span>
             <strong>{service.label}</strong>
           </div>
-          <span className={service.online ? "service-dot online" : "service-dot"} />
+          <span className={service.online ? (service.limited ? "service-dot limited" : "service-dot online") : "service-dot"} />
           <small>{status === null ? "Checking…" : service.detail}</small>
         </div>
       ))}
