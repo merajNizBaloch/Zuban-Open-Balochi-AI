@@ -56,6 +56,115 @@ function resolveProvider(): ProviderConfig | null {
   return null;
 }
 
+function normalize(value: string) {
+  return value
+    .toLocaleLowerCase()
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[“”"'.,!?;:()[\]{}]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function exactBalochiEntry(value: string) {
+  const q = normalize(value);
+
+  return dictionaryEntries.find((entry) => {
+    if (normalize(entry.word) === q) return true;
+    return entry.latin?.some((item) => normalize(item) === q) ?? false;
+  });
+}
+
+function englishEntries(value: string) {
+  const q = normalize(value);
+
+  return dictionaryEntries.filter((entry) =>
+    entry.meanings.some((meaning) => normalize(meaning) === q),
+  );
+}
+
+function formatEntry(entry: (typeof dictionaryEntries)[number]) {
+  const latin = entry.latin?.length ? " (" + entry.latin.join(", ") + ")" : "";
+  return [
+    entry.word + latin,
+    "Meaning: " + entry.meanings.join(", "),
+    "Part of speech: " + entry.part,
+    "",
+    "Source: Zubán dictionary · Wiktionary-derived entry.",
+  ].join("\n");
+}
+
+function extractLookupCandidate(input: string) {
+  const trimmed = input.trim();
+  const patterns = [
+    /(?:what does|what is the meaning of|meaning of|define|explain)\s+["“”']?(.+?)["“”']?\s*(?:mean)?[?.!]*$/i,
+    /(?:translate)\s+["“”']?(.+?)["“”']?\s+(?:into|to)\s+(?:english|balochi)[?.!]*$/i,
+  ];
+
+  for (const pattern of patterns) {
+    const match = trimmed.match(pattern);
+    if (match?.[1]) return match[1].trim();
+  }
+
+  return trimmed;
+}
+
+function localDictionaryChat(input: string) {
+  const candidate = extractLookupCandidate(input);
+
+  const balochi = exactBalochiEntry(candidate);
+  if (balochi) {
+    return formatEntry(balochi);
+  }
+
+  const english = englishEntries(candidate);
+  if (english.length) {
+    return [
+      candidate + " → " +
+        english
+          .slice(0, 6)
+          .map((entry) => {
+            const latin = entry.latin?.[0] ? " (" + entry.latin[0] + ")" : "";
+            return entry.word + latin;
+          })
+          .join(" / "),
+      "",
+      "Source: Zubán dictionary · exact English meaning match.",
+    ].join("\n");
+  }
+
+  return "";
+}
+
+function localDictionaryTranslation(
+  input: string,
+  source?: string,
+  target?: string,
+) {
+  const from = source?.toLocaleLowerCase();
+  const to = target?.toLocaleLowerCase();
+
+  if (from === "balochi" && to === "english") {
+    const entry = exactBalochiEntry(input);
+    return entry ? entry.meanings.join(", ") : "";
+  }
+
+  if (from === "english" && to === "balochi") {
+    const matches = englishEntries(input);
+    if (!matches.length) return "";
+
+    return matches
+      .slice(0, 8)
+      .map((entry) => {
+        const latin = entry.latin?.[0] ? " (" + entry.latin[0] + ")" : "";
+        return entry.word + latin;
+      })
+      .join(" / ");
+  }
+
+  return "";
+}
+
 function glossaryContext(input: string) {
   const normalized = input.toLocaleLowerCase();
   const matches = dictionaryEntries
@@ -80,10 +189,12 @@ function glossaryContext(input: string) {
 
 export function textProviderStatus() {
   const provider = resolveProvider();
+
   return {
     configured: Boolean(provider),
     provider: provider?.provider ?? null,
     model: provider?.model ?? null,
+    dictionaryFallback: true,
   };
 }
 
@@ -91,11 +202,28 @@ export async function runTextModel(request: TextRequest) {
   const provider = resolveProvider();
 
   if (!provider) {
+    const localOutput =
+      request.mode === "translate"
+        ? localDictionaryTranslation(request.input, request.source, request.target)
+        : localDictionaryChat(request.input);
+
+    if (localOutput) {
+      return {
+        configured: true,
+        output: localOutput,
+        message: "",
+        provider: "dictionary",
+        model: "Zubán Lexicon",
+      };
+    }
+
     return {
       configured: false,
       output: "",
       message:
-        "Chat and translation need one model connection. Add HF_TOKEN for Hugging Face, configure ZUBAN_TEXT_API_URL/ZUBAN_TEXT_MODEL, or set OLLAMA_BASE_URL for local Ollama.",
+        request.mode === "translate"
+          ? "No AI model is connected. Exact English ↔ Balochi dictionary words work offline, but sentence translation needs HF_TOKEN, a custom endpoint, or Ollama."
+          : "No AI model is connected. You can still ask for meanings of words in the Zubán dictionary, for example “What does آپ mean?”. Full chat needs HF_TOKEN, a custom endpoint, or Ollama.",
     };
   }
 
