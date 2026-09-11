@@ -23,6 +23,18 @@ type CompletionResponse = {
   }>;
 };
 
+type WebLlmModule = {
+  CreateMLCEngine: (
+    model: string,
+    options: {
+      initProgressCallback?: (report: {
+        progress?: number;
+        text?: string;
+      }) => void;
+    },
+  ) => Promise<LocalEngine>;
+};
+
 type LocalEngine = {
   chat: {
     completions: {
@@ -39,6 +51,7 @@ type LocalEngine = {
 };
 
 const MODEL_ID = "Llama-3.2-1B-Instruct-q4f16_1-MLC";
+const WEBLLM_CDN = "https://esm.run/@mlc-ai/web-llm@0.2.85";
 
 let enginePromise: Promise<LocalEngine> | null = null;
 let engineInstance: LocalEngine | null = null;
@@ -55,6 +68,22 @@ function requireWebGpu() {
   }
 }
 
+async function loadWebLlmModule() {
+  const importByUrl = new Function(
+    "url",
+    "return import(url)",
+  ) as (url: string) => Promise<WebLlmModule>;
+
+  try {
+    return await importByUrl(WEBLLM_CDN);
+  } catch (error) {
+    throw new Error(
+      "The on-device AI engine could not be downloaded. Check your internet connection, content blocker, or network policy and try again. " +
+        (error instanceof Error ? error.message : ""),
+    );
+  }
+}
+
 async function getEngine(onProgress?: BrowserAiOptions["onProgress"]) {
   requireWebGpu();
 
@@ -63,8 +92,14 @@ async function getEngine(onProgress?: BrowserAiOptions["onProgress"]) {
 
   enginePromise = (async () => {
     try {
-      const webllm = await import("@mlc-ai/web-llm");
-      const engine = (await webllm.CreateMLCEngine(MODEL_ID, {
+      onProgress?.({
+        progress: 0,
+        text: "Loading the on-device AI engine…",
+      });
+
+      const webllm = await loadWebLlmModule();
+
+      const engine = await webllm.CreateMLCEngine(MODEL_ID, {
         initProgressCallback: (report) => {
           onProgress?.({
             progress:
@@ -74,7 +109,7 @@ async function getEngine(onProgress?: BrowserAiOptions["onProgress"]) {
             text: report.text || "Preparing local AI…",
           });
         },
-      })) as LocalEngine;
+      });
 
       engineInstance = engine;
       return engine;
