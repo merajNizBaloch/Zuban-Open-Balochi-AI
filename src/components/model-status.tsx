@@ -43,7 +43,7 @@ export function ModelStatus() {
         ? (status.textProvider === "huggingface" ? "Hugging Face · " : status.textProvider === "ollama" ? "Ollama · " : "") +
           (status.textModel ?? "configured model")
         : status?.browserTextFallback
-          ? "Browser AI fallback · no developer key required"
+          ? "On-device WebGPU AI · no login required"
           : status?.dictionaryFallback
             ? "Dictionary mode · exact word lookup/translation"
             : "Text AI unavailable",
