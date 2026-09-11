@@ -6,9 +6,11 @@ Zubán combines a public product, reusable model adapters, open language resourc
 
 ## What works
 
-- **Chat** — ChatGPT-style conversation UI with thread history, local persistence, sourced dictionary hints, and open-model providers.
+- **Chat** — streaming conversation UI with local history, Stop Generation, dialect preference, Arabic/Latin script preference, sourced dictionary grounding, and open-model providers.
 - **Translate** — Balochi / English / Urdu / Persian translation workspace.
-- **Dictionary** — searchable Balochi dictionary seed derived from Wiktionary with source attribution.
+- **Dictionary** — searchable Wiktionary-derived Balochi lexicon with source attribution and a public lookup API.
+- **Language Lab** — conservative normalization plus dictionary-first Arabic ↔ Latin Balochi conversion with transparent rule-based fallback.
+- **Community** — public GitHub-backed contribution and review queue for words, sentences, translations, OCR corrections, speech corrections, data and research.
 - **Speech-to-text** — audio upload and browser microphone recording, ready for the open Balochi Whisper model.
 - **Text-to-speech** — three Balochi SpeechT5 voices with playback and download.
 - **OCR** — image upload, preview and extraction. If no server is configured, OCR runs in the browser using Urdu + Persian + Arabic Tesseract language data as a Balochi-script fallback.
@@ -16,6 +18,8 @@ Zubán combines a public product, reusable model adapters, open language resourc
 - **Datasets** — external resources plus Zubán dataset roadmap/status.
 - **Contribute** — structured contribution form that opens a pre-filled GitHub issue.
 - **Technology** — live provider/model status.
+- **Developers** — documented HTTP endpoints for Dictionary, Language Lab, Chat streaming, Translate, media, voice, Community and health.
+- **Roadmap** — public separation of Live, Building and Research work.
 - Responsive navigation, app metadata and automated CI.
 
 The product does not invent fake model outputs when a service is unavailable.
@@ -31,6 +35,51 @@ npm run dev
 ```
 
 Then open `http://localhost:3000`.
+
+
+
+## Language Lab
+
+The language core lives in `src/lib/balochi-language.ts` and is shared by the public Language Lab, Dictionary lookup, Chat grounding and APIs.
+
+```http
+POST /api/language
+Content-Type: application/json
+
+{
+  "action": "transliterate",
+  "input": "آپ",
+  "target": "latin"
+}
+```
+
+Conversion is **dictionary-first**. Unknown words fall back to conservative character rules and are explicitly reported as rule-based because Arabic-script Balochi does not always encode short vowels.
+
+Research/design notes: `docs/research/orthography.md`.
+
+## Community review
+
+`/community` reads structured language/data contributions from this repository's GitHub issues. Open issues are shown as needing review. Closed issues are shown as reviewed, and maintainers can use `verified` or `rejected` labels for clearer outcomes.
+
+Dictionary, OCR and STT interfaces can prefill Community corrections so normal tool use can produce reviewable language data rather than silent feedback.
+
+## Public APIs
+
+See `/developers`.
+
+Current public routes include:
+
+```text
+GET  /api/dictionary?q=
+POST /api/language
+POST /api/chat/stream
+POST /api/text
+POST /api/media
+POST /api/voice
+GET  /api/community
+GET  /api/status
+GET  /api/health
+```
 
 ## 1. Chat + Translate
 
