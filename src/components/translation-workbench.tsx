@@ -111,6 +111,7 @@ export function TranslationWorkbench() {
             onChange={(event) => setInput(event.target.value)}
             placeholder={"Type " + source + " text…"}
             maxLength={12000}
+            dir="auto"
           />
           <span className="translate-count">{input.length.toLocaleString()} / 12,000</span>
         </div>
@@ -126,7 +127,7 @@ export function TranslationWorkbench() {
               <span /><span /><span />
             </div>
           ) : output ? (
-            <p className="translate-output">{output}</p>
+            <p className="translate-output" dir="auto" lang="bal">{output}</p>
           ) : notice ? (
             <div className="translate-notice">{notice}</div>
           ) : (
