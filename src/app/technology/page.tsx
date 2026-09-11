@@ -1,19 +1,55 @@
+import { ModelStatus } from "@/components/model-status";
+
 const layers = [
-  ["INTERFACE", "Chat · Translate · Dictionary · Speech · OCR"],
-  ["ADAPTERS", "Text model · STT · TTS · OCR · Embeddings"],
-  ["LANGUAGE", "Normalization · tokenization · dialect/script metadata"],
-  ["KNOWLEDGE", "Lexicon · corpora · literature · verified sources"],
-  ["RESEARCH", "Model cards · experiments · Zubán Bench"],
+  ["Interface", "Chat · Translate · Dictionary · Speech · OCR"],
+  ["Model adapters", "Text · speech-to-text · text-to-speech · OCR"],
+  ["Language", "Normalization · tokenization · dialect and script metadata"],
+  ["Knowledge", "Dictionary · corpora · verified language resources"],
+  ["Research", "Model cards · evaluations · Zubán Bench"],
 ];
 
 export default function TechnologyPage() {
-  return <section className="section"><div className="shell">
-    <p className="eyebrow">ZUBÁN / TECHNOLOGY</p><h1 className="page-title">Modular by design.</h1>
-    <p className="lead wide">Zubán is not tied to one model provider. Components can improve independently while the public interfaces stay consistent.</p>
-    <div className="stack-map">{layers.map(([label, text], index) => <div className="stack-layer" key={label}><span>{String(index + 1).padStart(2, "0")}</span><strong>{label}</strong><p>{text}</p></div>)}</div>
-    <div className="two-col">
-      <article className="info-card"><p className="eyebrow">TEXT PROVIDER</p><h3>OpenAI-compatible, not OpenAI-dependent.</h3><p>The first adapter uses a standard chat-completions shape so an open/self-hosted endpoint can be swapped in without redesigning the product.</p></article>
-      <article className="info-card"><p className="eyebrow">NEXT</p><h3>Model adapters + evaluation.</h3><p>STT, TTS and OCR connectors will follow the same pattern, each paired with a public model card and benchmark result.</p></article>
-    </div>
-  </div></section>;
+  return (
+    <section className="section technology-page">
+      <div className="shell">
+        <h1 className="page-title">Technology.</h1>
+        <p className="lead wide">
+          Zubán keeps the product separate from the underlying models. A better open model can replace an older one without rebuilding the interface.
+        </p>
+
+        <div className="technology-status">
+          <div className="section-heading">
+            <div><h2>Service status.</h2></div>
+            <p>This reflects whether each model adapter is configured on the current deployment.</p>
+          </div>
+          <ModelStatus />
+        </div>
+
+        <div className="stack-map">
+          {layers.map(([label, text], index) => (
+            <div className="stack-layer" key={label}>
+              <span>{String(index + 1).padStart(2, "0")}</span>
+              <strong>{label}</strong>
+              <p>{text}</p>
+            </div>
+          ))}
+        </div>
+
+        <div className="two-col">
+          <article className="info-card">
+            <h3>Text model</h3>
+            <p>
+              Chat and Translate use an OpenAI-compatible chat-completions endpoint. This can point to an open/self-hosted model rather than a single vendor.
+            </p>
+          </article>
+          <article className="info-card">
+            <h3>Media models</h3>
+            <p>
+              Speech, voice and OCR use separate adapters, so each can be hosted or improved independently.
+            </p>
+          </article>
+        </div>
+      </div>
+    </section>
+  );
 }
