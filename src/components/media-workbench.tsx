@@ -1,12 +1,14 @@
 "use client";
 
 import { FormEvent, useEffect, useRef, useState } from "react";
+import { useExperience } from "@/components/experience-provider";
 
 type Mode = "stt" | "ocr";
 
 const publicModelServer = process.env.NEXT_PUBLIC_ZUBAN_MODEL_SERVER_URL?.replace(/\/$/, "");
 
 export function MediaWorkbench({ mode }: { mode: Mode }) {
+  const { t } = useExperience();
   const [file, setFile] = useState<File | null>(null);
   const [result, setResult] = useState("");
   const [message, setMessage] = useState("");
@@ -220,13 +222,13 @@ export function MediaWorkbench({ mode }: { mode: Mode }) {
             {file
               ? file.name
               : mode === "stt"
-                ? "Choose Balochi audio"
-                : "Choose a printed Balochi image"}
+                ? t("media.choose.audio", "Choose Balochi audio")
+                : t("media.choose.image", "Choose a printed Balochi image")}
           </strong>
           <span>
             {mode === "stt"
-              ? "Upload an audio file or record directly from your microphone."
-              : "Use a clear, well-lit image with readable printed text. OCR can run directly in your browser."}
+              ? t("media.audio.desc", "Upload an audio file or record directly from your microphone.")
+              : t("media.image.desc", "Use a clear, well-lit image with readable printed text. OCR can run directly in your browser.")}
           </span>
           <input
             accept={accepts}
@@ -248,7 +250,7 @@ export function MediaWorkbench({ mode }: { mode: Mode }) {
             {!recording ? (
               <button className="record-button" type="button" onClick={() => void startRecording()}>
                 <span className="record-dot" />
-                Record microphone
+                {t("media.record", "Record microphone")}
               </button>
             ) : (
               <button className="record-button recording" type="button" onClick={stopRecording}>
@@ -271,9 +273,13 @@ export function MediaWorkbench({ mode }: { mode: Mode }) {
                 : "Runs locally in the browser when no OCR server is configured")}
         </span>
         <div className="media-actions">
-          {(file || result) && <button className="quiet-button" type="button" onClick={reset}>Reset</button>}
+          {(file || result) && <button className="quiet-button" type="button" onClick={reset}>{t("media.reset", "Reset")}</button>}
           <button className="button primary" disabled={!file || loading || recording} type="submit">
-            {loading ? (mode === "ocr" ? "Reading…" : "Processing…") : mode === "stt" ? "Transcribe" : "Extract text"}
+            {loading
+              ? (mode === "ocr" ? t("media.reading", "Reading…") : t("media.processing", "Processing…"))
+              : mode === "stt"
+                ? t("media.transcribe", "Transcribe")
+                : t("media.extract", "Extract text")}
           </button>
         </div>
       </div>
@@ -281,8 +287,8 @@ export function MediaWorkbench({ mode }: { mode: Mode }) {
       {(result || message) && (
         <div className="media-result">
           <div className="result-toolbar">
-            <span>{result ? "Result" : "Status"}</span>
-            {result && <button type="button" onClick={() => void copyResult()}>Copy</button>}
+            <span>{result ? t("media.result", "Result") : t("media.status", "Status")}</span>
+            {result && <button type="button" onClick={() => void copyResult()}>{t("media.copy", "Copy")}</button>}
           </div>
           {result && <p className="model-output" dir="auto" lang="bal">{result}</p>}
           {result && (
@@ -301,7 +307,9 @@ export function MediaWorkbench({ mode }: { mode: Mode }) {
                 )
               }
             >
-              {mode === "ocr" ? "Suggest OCR correction →" : "Correct transcription →"}
+              {mode === "ocr"
+                ? t("media.ocr.correct", "Suggest OCR correction →")
+                : t("media.stt.correct", "Correct transcription →")}
             </a>
           )}
           {message && <div className="system-note">{message}</div>}
