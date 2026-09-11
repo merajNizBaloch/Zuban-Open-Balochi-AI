@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
+import { useExperience } from "@/components/experience-provider";
 
 const publicModelServer = process.env.NEXT_PUBLIC_ZUBAN_MODEL_SERVER_URL?.replace(/\/$/, "");
 
@@ -11,6 +12,7 @@ const speakers = [
 ];
 
 export function VoiceWorkbench() {
+  const { t } = useExperience();
   const [text, setText] = useState("");
   const [speaker, setSpeaker] = useState("ayn_kader");
   const [audioUrl, setAudioUrl] = useState("");
@@ -57,20 +59,20 @@ export function VoiceWorkbench() {
     <form className="voice-workbench" onSubmit={submit}>
       <div className="voice-options">
         <label>
-          <span>Voice</span>
+          <span>{t("voice.voice", "Voice")}</span>
           <select value={speaker} onChange={(event) => setSpeaker(event.target.value)}>
             {speakers.map((item) => <option value={item.value} key={item.value}>{item.label}</option>)}
           </select>
         </label>
-        <p>The current open Balochi TTS model works best with Latin-script Balochi and short paragraphs.</p>
+        <p>{t("voice.note", "The current open Balochi TTS model works best with Latin-script Balochi and short paragraphs.")}</p>
       </div>
 
       <label className="voice-editor">
-        <span className="pane-label">BALOCHI TEXT</span>
+        <span className="pane-label">{t("voice.text", "BALOCHI TEXT")}</span>
         <textarea
           value={text}
           onChange={(event) => setText(event.target.value)}
-          placeholder="Enter Latin-script Balochi text for speech synthesis…"
+          placeholder={t("voice.placeholder", "Enter Latin-script Balochi text for speech synthesis…")}
           maxLength={600}
           dir="auto"
         />
@@ -78,16 +80,16 @@ export function VoiceWorkbench() {
       </label>
 
       <div className="workbench-actions">
-        <span>SpeechT5 · three open Balochi speaker voices</span>
+        <span>{t("voice.meta", "SpeechT5 · three open Balochi speaker voices")}</span>
         <button className="button primary" disabled={!text.trim() || loading} type="submit">
-          {loading ? "Generating…" : "Generate voice"}
+          {loading ? t("voice.generating", "Generating…") : t("voice.generate", "Generate voice")}
         </button>
       </div>
 
       {audioUrl && (
         <div className="audio-result">
           <audio controls src={audioUrl}>Your browser does not support audio playback.</audio>
-          <a className="audio-download" href={audioUrl} download="zuban-voice.wav">Download audio</a>
+          <a className="audio-download" href={audioUrl} download="zuban-voice.wav">{t("voice.download", "Download audio")}</a>
         </div>
       )}
 
