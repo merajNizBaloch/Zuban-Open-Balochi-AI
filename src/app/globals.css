@@ -3149,3 +3149,31 @@ body {
   background: rgba(21, 196, 202, .2);
   color: #062e5a;
 }
+
+
+/* Balochi-inspired brand thread */
+.home-hero-centered {
+  position: relative;
+}
+
+.home-hero-centered::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -1px;
+  width: min(560px, 78vw);
+  height: 10px;
+  transform: translateX(-50%);
+  opacity: .9;
+  background:
+    linear-gradient(135deg, transparent 0 38%, #039fab 39% 61%, transparent 62%) 0 0 / 24px 10px repeat-x,
+    linear-gradient(45deg, transparent 0 38%, #062e5a 39% 61%, transparent 62%) 12px 0 / 24px 10px repeat-x;
+}
+
+.culture-band {
+  height: 8px;
+  background:
+    linear-gradient(135deg, transparent 0 39%, #039fab 40% 60%, transparent 61%) 0 0 / 24px 8px repeat-x,
+    linear-gradient(45deg, transparent 0 39%, #062e5a 40% 60%, transparent 61%) 12px 0 / 24px 8px repeat-x;
+  opacity: .9;
+}
