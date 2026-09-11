@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { dictionaryEntries, dictionarySource } from "@/lib/dictionary";
 import { normalizeForBalochiLookup } from "@/lib/balochi-language";
 
@@ -14,6 +14,20 @@ function normalize(value: string) {
 export function DictionaryBrowser() {
   const [query, setQuery] = useState("");
   const [limit, setLimit] = useState(18);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    queueMicrotask(() => {
+      if (cancelled) return;
+      const initial = new URLSearchParams(window.location.search).get("q");
+      if (initial) setQuery(initial.slice(0, 300));
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const results = useMemo(() => {
     const q = normalize(query);
@@ -99,6 +113,20 @@ export function DictionaryBrowser() {
                   )}
                 >
                   Copy
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const url =
+                      window.location.origin +
+                      "/dictionary?q=" +
+                      encodeURIComponent(entry.word);
+                    void navigator.clipboard?.writeText(url);
+                    window.history.replaceState({}, "", "/dictionary?q=" + encodeURIComponent(entry.word));
+                    setQuery(entry.word);
+                  }}
+                >
+                  Copy link
                 </button>
                 <a
                   href={
