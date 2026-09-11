@@ -213,7 +213,7 @@ export function ZubanChat() {
               },
               {
                 temperature: 0.25,
-                maxTokens: 1200,
+                maxTokens: 320,
                 onProgress: ({ progress, text }) => {
                   if (cancelledRef.current) return;
                   const percent = Math.round(progress * 100);
