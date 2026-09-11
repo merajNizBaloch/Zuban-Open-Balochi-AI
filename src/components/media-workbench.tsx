@@ -249,7 +249,7 @@ export function MediaWorkbench({ mode }: { mode: Mode }) {
             <span>{result ? "Result" : "Status"}</span>
             {result && <button type="button" onClick={() => void copyResult()}>Copy</button>}
           </div>
-          {result && <p className="model-output">{result}</p>}
+          {result && <p className="model-output" dir="auto" lang="bal">{result}</p>}
           {message && <div className="system-note">{message}</div>}
         </div>
       )}
