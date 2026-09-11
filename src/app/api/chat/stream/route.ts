@@ -114,6 +114,10 @@ export async function POST(request: Request) {
       );
     }
 
+    if (upstream.headers.get("X-Zuban-Stream-Format") === "plain") {
+      return upstream;
+    }
+
     const reader = upstream.body.getReader();
     const decoder = new TextDecoder();
     const encoder = new TextEncoder();
