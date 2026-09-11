@@ -1,12 +1,30 @@
 import { NextResponse } from "next/server";
 import { textProviderStatus } from "@/lib/text-provider";
 
+type ModelServerHealth = {
+  status?: string;
+  device?: string;
+  models?: {
+    stt_loaded?: boolean;
+    tts_loaded?: boolean;
+  };
+};
+
 async function modelServerHealth() {
   const base = (
     process.env.ZUBAN_MODEL_SERVER_URL ||
     process.env.NEXT_PUBLIC_ZUBAN_MODEL_SERVER_URL
   )?.replace(/\/$/, "");
-  if (!base) return { configured: false, reachable: false };
+
+  if (!base) {
+    return {
+      configured: false,
+      reachable: false,
+      device: null,
+      sttLoaded: false,
+      ttsLoaded: false,
+    };
+  }
 
   try {
     const controller = new AbortController();
@@ -19,14 +37,32 @@ async function modelServerHealth() {
 
     clearTimeout(timer);
 
+    if (!response.ok) {
+      return {
+        configured: true,
+        reachable: false,
+        device: null,
+        sttLoaded: false,
+        ttsLoaded: false,
+      };
+    }
+
+    const data = (await response.json()) as ModelServerHealth;
+
     return {
       configured: true,
-      reachable: response.ok,
+      reachable: true,
+      device: data.device ?? null,
+      sttLoaded: Boolean(data.models?.stt_loaded),
+      ttsLoaded: Boolean(data.models?.tts_loaded),
     };
   } catch {
     return {
       configured: true,
       reachable: false,
+      device: null,
+      sttLoaded: false,
+      ttsLoaded: false,
     };
   }
 }
@@ -46,6 +82,9 @@ export async function GET() {
 
       modelServerConfigured: modelServer.configured,
       modelServerReachable: modelServer.reachable,
+      modelServerDevice: modelServer.device,
+      sttModelLoaded: modelServer.sttLoaded,
+      ttsModelLoaded: modelServer.ttsLoaded,
 
       speechToText: Boolean(process.env.ZUBAN_STT_API_URL) || sharedServerReady,
       textToSpeech: Boolean(process.env.ZUBAN_TTS_API_URL) || sharedServerReady,
