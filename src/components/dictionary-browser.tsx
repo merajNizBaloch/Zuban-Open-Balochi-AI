@@ -88,6 +88,36 @@ export function DictionaryBrowser() {
               <ul>
                 {entry.meanings.map((meaning) => <li key={meaning}>{meaning}</li>)}
               </ul>
+              <div className="dictionary-entry-actions">
+                <button
+                  type="button"
+                  onClick={() => void navigator.clipboard?.writeText(
+                    entry.word +
+                    (entry.latin?.length ? " · " + entry.latin.join(" · ") : "") +
+                    " — " +
+                    entry.meanings.join(", "),
+                  )}
+                >
+                  Copy
+                </button>
+                <a
+                  href={
+                    "/community?type=Dictionary%20word&title=" +
+                    encodeURIComponent("Review " + entry.word) +
+                    "&details=" +
+                    encodeURIComponent(
+                      "Current entry: " +
+                      entry.word +
+                      (entry.latin?.length ? "\nLatin: " + entry.latin.join(", ") : "") +
+                      "\nMeaning: " +
+                      entry.meanings.join(", ") +
+                      "\n\nSuggested correction or additional context:\n",
+                    )
+                  }
+                >
+                  Suggest correction →
+                </a>
+              </div>
             </article>
           ))}
         </div>
