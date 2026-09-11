@@ -22,9 +22,10 @@ export function SiteFooter() {
         </div>
 
         <div className="footer-links">
-          <Link href="/research">Research</Link>
+          <Link href="/language">Language Lab</Link>
+          <Link href="/community">Community</Link>
           <Link href="/datasets">Datasets</Link>
-          <Link href="/contribute">Contribute</Link>
+          <Link href="/technology">Technology</Link>
           <a href={githubUrl} target="_blank" rel="noreferrer">GitHub ↗</a>
         </div>
       </div>
