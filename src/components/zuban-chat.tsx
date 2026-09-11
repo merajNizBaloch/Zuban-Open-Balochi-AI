@@ -234,6 +234,13 @@ export function ZubanChat() {
               },
             );
           } catch (browserError) {
+            if (
+              cancelledRef.current ||
+              (browserError instanceof DOMException && browserError.name === "AbortError")
+            ) {
+              return;
+            }
+
             const detail =
               browserError instanceof Error
                 ? browserError.message
