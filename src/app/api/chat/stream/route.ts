@@ -159,9 +159,16 @@ export async function POST(request: Request) {
       },
     });
   } catch (error) {
+    const detail =
+      error instanceof Error ? error.message : "Unknown model error.";
+
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Unknown model error." },
-      { status: 502 },
+      {
+        message:
+          "Server AI is temporarily unavailable. Zubán can fall back to local AI.",
+        detail,
+      },
+      { status: 503 },
     );
   }
 }
