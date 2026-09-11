@@ -606,3 +606,280 @@ main { min-height: 70vh; }
     flex-direction: column;
   }
 }
+
+
+/* Official Zubán brand system */
+:root {
+  --bg: #fefdfd;
+  --paper: #f9fafb;
+  --ink: #062e5a;
+  --muted: #0e526f;
+  --line: rgba(6, 46, 90, .14);
+  --accent: #039fab;
+  --accent-2: #15c4ca;
+  --accent-dark: #0b6886;
+  --rust: #15c4ca;
+  --night: #081629;
+  --night-2: #062246;
+  --deep: #011137;
+  --blue: #124a75;
+}
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+}
+
+.site-header {
+  background: rgba(254, 253, 253, .94);
+  border-bottom-color: rgba(6, 46, 90, .12);
+}
+
+.header-inner {
+  min-height: 82px;
+}
+
+.brand-logo-link {
+  width: 82px;
+  height: 76px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+
+.brand-logo {
+  width: 82px;
+  height: 82px;
+  object-fit: contain;
+}
+
+.main-nav a,
+.github-link {
+  color: #062e5a;
+}
+
+.main-nav a:hover,
+.github-link:hover,
+.text-link:hover,
+.clean-tool-row:hover {
+  color: #039fab;
+}
+
+.button {
+  border-color: #062e5a;
+}
+
+.button.primary {
+  background: #062e5a;
+  border-color: #062e5a;
+  color: #f9fafb;
+}
+
+.button.primary:hover {
+  background: #039fab;
+  border-color: #039fab;
+}
+
+.button.secondary {
+  color: #062e5a;
+}
+
+.home-hero {
+  background: #fefdfd;
+  border-bottom-color: rgba(6, 46, 90, .12);
+}
+
+.home-hero-grid {
+  min-height: 600px;
+  grid-template-columns: 1.05fr .95fr;
+}
+
+.home-hero-copy h1 {
+  max-width: 760px;
+  font-size: clamp(58px, 7.3vw, 104px);
+  line-height: .93;
+  letter-spacing: -.065em;
+  color: #062e5a;
+}
+
+.home-intro {
+  color: #0e526f;
+  max-width: 580px;
+}
+
+.home-logo-stage {
+  min-height: 500px;
+  display: grid;
+  place-items: center;
+  background: #081629;
+}
+
+.home-logo-dark {
+  width: min(100%, 500px);
+  height: auto;
+  display: block;
+}
+
+.home-section-title {
+  border-bottom-color: rgba(6, 46, 90, .14);
+}
+
+.home-section-title h2,
+.clean-tool-row h3,
+.home-about h2 {
+  color: inherit;
+}
+
+.clean-tool-list,
+.clean-tool-row {
+  border-color: rgba(6, 46, 90, .14);
+}
+
+.clean-tool-number,
+.clean-tool-row p,
+.home-section-title p {
+  color: #0e526f;
+}
+
+.clean-tool-arrow {
+  color: #039fab;
+}
+
+.home-about {
+  background: #081629;
+  color: #f9fafb;
+}
+
+.home-about p {
+  color: rgba(249, 250, 251, .72);
+}
+
+.home-about-links a {
+  color: #05cdc9;
+}
+
+.home-about-links a:hover {
+  color: #f9fafb;
+}
+
+.culture-rule,
+.culture-band {
+  background:
+    linear-gradient(45deg, transparent 43%, #039fab 44% 56%, transparent 57%) 0 0/28px 28px,
+    linear-gradient(-45deg, transparent 43%, #15c4ca 44% 56%, transparent 57%) 14px 0/28px 28px;
+}
+
+.simple-footer {
+  background: #062246;
+  color: #fbfbfc;
+  border-top-color: rgba(251, 251, 252, .12);
+}
+
+.footer-simple {
+  min-height: 170px;
+}
+
+.footer-brand {
+  display: block;
+}
+
+.footer-logo {
+  display: block;
+  width: 132px;
+  height: 132px;
+  object-fit: contain;
+}
+
+.simple-footer .footer-links a {
+  color: rgba(251, 251, 252, .72);
+}
+
+.simple-footer .footer-links a:hover {
+  color: #05cdc9;
+}
+
+.status-chip {
+  border-color: rgba(3, 159, 171, .30);
+  background: rgba(3, 159, 171, .07);
+  color: #0b6886;
+}
+
+.system-note {
+  border-color: #039fab;
+  background: rgba(3, 159, 171, .07);
+  color: #0b6886;
+}
+
+.inverse {
+  background: #081629;
+}
+
+.inverse .eyebrow,
+.benchmark-strip .eyebrow,
+.contribution-call .eyebrow {
+  color: #05cdc9;
+}
+
+.benchmark-strip,
+.contribution-call {
+  background: #081629;
+}
+
+.resource-index,
+.tool-index,
+.eyebrow,
+.schema-box code {
+  color: #0b6886;
+}
+
+@media (max-width: 900px) {
+  .home-hero-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .home-logo-stage {
+    min-height: 380px;
+  }
+
+  .home-logo-dark {
+    width: min(100%, 420px);
+  }
+}
+
+@media (max-width: 620px) {
+  .header-inner {
+    min-height: 70px;
+  }
+
+  .brand-logo-link {
+    width: 66px;
+    height: 64px;
+  }
+
+  .brand-logo {
+    width: 68px;
+    height: 68px;
+  }
+
+  .home-hero-copy h1 {
+    font-size: clamp(52px, 15vw, 78px);
+  }
+
+  .home-logo-stage {
+    min-height: 300px;
+  }
+
+  .home-logo-dark {
+    width: min(100%, 320px);
+  }
+
+  .footer-simple {
+    min-height: auto;
+    padding: 28px 0 38px;
+  }
+
+  .footer-logo {
+    width: 108px;
+    height: 108px;
+  }
+}
