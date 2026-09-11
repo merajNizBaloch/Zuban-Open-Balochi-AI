@@ -47,6 +47,7 @@ export function ZubanChat() {
   const bottomRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const abortRef = useRef<AbortController | null>(null);
+  const streamTextRef = useRef("");
 
   useEffect(() => {
     let cancelled = false;
@@ -177,7 +178,7 @@ export function ZubanChat() {
       }
 
       const assistantId = messageId();
-      let answer = "";
+      streamTextRef.current = "";
 
       setStreamingId(assistantId);
       setMessages((current) => [
@@ -192,20 +193,33 @@ export function ZubanChat() {
         const { done, value } = await reader.read();
         if (done) break;
 
-        answer += decoder.decode(value, { stream: true });
+        const chunk = decoder.decode(value, { stream: true });
+        streamTextRef.current += chunk;
+        const streamedText = streamTextRef.current;
 
         setMessages((current) =>
           current.map((message) =>
             message.id === assistantId
-              ? { ...message, content: answer }
+              ? { ...message, content: streamedText }
               : message,
           ),
         );
       }
 
-      answer += decoder.decode();
+      const tail = decoder.decode();
+      if (tail) {
+        streamTextRef.current += tail;
+        const finalText = streamTextRef.current;
+        setMessages((current) =>
+          current.map((message) =>
+            message.id === assistantId
+              ? { ...message, content: finalText }
+              : message,
+          ),
+        );
+      }
 
-      if (!answer.trim()) {
+      if (!streamTextRef.current.trim()) {
         setMessages((current) =>
           current.map((message) =>
             message.id === assistantId
