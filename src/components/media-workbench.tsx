@@ -250,6 +250,25 @@ export function MediaWorkbench({ mode }: { mode: Mode }) {
             {result && <button type="button" onClick={() => void copyResult()}>Copy</button>}
           </div>
           {result && <p className="model-output" dir="auto" lang="bal">{result}</p>}
+          {result && (
+            <a
+              className="media-correction-link"
+              href={
+                "/community?type=" +
+                encodeURIComponent(mode === "ocr" ? "OCR correction" : "Pronunciation / voice") +
+                "&title=" +
+                encodeURIComponent(mode === "ocr" ? "OCR text correction" : "Speech transcription correction") +
+                "&details=" +
+                encodeURIComponent(
+                  (mode === "ocr" ? "OCR result:\n" : "Speech transcription:\n") +
+                  result +
+                  "\n\nCorrected text / notes:\n",
+                )
+              }
+            >
+              {mode === "ocr" ? "Suggest OCR correction →" : "Correct transcription →"}
+            </a>
+          )}
           {message && <div className="system-note">{message}</div>}
         </div>
       )}
