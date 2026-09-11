@@ -171,7 +171,7 @@ export function ZubanChat() {
       <div className="chat-topbar">
         <div className="chat-title">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/zuban-mark.webp?v=4" alt="" width="30" height="30" />
+          <img src="/zuban-mark.png?v=1" alt="" width="30" height="30" />
           <span>Zubán Chat</span>
         </div>
         {messages.length > 0 && (
@@ -186,7 +186,7 @@ export function ZubanChat() {
         {messages.length === 0 ? (
           <div className="chat-empty-state">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img className="chat-empty-logo" src="/zuban-mark.webp?v=4" alt="Zubán" width="92" height="92" />
+            <img className="chat-empty-logo" src="/zuban-mark.png?v=1" alt="Zubán" width="92" height="92" />
             <h1>How can Zubán help?</h1>
             <p>Ask in Balochi, English, Urdu or Persian.</p>
 
@@ -211,7 +211,7 @@ export function ZubanChat() {
                 {message.role === "assistant" && (
                   <div className="assistant-avatar">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src="/zuban-mark.webp?v=4" alt="" width="30" height="30" />
+                    <img src="/zuban-mark.png?v=1" alt="" width="30" height="30" />
                   </div>
                 )}
 
@@ -241,7 +241,7 @@ export function ZubanChat() {
               <article className="chat-message assistant">
                 <div className="assistant-avatar">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src="/zuban-mark.webp?v=4" alt="" width="30" height="30" />
+                  <img src="/zuban-mark.png?v=1" alt="" width="30" height="30" />
                 </div>
                 <div className="chat-thinking" aria-label="Zubán is thinking">
                   <span />
