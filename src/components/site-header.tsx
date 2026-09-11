@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { githubUrl, primaryNav } from "@/lib/site";
+import { ZubanLogo } from "@/components/zuban-logo";
 
 export function SiteHeader() {
   const pathname = usePathname();
@@ -13,15 +14,7 @@ export function SiteHeader() {
     <header className="site-header">
       <div className="shell header-inner">
         <Link className="brand brand-logo-link" href="/" aria-label="Zubán home">
-          {/* Using a normal img avoids image-optimizer issues for the generated transparent mark. */}
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            className="brand-logo"
-            src="/zuban-mark.png?v=1"
-            alt=""
-            width="48"
-            height="48"
-          />
+          <ZubanLogo className="brand-logo" width={48} height={48} priority />
           <span className="brand-word">Zubán</span>
         </Link>
 
