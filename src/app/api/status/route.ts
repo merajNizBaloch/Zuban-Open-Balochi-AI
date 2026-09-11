@@ -2,7 +2,10 @@ import { NextResponse } from "next/server";
 import { textProviderStatus } from "@/lib/text-provider";
 
 async function modelServerHealth() {
-  const base = process.env.ZUBAN_MODEL_SERVER_URL?.replace(/\/$/, "");
+  const base = (
+    process.env.ZUBAN_MODEL_SERVER_URL ||
+    process.env.NEXT_PUBLIC_ZUBAN_MODEL_SERVER_URL
+  )?.replace(/\/$/, "");
   if (!base) return { configured: false, reachable: false };
 
   try {
