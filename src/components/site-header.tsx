@@ -89,10 +89,10 @@ export function SiteHeader() {
           ))}
           <div className="mobile-experience-controls">
             <button type="button" onClick={toggleTheme}>
-              {theme === "light" ? "Makran Night" : "Light"}
+              {theme === "light" ? t("nav.makran", "Makran Night") : t("nav.light", "Light")}
             </button>
             <button type="button" onClick={() => setLanguage(language === "en" ? "bal" : "en")}>
-              {language === "en" ? "بلوچی" : "English"}
+              {language === "en" ? "بلوچی" : t("nav.english", "English")}
             </button>
           </div>
           <a href={githubUrl} target="_blank" rel="noreferrer">
