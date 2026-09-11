@@ -96,15 +96,24 @@ Connect the Next.js app with one URL:
 
 ```env
 ZUBAN_MODEL_SERVER_URL=http://localhost:7860
+NEXT_PUBLIC_ZUBAN_MODEL_SERVER_URL=http://localhost:7860
 ```
 
-Zubán derives `/stt`, `/tts`, `/ocr` and `/health` from that base URL. Individual endpoint variables remain available as overrides.
+`ZUBAN_MODEL_SERVER_URL` enables the server-side proxy. `NEXT_PUBLIC_ZUBAN_MODEL_SERVER_URL` lets the browser send speech, voice and OCR files directly to the model server, which avoids serverless upload/inference timeouts. Zubán derives `/stt`, `/tts`, `/ocr` and `/health` from the base URL.
 
 Check a deployment with:
 
 ```bash
 ZUBAN_MODEL_SERVER_URL=http://localhost:7860 npm run check:model-server
 ```
+
+Warm STT and TTS after a cold deployment:
+
+```bash
+curl -X POST http://localhost:7860/warmup
+```
+
+The default Dockerfile installs CPU-only PyTorch so it is practical for free CPU hosting and smaller container builds. An optional `Dockerfile.gpu` is included for GPU deployments.
 
 ### Hugging Face Space deployment
 
@@ -115,9 +124,11 @@ The service directory is already configured as a Docker Space. To keep it synchr
 3. Add secret `HF_SPACE_TOKEN` with a fine-grained Hugging Face write token for that Space.
 4. The `Sync Balochi model server to Hugging Face` workflow will mirror `services/balochi-model-server` to the Space when that directory changes.
 
-Once the Space is running, put its public base URL into `ZUBAN_MODEL_SERVER_URL` on the web deployment.
+Once the Space is running, put its public base URL into both `ZUBAN_MODEL_SERVER_URL` and `NEXT_PUBLIC_ZUBAN_MODEL_SERVER_URL` on the web deployment.
 
-GPU is recommended for STT/TTS.
+The model server permits browser calls through CORS. Use `ZUBAN_CORS_ORIGINS` on the model server to restrict browser origins if needed.
+
+CPU works for short requests. GPU is recommended when you want lower STT/TTS latency.
 
 ## 3. OCR without a server
 
