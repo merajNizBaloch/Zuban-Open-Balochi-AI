@@ -83,6 +83,27 @@ GET  /api/health
 
 ## 1. Chat + Translate
 
+### Recommended: Vercel AI Gateway
+
+When the Next.js app is deployed on Vercel, Zubán uses Vercel AI Gateway as the default server-side text provider when no custom/Hugging Face/Ollama provider is configured.
+
+```env
+ZUBAN_VERCEL_TEXT_MODEL=meta/llama-3.3-70b
+```
+
+Vercel deployments authenticate through project OIDC, so website visitors do not sign in and no browser API key is exposed.
+
+For ordinary localhost development with `npm run dev`, set a server-side AI Gateway key:
+
+```env
+AI_GATEWAY_API_KEY=...
+ZUBAN_VERCEL_TEXT_MODEL=meta/llama-3.3-70b
+```
+
+Alternatively, use Vercel's linked local-development flow so its OIDC environment is available.
+
+The browser model is only an emergency fallback. It has hard timeouts and should not be treated as the primary Chat/Translate runtime.
+
 ### Hugging Face Inference Providers
 
 The easiest hosted setup is a Hugging Face token with **Make calls to Inference Providers** permission:
