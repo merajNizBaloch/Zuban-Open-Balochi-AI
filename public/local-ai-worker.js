@@ -27,7 +27,7 @@ async function createGenerator(id) {
 
   const load = async (device) => {
     const activeBackend = device === "webgpu" ? "webgpu" : "cpu";
-    const dtype = device === "webgpu" ? "q4f16" : "q4";
+    const dtype = device === "webgpu" ? "q4f16" : "q8";
 
     postProgress(
       id,
@@ -45,11 +45,13 @@ async function createGenerator(id) {
         const progress =
           typeof report.progress === "number" ? report.progress : 0;
         const label =
-          report.status === "progress" && report.file
-            ? "Downloading " + report.file
-            : report.status === "ready"
-              ? "Finalizing local model…"
-              : report.status || "Preparing local model…";
+          progress >= 1 && report.file
+            ? "Download complete · starting model…"
+            : report.status === "progress" && report.file
+              ? "Downloading " + report.file
+              : report.status === "ready"
+                ? "Finalizing local model…"
+                : report.status || "Preparing local model…";
 
         postProgress(id, progress, label, activeBackend);
       },
