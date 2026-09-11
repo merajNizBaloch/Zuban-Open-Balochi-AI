@@ -9,6 +9,7 @@ export function MediaWorkbench({ mode }: { mode: Mode }) {
   const [result, setResult] = useState("");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
+  const [progress, setProgress] = useState("");
   const [recording, setRecording] = useState(false);
   const [previewUrl, setPreviewUrl] = useState("");
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -19,6 +20,40 @@ export function MediaWorkbench({ mode }: { mode: Mode }) {
       if (previewUrl) URL.revokeObjectURL(previewUrl);
     };
   }, [previewUrl]);
+
+  async function browserOcr(image: File) {
+    setProgress("Loading OCR language data…");
+
+    const { createWorker } = await import("tesseract.js");
+    const worker = await createWorker(["urd", "fas", "ara"], 1, {
+      logger: (event) => {
+        if (event.status === "recognizing text" && typeof event.progress === "number") {
+          setProgress("Reading text… " + Math.round(event.progress * 100) + "%");
+        } else if (event.status) {
+          setProgress(event.status.replace(/^./, (letter) => letter.toUpperCase()) + "…");
+        }
+      },
+    });
+
+    try {
+      const recognition = await worker.recognize(image);
+      const text = recognition.data.text.trim();
+
+      if (!text) {
+        setMessage(
+          "No text was detected. Try a sharper image with higher contrast. Browser OCR uses Urdu, Persian and Arabic script models as a Balochi fallback.",
+        );
+        return;
+      }
+
+      setResult(text);
+      setMessage(
+        "Browser OCR fallback was used. Balochi has characters and spelling patterns that Urdu/Persian/Arabic OCR may misread, so verify the result.",
+      );
+    } finally {
+      await worker.terminate();
+    }
+  }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -31,16 +66,37 @@ export function MediaWorkbench({ mode }: { mode: Mode }) {
     setLoading(true);
     setResult("");
     setMessage("");
+    setProgress(mode === "ocr" ? "Checking OCR service…" : "Uploading audio…");
 
     try {
       const response = await fetch("/api/media", { method: "POST", body: form });
       const data = (await response.json()) as { text?: string; message?: string; error?: string };
-      setResult(data.text ?? "");
-      setMessage(data.message ?? data.error ?? "");
+
+      if (response.ok && data.text) {
+        setResult(data.text);
+        setMessage("");
+        return;
+      }
+
+      if (mode === "ocr" && response.status === 503) {
+        await browserOcr(file);
+        return;
+      }
+
+      setMessage(data.message ?? data.error ?? "The media service could not process this file.");
     } catch {
-      setMessage("The media service could not be reached.");
+      if (mode === "ocr") {
+        try {
+          await browserOcr(file);
+        } catch {
+          setMessage("OCR could not start in this browser. Please try another browser or configure the OCR model endpoint.");
+        }
+      } else {
+        setMessage("The speech service could not be reached.");
+      }
     } finally {
       setLoading(false);
+      setProgress("");
     }
   }
 
@@ -100,6 +156,7 @@ export function MediaWorkbench({ mode }: { mode: Mode }) {
     setFile(null);
     setResult("");
     setMessage("");
+    setProgress("");
   }
 
   const accepts = mode === "stt" ? "audio/*" : "image/*";
@@ -126,7 +183,7 @@ export function MediaWorkbench({ mode }: { mode: Mode }) {
           <span>
             {mode === "stt"
               ? "Upload an audio file or record directly from your microphone."
-              : "Use a clear, well-lit image with readable printed text."}
+              : "Use a clear, well-lit image with readable printed text. OCR can run directly in your browser."}
           </span>
           <input
             accept={accepts}
@@ -138,6 +195,7 @@ export function MediaWorkbench({ mode }: { mode: Mode }) {
               setPreviewUrl(mode === "ocr" && nextFile ? URL.createObjectURL(nextFile) : "");
               setResult("");
               setMessage("");
+              setProgress("");
             }}
           />
         </label>
@@ -161,12 +219,17 @@ export function MediaWorkbench({ mode }: { mode: Mode }) {
 
       <div className="workbench-actions">
         <span>
-          {file ? Math.max(1, Math.round(file.size / 1024)).toLocaleString() + " KB selected" : mode === "stt" ? "Audio up to 15 MB" : "Image up to 15 MB"}
+          {progress ||
+            (file
+              ? Math.max(1, Math.round(file.size / 1024)).toLocaleString() + " KB selected"
+              : mode === "stt"
+                ? "Audio up to 15 MB"
+                : "Runs locally in the browser when no OCR server is configured")}
         </span>
         <div className="media-actions">
           {(file || result) && <button className="quiet-button" type="button" onClick={reset}>Reset</button>}
           <button className="button primary" disabled={!file || loading || recording} type="submit">
-            {loading ? "Processing…" : mode === "stt" ? "Transcribe" : "Extract text"}
+            {loading ? (mode === "ocr" ? "Reading…" : "Processing…") : mode === "stt" ? "Transcribe" : "Extract text"}
           </button>
         </div>
       </div>
