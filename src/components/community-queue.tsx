@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useExperience } from "@/components/experience-provider";
 
 type Contribution = {
   number: number;
@@ -33,6 +34,7 @@ const filters = [
 ] as const;
 
 export function CommunityQueue() {
+  const { t } = useExperience();
   const [data, setData] = useState<QueueResponse | null>(null);
   const [filter, setFilter] = useState<(typeof filters)[number][0]>("all");
   const [loading, setLoading] = useState(true);
@@ -44,7 +46,7 @@ export function CommunityQueue() {
       const body = (await response.json()) as QueueResponse;
       setData(body);
     } catch {
-      setData({ error: "The review queue could not be loaded." });
+      setData({ error: t("community.loading", "The review queue could not be loaded.") });
     } finally {
       setLoading(false);
     }
@@ -71,9 +73,9 @@ export function CommunityQueue() {
   return (
     <div className="community-queue">
       <div className="community-stats">
-        <div><strong>{data?.stats?.total ?? "—"}</strong><span>Contributions</span></div>
-        <div><strong>{data?.stats?.needsReview ?? "—"}</strong><span>Needs review</span></div>
-        <div><strong>{data?.stats?.verified ?? "—"}</strong><span>Verified</span></div>
+        <div><strong>{data?.stats?.total ?? "—"}</strong><span>{t("community.stats.total", "Contributions")}</span></div>
+        <div><strong>{data?.stats?.needsReview ?? "—"}</strong><span>{t("community.stats.review", "Needs review")}</span></div>
+        <div><strong>{data?.stats?.verified ?? "—"}</strong><span>{t("community.stats.verified", "Verified")}</span></div>
       </div>
 
       <div className="community-queue-bar">
@@ -85,17 +87,23 @@ export function CommunityQueue() {
               key={value}
               onClick={() => setFilter(value)}
             >
-              {label}
+              {value === "all"
+                ? t("community.filter.all", label)
+                : value === "needs-review"
+                  ? t("community.filter.review", label)
+                  : value === "verified"
+                    ? t("community.filter.verified", label)
+                    : t("community.filter.reviewed", label)}
             </button>
           ))}
         </div>
         <button className="community-refresh" type="button" onClick={() => void load()}>
-          Refresh
+          {t("community.refresh", "Refresh")}
         </button>
       </div>
 
       {loading ? (
-        <div className="community-empty">Loading the public review queue…</div>
+        <div className="community-empty">{t("community.loading", "Loading the public review queue…")}</div>
       ) : data?.error ? (
         <div className="community-empty">{data.error}</div>
       ) : visible.length ? (
@@ -107,15 +115,15 @@ export function CommunityQueue() {
                   <span className="community-type">{item.type}</span>
                   <span className={"community-state " + item.state}>
                     {item.state === "needs-review"
-                      ? "Needs review"
+                      ? t("community.state.review", "Needs review")
                       : item.state === "verified"
-                        ? "Verified"
+                        ? t("community.state.verified", "Verified")
                         : item.state === "rejected"
-                          ? "Rejected"
-                          : "Reviewed"}
+                          ? t("community.state.rejected", "Rejected")
+                          : t("community.state.reviewed", "Reviewed")}
                   </span>
                 </div>
-                <h3>{item.title || "Community contribution"}</h3>
+                <h3>{item.title || t("community.contribution", "Community contribution")}</h3>
                 <p>
                   #{item.number} · @{item.contributor} · {item.comments} discussion {item.comments === 1 ? "reply" : "replies"}
                 </p>
@@ -126,13 +134,12 @@ export function CommunityQueue() {
         </div>
       ) : (
         <div className="community-empty">
-          No contributions in this view yet. The first useful correction or language example can start the queue.
+          {t("community.empty", "No contributions in this view yet. The first useful correction or language example can start the queue.")}
         </div>
       )}
 
       <p className="community-review-note">
-        Review happens in public on GitHub. Closing an issue marks it reviewed; maintainers can use
-        <strong> verified </strong> or <strong> rejected </strong> labels for clearer outcomes.
+        {t("community.note", "Review happens in public on GitHub. Closing an issue marks it reviewed; maintainers can use verified or rejected labels for clearer outcomes.")}
       </p>
     </div>
   );
