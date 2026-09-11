@@ -76,7 +76,7 @@ export default function DisclaimerPage() {
               <p>
                 <UiText
                   id="disclaimer.page.improving.body"
-                  fallback="The team and open-source contributors review sources, correct mistakes, improve tools and add better data over time. Results may change as Zubán develops. Public corrections and reproducible research are part of the project by design."
+                  fallback="The team and open-source contributors continuously review sources, correct mistakes, improve tools and add better data on an ongoing, often daily basis. Results may change as Zubán develops. Public corrections and reproducible research are part of the project by design."
                 />
               </p>
             </div>
