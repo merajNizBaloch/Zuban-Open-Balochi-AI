@@ -9,6 +9,9 @@ type Status = {
   dictionaryFallback?: boolean;
   modelServerConfigured?: boolean;
   modelServerReachable?: boolean;
+  modelServerDevice?: string | null;
+  sttModelLoaded?: boolean;
+  ttsModelLoaded?: boolean;
   speechToText: boolean;
   textToSpeech: boolean;
   ocr: boolean;
@@ -52,7 +55,10 @@ export function SetupDashboard() {
               ? "limited"
               : "missing",
           detail: status.modelServerReachable
-            ? "The shared speech/voice server answered its health check."
+            ? "Server reachable" +
+              (status.modelServerDevice ? " · " + status.modelServerDevice.toUpperCase() : "") +
+              " · STT " + (status.sttModelLoaded ? "warm" : "cold") +
+              " · TTS " + (status.ttsModelLoaded ? "warm" : "cold")
             : status.modelServerConfigured
               ? "A model-server URL is configured but /health is not reachable."
               : "No shared Balochi model server is configured.",
@@ -62,7 +68,8 @@ export function SetupDashboard() {
           title: "Speech to text",
           state: status.speechToText ? "ready" : "missing",
           detail: status.speechToText
-            ? "Balochi Whisper transcription is connected."
+            ? "Balochi Whisper transcription is connected" +
+              (status.sttModelLoaded ? " and loaded." : ", but the first request may need to load the model.")
             : "The UI works, but Balochi Whisper needs the model server.",
           env: status.speechToText ? undefined : "ZUBAN_MODEL_SERVER_URL",
         },
@@ -70,7 +77,8 @@ export function SetupDashboard() {
           title: "Text to speech",
           state: status.textToSpeech ? "ready" : "missing",
           detail: status.textToSpeech
-            ? "Balochi SpeechT5 voice generation is connected."
+            ? "Balochi SpeechT5 voice generation is connected" +
+              (status.ttsModelLoaded ? " and loaded." : ", but the first request may need to load the model.")
             : "The three-voice UI is ready, but SpeechT5 needs the model server.",
           env: status.textToSpeech ? undefined : "ZUBAN_MODEL_SERVER_URL",
         },
@@ -122,7 +130,7 @@ export function SetupDashboard() {
         <div>
           <h2>Recommended production configuration</h2>
           <p>
-            One Hugging Face token enables Chat + Translate. One model-server URL enables Balochi STT and TTS.
+            One Hugging Face token enables Chat + Translate. One model-server URL enables Balochi STT and TTS. After deployment, POST /warmup once to pre-load the speech models.
           </p>
         </div>
         <pre>{`HF_TOKEN=hf_...
