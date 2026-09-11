@@ -13,6 +13,7 @@ export function MediaWorkbench({ mode }: { mode: Mode }) {
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState("");
   const [recording, setRecording] = useState(false);
+  const [recordingSeconds, setRecordingSeconds] = useState(0);
   const [previewUrl, setPreviewUrl] = useState("");
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
@@ -22,6 +23,16 @@ export function MediaWorkbench({ mode }: { mode: Mode }) {
       if (previewUrl) URL.revokeObjectURL(previewUrl);
     };
   }, [previewUrl]);
+
+  useEffect(() => {
+    if (!recording) return;
+
+    const timer = window.setInterval(() => {
+      setRecordingSeconds((value) => value + 1);
+    }, 1000);
+
+    return () => window.clearInterval(timer);
+  }, [recording]);
 
   async function browserOcr(image: File) {
     setProgress("Loading OCR language data…");
@@ -138,6 +149,7 @@ export function MediaWorkbench({ mode }: { mode: Mode }) {
       };
 
       recorder.start();
+      setRecordingSeconds(0);
       setRecording(true);
     } catch {
       setMessage("Microphone permission was not granted.");
@@ -218,8 +230,9 @@ export function MediaWorkbench({ mode }: { mode: Mode }) {
               </button>
             ) : (
               <button className="record-button recording" type="button" onClick={stopRecording}>
+                <span className="record-pulse" aria-hidden="true"><i /><i /><i /></span>
                 <span className="record-stop" />
-                Stop recording
+                Stop · {String(Math.floor(recordingSeconds / 60)).padStart(2, "0")}:{String(recordingSeconds % 60).padStart(2, "0")}
               </button>
             )}
           </div>
