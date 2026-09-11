@@ -18,10 +18,10 @@ type ApiResult = {
 };
 
 const suggestions = [
+  "What does آپ mean?",
+  "What does دوست mean?",
+  "Translate water into Balochi",
   "Write a short greeting in Balochi",
-  "Translate an Urdu sentence into Balochi",
-  "Explain a Balochi word",
-  "Help me write a short paragraph in Balochi",
 ];
 
 function messageId() {
@@ -114,9 +114,7 @@ export function ZubanChat() {
           { id: messageId(), role: "assistant", content: data.output as string },
         ]);
       } else {
-        const text = data.message
-          ? "Zubán's language model is not connected on this deployment yet. The chat interface is ready for an open or self-hosted model."
-          : data.error || "Zubán could not answer that message.";
+        const text = data.message || data.error || "Zubán could not answer that message.";
 
         setMessages((current) => [
           ...current,
