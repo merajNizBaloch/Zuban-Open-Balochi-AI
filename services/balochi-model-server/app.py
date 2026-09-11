@@ -8,6 +8,7 @@ import pytesseract
 import soundfile as sf
 import torch
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import Response
 from huggingface_hub import hf_hub_download
 from PIL import Image
@@ -25,6 +26,20 @@ app = FastAPI(
     title="Zubán Balochi Model Server",
     description="Open inference service for Zubán speech, voice and OCR.",
     version="0.1.0",
+)
+
+cors_origins = [
+    item.strip()
+    for item in os.getenv("ZUBAN_CORS_ORIGINS", "*").split(",")
+    if item.strip()
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=cors_origins,
+    allow_credentials=False,
+    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_headers=["*"],
 )
 
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
