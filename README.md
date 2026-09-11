@@ -92,15 +92,32 @@ docker build -t zuban-model-server .
 docker run --rm -p 7860:7860 zuban-model-server
 ```
 
-Connect the Next.js app:
+Connect the Next.js app with one URL:
 
 ```env
-ZUBAN_STT_API_URL=http://localhost:7860/stt
-ZUBAN_TTS_API_URL=http://localhost:7860/tts
-ZUBAN_OCR_API_URL=http://localhost:7860/ocr
+ZUBAN_MODEL_SERVER_URL=http://localhost:7860
 ```
 
-The same Docker directory can be deployed as a Hugging Face Docker Space. GPU is recommended for STT/TTS.
+Zubán derives `/stt`, `/tts`, `/ocr` and `/health` from that base URL. Individual endpoint variables remain available as overrides.
+
+Check a deployment with:
+
+```bash
+ZUBAN_MODEL_SERVER_URL=http://localhost:7860 npm run check:model-server
+```
+
+### Hugging Face Space deployment
+
+The service directory is already configured as a Docker Space. To keep it synchronized from GitHub:
+
+1. Create a Hugging Face Docker Space.
+2. In this GitHub repository add variable `HF_SPACE_ID` with `your-hf-user/your-space`.
+3. Add secret `HF_SPACE_TOKEN` with a fine-grained Hugging Face write token for that Space.
+4. The `Sync Balochi model server to Hugging Face` workflow will mirror `services/balochi-model-server` to the Space when that directory changes.
+
+Once the Space is running, put its public base URL into `ZUBAN_MODEL_SERVER_URL` on the web deployment.
+
+GPU is recommended for STT/TTS.
 
 ## 3. OCR without a server
 
