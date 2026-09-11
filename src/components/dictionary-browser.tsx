@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { dictionaryEntries, dictionarySource } from "@/lib/dictionary";
 import { normalizeForBalochiLookup } from "@/lib/balochi-language";
+import { useExperience } from "@/components/experience-provider";
 
 function normalize(value: string) {
   return normalizeForBalochiLookup(value)
@@ -12,6 +13,7 @@ function normalize(value: string) {
 }
 
 export function DictionaryBrowser() {
+  const { t } = useExperience();
   const [query, setQuery] = useState("");
   const [limit, setLimit] = useState(18);
 
@@ -70,7 +72,7 @@ export function DictionaryBrowser() {
             setQuery(event.target.value);
             setLimit(18);
           }}
-          placeholder="Search Balochi, Latin spelling, or English meaning"
+          placeholder={t("dictionary.search", "Search Balochi, Latin spelling, or English meaning")}
           aria-label="Search dictionary"
           autoComplete="off"
         />
@@ -82,8 +84,8 @@ export function DictionaryBrowser() {
       </div>
 
       <div className="dictionary-meta">
-        <span>{results.length} {results.length === 1 ? "entry" : "entries"}</span>
-        <span>Arabic script · Latin transcription · English meanings</span>
+        <span>{results.length} {t("dictionary.entries", results.length === 1 ? "entry" : "entries")}</span>
+        <span>{t("dictionary.meta", "Arabic script · Latin transcription · English meanings")}</span>
       </div>
 
       {visible.length > 0 ? (
@@ -112,7 +114,7 @@ export function DictionaryBrowser() {
                     entry.meanings.join(", "),
                   )}
                 >
-                  Copy
+                  {t("dictionary.copy", "Copy")}
                 </button>
                 <button
                   type="button"
@@ -126,7 +128,7 @@ export function DictionaryBrowser() {
                     setQuery(entry.word);
                   }}
                 >
-                  Copy link
+                  {t("dictionary.copyLink", "Copy link")}
                 </button>
                 <a
                   href={
@@ -143,7 +145,7 @@ export function DictionaryBrowser() {
                     )
                   }
                 >
-                  Suggest correction →
+                  {t("dictionary.correct", "Suggest correction →")}
                 </a>
               </div>
             </article>
@@ -151,27 +153,27 @@ export function DictionaryBrowser() {
         </div>
       ) : (
         <div className="dictionary-empty">
-          <strong>No entry found.</strong>
-          <p>Try another spelling or an English meaning. Try another spelling, Latin form, or English meaning.</p>
+          <strong>{t("dictionary.empty", "No entry found.")}</strong>
+          <p>{t("dictionary.try", "Try another spelling, Latin form, or English meaning.")}</p>
         </div>
       )}
 
       {results.length > visible.length && (
         <button className="dictionary-more" type="button" onClick={() => setLimit((value) => value + 24)}>
-          Show more
+          {t("dictionary.more", "Show more")}
         </button>
       )}
 
       <div className="dictionary-source">
         <div>
-          <strong>Source</strong>
+          <strong>{t("dictionary.source", "Source")}</strong>
           <p>
             This searchable lexicon is derived from the Baluchi-English Wiktionary dictionary.
             It may include regional, spelling, or transcription variants.
           </p>
         </div>
         <a href={dictionarySource.url} target="_blank" rel="noreferrer">
-          View source ↗
+          {t("dictionary.viewSource", "View source ↗")}
         </a>
         <span>{dictionarySource.license}</span>
       </div>
