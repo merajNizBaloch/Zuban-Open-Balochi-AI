@@ -318,6 +318,7 @@ export async function streamChatModel(request: TextRequest) {
       "Cache-Control": "no-store",
       "X-Zuban-Provider": resolved.provider.provider,
       "X-Zuban-Model": resolved.provider.model,
+      "X-Zuban-Stream-Format": "plain",
     },
   });
 }
