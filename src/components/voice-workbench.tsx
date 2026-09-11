@@ -56,7 +56,12 @@ export function VoiceWorkbench() {
           {loading ? "Generating…" : "Generate voice"}
         </button>
       </div>
-      {audioUrl && <div className="audio-result"><audio controls src={audioUrl}>Your browser does not support audio playback.</audio></div>}
+      {audioUrl && (
+        <div className="audio-result">
+          <audio controls src={audioUrl}>Your browser does not support audio playback.</audio>
+          <a className="audio-download" href={audioUrl} download="zuban-voice.wav">Download audio</a>
+        </div>
+      )}
       {message && <div className="system-note">{message}</div>}
     </form>
   );
