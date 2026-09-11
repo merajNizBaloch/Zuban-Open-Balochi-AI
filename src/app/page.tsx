@@ -38,9 +38,9 @@ export default function Home() {
             {tools.map((tool) => (
               <Link href={tool.href} className="home-tool-card" key={tool.href}>
                 <span className="home-tool-number">{tool.index}</span>
-                <h3>{tool.title}</h3>
-                <p>{tool.description}</p>
-                <span className="home-tool-open">Open →</span>
+                <h3><UiText id={"home.tool." + tool.index + ".title"} fallback={tool.title} /></h3>
+                <p><UiText id={"home.tool." + tool.index + ".desc"} fallback={tool.description} /></p>
+                <span className="home-tool-open"><UiText id="home.tool.open" fallback="Open" /> →</span>
               </Link>
             ))}
           </div>
