@@ -5327,3 +5327,165 @@ html[data-language="bal"] pre {
   direction: ltr;
   text-align: left;
 }
+
+
+/* Chat-specific Makran Night pass */
+html[data-theme="makran"] .zuban-chat {
+  background:
+    radial-gradient(circle at 50% -10%, rgba(75, 214, 202, .055), transparent 28rem),
+    #171425 !important;
+  color: #efe3c8;
+}
+
+html[data-theme="makran"] .chat-topbar {
+  background: rgba(25, 21, 41, .9) !important;
+  border-bottom-color: rgba(239, 227, 200, .09) !important;
+}
+
+html[data-theme="makran"] .chat-title,
+html[data-theme="makran"] .chat-empty-state h1 {
+  color: #efe3c8 !important;
+}
+
+html[data-theme="makran"] .chat-empty-state > p {
+  color: #aaa2b3 !important;
+}
+
+html[data-theme="makran"] .chat-scroll-area {
+  background: transparent !important;
+  scrollbar-color: rgba(239, 227, 200, .18) transparent;
+}
+
+html[data-theme="makran"] .chat-suggestions button {
+  background: #211c33 !important;
+  color: #e9ddc4 !important;
+  border-color: rgba(239, 227, 200, .1) !important;
+  box-shadow: none !important;
+}
+
+html[data-theme="makran"] .chat-suggestions button:hover:not(:disabled) {
+  background: #28213d !important;
+  border-color: rgba(75, 214, 202, .3) !important;
+  box-shadow: 0 12px 30px rgba(3, 6, 17, .16) !important;
+}
+
+html[data-theme="makran"] .chat-suggestions button span:last-child {
+  color: #4bd6ca !important;
+}
+
+html[data-theme="makran"] .chat-bubble {
+  color: #e8dcc4 !important;
+}
+
+html[data-theme="makran"] .chat-message.user .chat-bubble {
+  background: #302746 !important;
+  color: #f1e7d1 !important;
+  border: 1px solid rgba(207, 148, 113, .12);
+}
+
+html[data-theme="makran"] .chat-message.assistant .chat-bubble {
+  color: #e8dcc4 !important;
+}
+
+html[data-theme="makran"] .chat-bubble.error {
+  background: rgba(207, 148, 113, .075) !important;
+  border-color: rgba(207, 148, 113, .22) !important;
+  color: #efb99a !important;
+}
+
+html[data-theme="makran"] .message-action {
+  color: #8f8798 !important;
+}
+
+html[data-theme="makran"] .message-action:hover {
+  color: #4bd6ca !important;
+}
+
+html[data-theme="makran"] .chat-thinking span {
+  background: #4bd6ca !important;
+}
+
+html[data-theme="makran"] .chat-composer-wrap {
+  background:
+    linear-gradient(
+      to top,
+      #171425 72%,
+      rgba(23, 20, 37, .94) 87%,
+      rgba(23, 20, 37, 0)
+    ) !important;
+}
+
+html[data-theme="makran"] .chat-composer {
+  background: #211c33 !important;
+  border-color: rgba(239, 227, 200, .12) !important;
+  box-shadow: 0 14px 38px rgba(3, 6, 17, .22) !important;
+}
+
+html[data-theme="makran"] .chat-composer:focus-within {
+  border-color: rgba(75, 214, 202, .42) !important;
+  box-shadow:
+    0 16px 44px rgba(3, 6, 17, .26),
+    0 0 0 1px rgba(75, 214, 202, .055) !important;
+}
+
+html[data-theme="makran"] .chat-composer textarea {
+  background: transparent !important;
+  color: #efe3c8 !important;
+}
+
+html[data-theme="makran"] .chat-composer textarea::placeholder {
+  color: #756f80 !important;
+}
+
+html[data-theme="makran"] .chat-preferences label {
+  background: #28213d !important;
+  border-color: rgba(239, 227, 200, .09) !important;
+}
+
+html[data-theme="makran"] .chat-preferences label > span {
+  color: #8e8797 !important;
+}
+
+html[data-theme="makran"] .chat-preferences select {
+  background: transparent !important;
+  color: #d9cfbb !important;
+}
+
+html[data-theme="makran"] .chat-preferences option {
+  background: #211c33 !important;
+  color: #efe3c8 !important;
+}
+
+html[data-theme="makran"] .new-chat-button {
+  background: #211c33 !important;
+  color: #dcd2bd !important;
+  border-color: rgba(239, 227, 200, .11) !important;
+}
+
+html[data-theme="makran"] .new-chat-button:hover {
+  background: #28213d !important;
+  border-color: rgba(75, 214, 202, .32) !important;
+}
+
+html[data-theme="makran"] .chat-send-button {
+  background: #e3c9a2 !important;
+  color: #171425 !important;
+}
+
+html[data-theme="makran"] .chat-send-button:hover:not(:disabled) {
+  background: #4bd6ca !important;
+  color: #10202a !important;
+}
+
+html[data-theme="makran"] .chat-send-button.stop {
+  background: #cf9471 !important;
+  color: #171425 !important;
+}
+
+html[data-theme="makran"] .chat-disclaimer {
+  color: #777182 !important;
+}
+
+html[data-theme="makran"] body:has(.zuban-chat) main {
+  background: #171425 !important;
+}
