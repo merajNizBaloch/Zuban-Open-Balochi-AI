@@ -4,17 +4,13 @@ import { useEffect, useState } from "react";
 
 type Status = {
   text: boolean;
+  textProvider?: string | null;
+  textModel?: string | null;
   speechToText: boolean;
   textToSpeech: boolean;
   ocr: boolean;
+  ocrProvider?: string | null;
 };
-
-const labels: Array<[keyof Status, string, string]> = [
-  ["text", "Chat + Translate", "Text model"],
-  ["speechToText", "Speech to text", "STT"],
-  ["textToSpeech", "Text to speech", "TTS"],
-  ["ocr", "OCR", "Vision"],
-];
 
 export function ModelStatus() {
   const [status, setStatus] = useState<Status | null>(null);
@@ -23,24 +19,63 @@ export function ModelStatus() {
     fetch("/api/status", { cache: "no-store" })
       .then((response) => response.json())
       .then((data) => setStatus(data as Status))
-      .catch(() => setStatus({ text: false, speechToText: false, textToSpeech: false, ocr: false }));
+      .catch(() =>
+        setStatus({
+          text: false,
+          speechToText: false,
+          textToSpeech: false,
+          ocr: true,
+          ocrProvider: "browser OCR",
+        }),
+      );
   }, []);
+
+  const services = [
+    {
+      key: "text",
+      type: "Text model",
+      label: "Chat + Translate",
+      online: Boolean(status?.text),
+      detail: status?.text
+        ? (status.textProvider === "huggingface" ? "Hugging Face · " : status.textProvider === "ollama" ? "Ollama · " : "") +
+          (status.textModel ?? "configured model")
+        : "Add HF_TOKEN, a custom endpoint, or Ollama",
+    },
+    {
+      key: "stt",
+      type: "STT",
+      label: "Speech to text",
+      online: Boolean(status?.speechToText),
+      detail: status?.speechToText ? "Balochi STT endpoint connected" : "Deploy the Balochi Whisper service",
+    },
+    {
+      key: "tts",
+      type: "TTS",
+      label: "Text to speech",
+      online: Boolean(status?.textToSpeech),
+      detail: status?.textToSpeech ? "Balochi TTS endpoint connected" : "Deploy the Balochi SpeechT5 service",
+    },
+    {
+      key: "ocr",
+      type: "Vision",
+      label: "OCR",
+      online: Boolean(status?.ocr),
+      detail: status?.ocrProvider === "model endpoint" ? "OCR model endpoint" : "Browser Urdu + Persian + Arabic OCR",
+    },
+  ];
 
   return (
     <div className="model-status-grid">
-      {labels.map(([key, label, type]) => {
-        const online = Boolean(status?.[key]);
-        return (
-          <div className="model-status-item" key={key}>
-            <div>
-              <span>{type}</span>
-              <strong>{label}</strong>
-            </div>
-            <span className={online ? "service-dot online" : "service-dot"} />
-            <small>{status === null ? "Checking" : online ? "Connected" : "Needs model"}</small>
+      {services.map((service) => (
+        <div className="model-status-item" key={service.key}>
+          <div>
+            <span>{service.type}</span>
+            <strong>{service.label}</strong>
           </div>
-        );
-      })}
+          <span className={service.online ? "service-dot online" : "service-dot"} />
+          <small>{status === null ? "Checking…" : service.detail}</small>
+        </div>
+      ))}
     </div>
   );
 }
