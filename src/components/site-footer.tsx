@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { githubUrl } from "@/lib/site";
 
@@ -7,9 +8,15 @@ export function SiteFooter() {
       <div className="culture-band" aria-hidden="true" />
       <div className="shell footer-simple">
         <div className="footer-brand">
-          <strong>Zubán</strong>
-          <span>Open tools for the Balochi language.</span>
+          <Image
+            className="footer-logo"
+            src="/zuban-white.svg"
+            alt="Zubán"
+            width={1254}
+            height={1254}
+          />
         </div>
+
         <div className="footer-links">
           <Link href="/research">Research</Link>
           <Link href="/datasets">Datasets</Link>
