@@ -4918,3 +4918,292 @@ html[data-language="bal"] :where(
     border-color: rgba(239, 227, 200, .12);
   }
 }
+
+
+/* Makran Night hard-surface pass: eliminate legacy light surfaces */
+html[data-theme="makran"] {
+  --surface-0: #171425;
+  --surface-1: #211c33;
+  --surface-2: #28213d;
+  --surface-3: #302746;
+  --surface-soft: rgba(239, 227, 200, .045);
+  --sand: #efe3c8;
+  --sand-muted: #aaa2b3;
+  --turquoise: #4bd6ca;
+  --copper: #cf9471;
+}
+
+html[data-theme="makran"] :where(
+  .workbench,
+  .search-shell,
+  .upload-zone,
+  .signal-panel,
+  .tool-card,
+  .info-card,
+  .lab-card,
+  .schema-box,
+  .media-workbench,
+  .voice-workbench,
+  .file-drop,
+  .media-result,
+  .audio-result,
+  .resource-row,
+  .research-card,
+  .contribute-card,
+  .dictionary-source,
+  .dictionary-entry,
+  .dictionary-empty,
+  .dictionary-search,
+  .translate-workspace,
+  .translate-panel,
+  .script-panel,
+  .script-direction-bar,
+  .script-lab-note,
+  .community-empty,
+  .community-refresh,
+  .community-filters button,
+  .contribution-form,
+  .contribution-form input,
+  .contribution-form textarea,
+  .contribution-form select,
+  .setup-item,
+  .setup-code,
+  .setup-env,
+  .model-status-item,
+  .developer-note,
+  .developer-endpoints article,
+  .developer-examples article,
+  .roadmap-items article,
+  .bench-principles article,
+  .bench-table,
+  .bench-row,
+  .dataset-resource-card,
+  .dataset-table,
+  .dataset-row,
+  .home-tool-card,
+  .home-prompt,
+  .chat-composer,
+  .chat-suggestions button,
+  .new-chat-button,
+  .record-button,
+  .quiet-button,
+  .translate-swap,
+  .script-swap,
+  .script-lab-tabs button,
+  .voice-options select,
+  .language-row select
+) {
+  background-color: var(--surface-1) !important;
+  color: var(--sand);
+  border-color: rgba(239, 227, 200, .11) !important;
+}
+
+html[data-theme="makran"] :where(
+  .resource-row:hover,
+  .tool-card:hover,
+  .home-tool-card:hover,
+  .community-row:hover,
+  .dataset-resource-card:hover,
+  .chat-suggestions button:hover,
+  .community-filters button:hover:not(.active),
+  .new-chat-button:hover,
+  .quiet-button:hover
+) {
+  background-color: var(--surface-2) !important;
+}
+
+html[data-theme="makran"] :where(
+  .result-pane,
+  .editor-pane,
+  .voice-editor,
+  .media-input-area,
+  .translation-panel,
+  .script-panel.output,
+  .ocr-preview,
+  .setup-item-head,
+  .result-toolbar,
+  .translate-panel-head,
+  .script-panel-head
+) {
+  background-color: transparent !important;
+  color: var(--sand);
+}
+
+html[data-theme="makran"] :where(
+  input,
+  textarea,
+  select
+) {
+  background-color: var(--surface-1) !important;
+  color: var(--sand) !important;
+  caret-color: var(--turquoise);
+  border-color: rgba(239, 227, 200, .13) !important;
+}
+
+html[data-theme="makran"] :where(
+  input:focus,
+  textarea:focus,
+  select:focus
+) {
+  border-color: rgba(75, 214, 202, .5) !important;
+  outline-color: rgba(75, 214, 202, .35);
+}
+
+html[data-theme="makran"] :where(
+  .system-note,
+  .status-chip,
+  .community-type,
+  .bench-status,
+  .setup-state,
+  .service-dot
+) {
+  color: var(--sand);
+}
+
+html[data-theme="makran"] .system-note {
+  background: rgba(75, 214, 202, .07) !important;
+  border-color: var(--turquoise) !important;
+  color: #9de9e2 !important;
+}
+
+html[data-theme="makran"] .system-note.error {
+  background: rgba(207, 148, 113, .08) !important;
+  border-color: var(--copper) !important;
+  color: #efb99a !important;
+}
+
+html[data-theme="makran"] :where(
+  .page-intro-center,
+  .section-heading,
+  .dataset-heading,
+  .registry-heading,
+  .technology-status,
+  .community-section-heading
+) {
+  color: var(--sand);
+}
+
+html[data-theme="makran"] :where(
+  .home-tool-number,
+  .home-tool-open,
+  .resource-index,
+  .resource-open,
+  .eyebrow,
+  .card-link,
+  .media-correction-link,
+  .translate-correction-link,
+  .dictionary-entry-actions a,
+  .dictionary-entry-actions button,
+  .benchmark-strip-centered .metric-list a
+) {
+  color: var(--turquoise) !important;
+}
+
+html[data-theme="makran"] :where(
+  .footer-links a,
+  .home-about-links a
+) {
+  color: #c8c0c9;
+}
+
+html[data-theme="makran"] :where(
+  .footer-links a:hover,
+  .home-about-links a:hover
+) {
+  color: var(--turquoise);
+}
+
+html[data-theme="makran"] :where(
+  pre,
+  code
+) {
+  color: #9de9e2;
+}
+
+html[data-theme="makran"] .developer-examples pre {
+  background: #121827 !important;
+}
+
+html[data-theme="makran"] :where(
+  .dataset-head,
+  .bench-head,
+  .lab-heading,
+  .translate-language-bar,
+  .chat-topbar,
+  .script-lab-tabs
+) {
+  background-color: rgba(239, 227, 200, .035) !important;
+}
+
+html[data-theme="makran"] .community-filters button.active {
+  background: var(--sand) !important;
+  color: var(--surface-0) !important;
+  border-color: var(--sand) !important;
+}
+
+html[data-theme="makran"] :where(
+  .record-button.recording,
+  .chat-send-button,
+  .chat-send-button.stop
+) {
+  background: var(--copper) !important;
+  color: #1a1320 !important;
+  border-color: var(--copper) !important;
+}
+
+html[data-theme="makran"] :where(
+  .home-prompt button,
+  .button.primary
+) {
+  background: var(--sand) !important;
+  color: #171425 !important;
+  border-color: var(--sand) !important;
+}
+
+html[data-theme="makran"] :where(
+  .button.secondary,
+  .button:not(.primary)
+) {
+  background: transparent;
+  color: var(--sand);
+  border-color: rgba(239, 227, 200, .22) !important;
+}
+
+html[data-theme="makran"] audio {
+  filter: invert(.84) hue-rotate(170deg) saturate(.55);
+}
+
+html[data-theme="makran"] img {
+  color-scheme: dark;
+}
+
+html[data-theme="makran"] ::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+html[data-theme="makran"] ::-webkit-scrollbar-track {
+  background: #151221;
+}
+
+html[data-theme="makran"] ::-webkit-scrollbar-thumb {
+  background: #443953;
+  border: 2px solid #151221;
+  border-radius: 999px;
+}
+
+html[data-theme="makran"] ::-webkit-scrollbar-thumb:hover {
+  background: #5b4b68;
+}
+
+@media (max-width: 900px) {
+  html[data-theme="makran"] .mobile-nav {
+    background: #191529 !important;
+    border-color: rgba(239, 227, 200, .1) !important;
+  }
+
+  html[data-theme="makran"] .mobile-nav a {
+    color: var(--sand);
+    border-color: rgba(239, 227, 200, .09) !important;
+  }
+}
