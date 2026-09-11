@@ -2,6 +2,8 @@
 
 import { FormEvent, useEffect, useState } from "react";
 
+const publicModelServer = process.env.NEXT_PUBLIC_ZUBAN_MODEL_SERVER_URL?.replace(/\/$/, "");
+
 const speakers = [
   { value: "ayn_kader", label: "Ayn Káder" },
   { value: "doda", label: "Dódá" },
@@ -31,7 +33,7 @@ export function VoiceWorkbench() {
     setLoading(true);
 
     try {
-      const response = await fetch("/api/voice", {
+      const response = await fetch(publicModelServer ? publicModelServer + "/tts" : "/api/voice", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ text, speaker }),
