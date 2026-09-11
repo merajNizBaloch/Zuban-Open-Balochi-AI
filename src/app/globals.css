@@ -3839,3 +3839,34 @@ body {
   stroke-linecap: round;
   stroke-linejoin: round;
 }
+
+
+/* Review-loop actions */
+.dictionary-entry-actions {
+  margin-top: 16px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.dictionary-entry-actions button,
+.dictionary-entry-actions a,
+.media-correction-link {
+  border: 0;
+  background: transparent;
+  color: #0b6886;
+  cursor: pointer;
+  font-size: 10px;
+  font-weight: 750;
+}
+
+.dictionary-entry-actions button:hover,
+.dictionary-entry-actions a:hover,
+.media-correction-link:hover {
+  color: #039fab;
+}
+
+.media-correction-link {
+  display: inline-block;
+  margin-top: 12px;
+}
