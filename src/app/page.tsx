@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { HomePrompt } from "@/components/home-prompt";
 import { tools } from "@/lib/site";
 
 export default function Home() {
@@ -28,8 +29,10 @@ export default function Home() {
 
           <div className="hero-actions hero-actions-centered">
             <Link className="button primary" href="/chat">Open Zubán</Link>
-            <Link className="button secondary" href="/contribute">Contribute</Link>
+            <Link className="button secondary" href="/community">Contribute</Link>
           </div>
+
+          <HomePrompt />
         </div>
       </section>
 
