@@ -5207,3 +5207,123 @@ html[data-theme="makran"] ::-webkit-scrollbar-thumb:hover {
     border-color: rgba(239, 227, 200, .09) !important;
   }
 }
+
+
+/* Final Makran Night leak fixes */
+html[data-theme="makran"] .mobile-navigation,
+html[data-theme="makran"] .mobile-navigation.open,
+html[data-theme="makran"] .mobile-navigation nav {
+  background: #191529 !important;
+  color: var(--sand);
+  border-color: rgba(239, 227, 200, .1) !important;
+}
+
+html[data-theme="makran"] .mobile-navigation a {
+  color: var(--sand) !important;
+  border-color: rgba(239, 227, 200, .09) !important;
+}
+
+html[data-theme="makran"] .mobile-navigation a.active,
+html[data-theme="makran"] .mobile-navigation a:hover {
+  color: var(--turquoise) !important;
+}
+
+html[data-theme="makran"] .mobile-menu-button {
+  color: var(--sand);
+  border-color: rgba(239, 227, 200, .12) !important;
+  background: transparent !important;
+}
+
+html[data-theme="makran"] .mobile-menu-button span {
+  background: var(--sand) !important;
+}
+
+html[data-theme="makran"] :where(
+  .setup-links,
+  .contribute-code-call,
+  .translation-notice,
+  .translate-notice,
+  .dictionary-source,
+  .community-review-note
+) {
+  color: var(--sand-muted);
+}
+
+html[data-theme="makran"] :where(
+  .setup-code pre,
+  .setup-env code,
+  .schema-box,
+  .developer-examples pre
+) {
+  background: #121827 !important;
+  color: #9de9e2 !important;
+  border-color: rgba(75, 214, 202, .12) !important;
+}
+
+html[data-theme="makran"] input[type="file"]::file-selector-button {
+  background: #302746;
+  color: var(--sand);
+  border: 1px solid rgba(239, 227, 200, .12);
+}
+
+html[data-theme="makran"] :where(
+  .status-chip,
+  .community-state.reviewed,
+  .community-state.needs-review,
+  .community-state.verified,
+  .community-state.rejected,
+  .bench-status.reproduce,
+  .bench-status.audit,
+  .bench-status.planned,
+  .setup-state.ready,
+  .setup-state.limited,
+  .setup-state.missing,
+  .setup-state.checking
+) {
+  background-color: rgba(239, 227, 200, .07) !important;
+  border-color: rgba(239, 227, 200, .12) !important;
+}
+
+html[data-theme="makran"] .community-state.verified,
+html[data-theme="makran"] .setup-state.ready {
+  color: #78e4d9 !important;
+}
+
+html[data-theme="makran"] .community-state.needs-review,
+html[data-theme="makran"] .bench-status.audit {
+  color: #e6b995 !important;
+}
+
+html[data-theme="makran"] .community-state.rejected,
+html[data-theme="makran"] .setup-state.missing {
+  color: #ef9e92 !important;
+}
+
+html[data-theme="makran"] .footer-logo,
+html[data-theme="makran"] .brand-logo,
+html[data-theme="makran"] .chat-empty-logo {
+  filter: none !important;
+}
+
+html[data-language="bal"] :where(
+  .main-nav,
+  .footer-links,
+  .community-filters,
+  .chat-preferences,
+  .hero-actions,
+  .home-about-links,
+  .setup-links
+) {
+  direction: rtl;
+}
+
+html[data-language="bal"] :where(
+  .developer-endpoints,
+  .developer-examples,
+  .bench-table,
+  .dataset-table
+) code,
+html[data-language="bal"] pre {
+  direction: ltr;
+  text-align: left;
+}
