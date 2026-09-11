@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useMemo, useState } from "react";
+import { useExperience } from "@/components/experience-provider";
 
 type Mode = "transliterate" | "normalize";
 type Target = "latin" | "arabic";
@@ -15,6 +16,7 @@ type TransliterationResponse = {
 };
 
 export function ScriptLab() {
+  const { t } = useExperience();
   const [mode, setMode] = useState<Mode>("transliterate");
   const [target, setTarget] = useState<Target>("latin");
   const [input, setInput] = useState("");
@@ -118,7 +120,7 @@ export function ScriptLab() {
             setMeta("");
           }}
         >
-          Script conversion
+          {t("script.convert", "Script conversion")}
         </button>
         <button
           className={mode === "normalize" ? "active" : ""}
@@ -130,7 +132,7 @@ export function ScriptLab() {
             setMeta("");
           }}
         >
-          Normalize text
+          {t("script.normalize", "Normalize text")}
         </button>
       </div>
 
@@ -138,7 +140,7 @@ export function ScriptLab() {
         {mode === "transliterate" && (
           <div className="script-direction-bar">
             <div>
-              <span>Detected</span>
+              <span>{t("script.detected", "Detected")}</span>
               <strong>{sourceLabel}</strong>
             </div>
 
@@ -147,10 +149,10 @@ export function ScriptLab() {
             </button>
 
             <label>
-              <span>Convert to</span>
+              <span>{t("script.convertTo", "Convert to")}</span>
               <select value={target} onChange={(event) => setTarget(event.target.value as Target)}>
-                <option value="latin">Latin Balochi</option>
-                <option value="arabic">Arabic-script Balochi</option>
+                <option value="latin">{t("script.latin", "Latin Balochi")}</option>
+                <option value="arabic">{t("script.arabic", "Arabic-script Balochi")}</option>
               </select>
             </label>
           </div>
@@ -159,7 +161,7 @@ export function ScriptLab() {
         <div className="script-lab-panels">
           <label className="script-panel">
             <div className="script-panel-head">
-              <span>Input</span>
+              <span>{t("script.input", "Input")}</span>
               {input && (
                 <button type="button" onClick={() => {
                   setInput("");
@@ -167,7 +169,7 @@ export function ScriptLab() {
                   setWarning("");
                   setMeta("");
                 }}>
-                  Clear
+                  {t("script.clear", "Clear")}
                 </button>
               )}
             </div>
@@ -185,15 +187,15 @@ export function ScriptLab() {
           <div className="script-panel output">
             <div className="script-panel-head">
               <span>{mode === "normalize" ? "Normalized" : target === "latin" ? "Latin" : "Arabic script"}</span>
-              {output && <button type="button" onClick={() => void copy()}>Copy</button>}
+              {output && <button type="button" onClick={() => void copy()}>{t("script.copy", "Copy")}</button>}
             </div>
 
             {loading ? (
-              <div className="script-processing">Processing…</div>
+              <div className="script-processing">{t("script.processing", "Processing…")}</div>
             ) : output ? (
               <p dir="auto" lang="bal">{output}</p>
             ) : (
-              <div className="script-placeholder">Result will appear here.</div>
+              <div className="script-placeholder">{t("script.result", "Result will appear here.")}</div>
             )}
           </div>
         </div>
@@ -204,7 +206,7 @@ export function ScriptLab() {
             {warning && <p>{warning}</p>}
           </div>
           <button className="button primary" type="submit" disabled={!input.trim() || loading}>
-            {loading ? "Working…" : mode === "normalize" ? "Normalize" : "Convert script"}
+            {loading ? t("script.working", "Working…") : mode === "normalize" ? t("script.normalizeAction", "Normalize") : t("script.convertAction", "Convert script")}
           </button>
         </div>
       </form>
