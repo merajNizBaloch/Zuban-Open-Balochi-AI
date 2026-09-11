@@ -1,0 +1,63 @@
+"use client";
+
+import { FormEvent, useEffect, useState } from "react";
+
+export function VoiceWorkbench() {
+  const [text, setText] = useState("");
+  const [audioUrl, setAudioUrl] = useState("");
+  const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    return () => {
+      if (audioUrl) URL.revokeObjectURL(audioUrl);
+    };
+  }, [audioUrl]);
+
+  async function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!text.trim() || loading) return;
+
+    if (audioUrl) URL.revokeObjectURL(audioUrl);
+    setAudioUrl("");
+    setMessage("");
+    setLoading(true);
+
+    try {
+      const response = await fetch("/api/voice", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text }),
+      });
+
+      const contentType = response.headers.get("content-type") ?? "";
+      if (response.ok && contentType.startsWith("audio/")) {
+        setAudioUrl(URL.createObjectURL(await response.blob()));
+      } else {
+        const data = (await response.json()) as { message?: string; error?: string };
+        setMessage(data.message ?? data.error ?? "Voice generation failed.");
+      }
+    } catch {
+      setMessage("The voice service could not be reached.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <form className="voice-workbench" onSubmit={submit}>
+      <label className="voice-editor">
+        <span className="pane-label">BALOCHI TEXT</span>
+        <textarea value={text} onChange={(event) => setText(event.target.value)} placeholder="Enter Balochi text for speech synthesis…" />
+      </label>
+      <div className="workbench-actions">
+        <span>Text → speech · experimental adapter</span>
+        <button className="button primary" disabled={!text.trim() || loading} type="submit">
+          {loading ? "Generating…" : "Generate voice"}
+        </button>
+      </div>
+      {audioUrl && <div className="audio-result"><audio controls src={audioUrl}>Your browser does not support audio playback.</audio></div>}
+      {message && <div className="system-note">{message}</div>}
+    </form>
+  );
+}

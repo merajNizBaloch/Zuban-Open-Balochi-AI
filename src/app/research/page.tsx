@@ -1,3 +1,5 @@
+import { reusableResources } from "@/lib/resources";
+
 const tracks = [
   ["Corpus", "Dialect- and script-aware text collection with provenance."],
   ["Translate", "Parallel corpora, baselines and human evaluation."],
@@ -11,10 +13,30 @@ export default function ResearchPage() {
   return <section className="section"><div className="shell">
     <p className="eyebrow">ZUBÁN / RESEARCH</p>
     <h1 className="page-title">Open research for a low-resource language.</h1>
-    <p className="lead wide">Zubán Research will publish methods, limitations, dataset provenance and reproducible evaluations—not only polished demos.</p>
+    <p className="lead wide">Zubán Research publishes methods, limitations, dataset provenance and reproducible evaluations—not only polished demos.</p>
+
     <div className="research-grid">
       {tracks.map(([title, text], index) => <article className="research-card" key={title}><span>R/{String(index + 1).padStart(2, "0")}</span><h2>Zubán {title}</h2><p>{text}</p></article>)}
     </div>
+
+    <div className="section-heading registry-heading">
+      <div><p className="eyebrow">REUSE / AUDIT QUEUE</p><h2>Build on work that already exists.</h2></div>
+      <p>These external resources are candidates for reuse, benchmarking or integration. Inclusion here is not an endorsement of every metric or dataset; Zubán audits licensing, provenance and reproducibility before importing anything.</p>
+    </div>
+
+    <div className="resource-list">
+      {reusableResources.map((resource, index) => (
+        <a className="resource-row" href={resource.url} target="_blank" rel="noreferrer" key={resource.name}>
+          <span className="resource-index">{String(index + 1).padStart(2, "0")}</span>
+          <div><strong>{resource.name}</strong><small>{resource.owner}</small></div>
+          <span>{resource.type}</span>
+          <span>{resource.license}</span>
+          <p>{resource.note}</p>
+          <span className="resource-open">↗</span>
+        </a>
+      ))}
+    </div>
+
     <div className="benchmark-strip">
       <div><p className="eyebrow">ZUBÁN BENCH</p><h2>Metrics before marketing.</h2></div>
       <div className="metric-list"><span>Translation · BLEU / COMET + human review</span><span>Speech · WER</span><span>OCR · CER / WER</span><span>NER / POS · F1</span><span>Retrieval · task-specific evaluation</span></div>
