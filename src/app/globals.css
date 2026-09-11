@@ -1,14 +1,14 @@
 :root {
-  --bg: #f3efe7;
-  --paper: #faf7f1;
-  --ink: #101414;
-  --muted: #666a67;
-  --line: #d6d0c4;
-  --accent: #078f8d;
-  --accent-dark: #056765;
-  --rust: #b85036;
-  --night: #111918;
-  --night-2: #182220;
+  --bg: #fefdfd;
+  --paper: #ffffff;
+  --ink: #062e5a;
+  --muted: #60798b;
+  --line: #d9e4e8;
+  --accent: #039fab;
+  --accent-dark: #0b6886;
+  --rust: #15c4ca;
+  --night: #081629;
+  --night-2: #062246;
   --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
   --sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
@@ -3117,4 +3117,35 @@ body {
   .stack-layer {
     border-radius: 14px;
   }
+}
+
+
+/* Accessibility */
+.skip-link {
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  z-index: 1000;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: #062e5a;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 750;
+  transform: translateY(-160%);
+  transition: transform .16s ease;
+}
+
+.skip-link:focus {
+  transform: translateY(0);
+}
+
+:focus-visible {
+  outline: 3px solid rgba(3, 159, 171, .36);
+  outline-offset: 3px;
+}
+
+::selection {
+  background: rgba(21, 196, 202, .2);
+  color: #062e5a;
 }
