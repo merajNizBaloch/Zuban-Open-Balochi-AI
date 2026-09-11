@@ -20,11 +20,11 @@ export default function Home() {
 
           <div className="home-logo-stage">
             <Image
-              className="home-logo-dark"
-              src="/zuban-dark.svg"
-              alt="Zubán — People · Language · Open Future"
-              width={1254}
-              height={1254}
+              className="home-logo-mark"
+              src="/zuban-mark.webp"
+              alt="Zubán"
+              width={512}
+              height={512}
               priority
             />
           </div>
