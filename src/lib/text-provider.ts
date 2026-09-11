@@ -1,4 +1,5 @@
 import { dictionaryEntries } from "@/lib/dictionary";
+import { detectBalochiScript, normalizeBalochi, normalizeForBalochiLookup } from "@/lib/balochi-language";
 
 type TextMode = "chat" | "translate";
 
@@ -57,11 +58,8 @@ function resolveProvider(): ProviderConfig | null {
 }
 
 function normalize(value: string) {
-  return value
-    .toLocaleLowerCase()
-    .normalize("NFKD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[“”"'.,!?;:()[\]{}]/g, " ")
+  return normalizeForBalochiLookup(value)
+    .replace(/[“”"'.,!?؟،؛:;()[\]{}]/g, " ")
     .replace(/\s+/g, " ")
     .trim();
 }
@@ -229,7 +227,9 @@ export async function runTextModel(request: TextRequest) {
     };
   }
 
-  const lexicalContext = glossaryContext(request.input);
+  const normalizedInput = normalizeBalochi(request.input);
+  const detectedScript = detectBalochiScript(request.input);
+  const lexicalContext = glossaryContext(normalizedInput);
 
   const system =
     request.mode === "translate"
@@ -239,6 +239,7 @@ export async function runTextModel(request: TextRequest) {
           "Return only the translation unless a short dialect note is genuinely necessary.",
           "Preserve names, numbers and meaning. Do not invent Balochi forms when uncertain.",
           "Balochi has dialect and orthographic variation; prefer natural wording and be explicit only when ambiguity matters.",
+          "Detected input script: " + detectedScript + ".",
           lexicalContext,
         ].join("\n")
       : [
@@ -247,6 +248,7 @@ export async function runTextModel(request: TextRequest) {
           "Be concise by default. Respect dialect and script differences and do not present one regional form as universally correct.",
           "When you are unsure about a Balochi word or grammar point, say so rather than inventing it.",
           "Use Arabic-script Balochi when the user writes in Arabic script and Latin Balochi when they use Latin, unless they ask for another script.",
+          "Detected input script: " + detectedScript + ".",
           lexicalContext,
         ].join("\n");
 
