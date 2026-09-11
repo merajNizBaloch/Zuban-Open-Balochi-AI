@@ -25,7 +25,8 @@ export function SiteFooter() {
           <Link href="/language">Language Lab</Link>
           <Link href="/community">Community</Link>
           <Link href="/datasets">Datasets</Link>
-          <Link href="/technology">Technology</Link>
+          <Link href="/developers">Developers</Link>
+          <Link href="/roadmap">Roadmap</Link>
           <a href={githubUrl} target="_blank" rel="noreferrer">GitHub ↗</a>
         </div>
       </div>
