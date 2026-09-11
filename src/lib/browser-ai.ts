@@ -286,6 +286,8 @@ export function isMissingServerModelMessage(value: string) {
     text.includes("no ai model is connected") ||
     text.includes("no text model is connected") ||
     text.includes("text model returned 401") ||
-    text.includes("text model returned 403")
+    text.includes("text model returned 403") ||
+    text.includes("server ai is temporarily unavailable") ||
+    text.includes("text provider returned")
   );
 }
