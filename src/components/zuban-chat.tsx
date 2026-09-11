@@ -62,6 +62,11 @@ export function ZubanChat() {
           if (Array.isArray(parsed)) setMessages(parsed.slice(-40));
         }
 
+        const initialPrompt = new URLSearchParams(window.location.search).get("prompt");
+        if (initialPrompt && initialPrompt.trim()) {
+          setInput(initialPrompt.slice(0, 12000));
+        }
+
         const preferences = window.localStorage.getItem("zuban-chat-preferences-v1");
         if (preferences) {
           const parsed = JSON.parse(preferences) as {
