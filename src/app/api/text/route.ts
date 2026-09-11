@@ -72,9 +72,16 @@ export async function POST(request: Request) {
 
     return NextResponse.json(result, { status: result.configured ? 200 : 503 });
   } catch (error) {
-    const message =
+    const detail =
       error instanceof Error ? error.message : "Unknown model error.";
 
-    return NextResponse.json({ error: message }, { status: 502 });
+    return NextResponse.json(
+      {
+        message:
+          "Server AI is temporarily unavailable. Zubán can fall back to local AI.",
+        detail,
+      },
+      { status: 503 },
+    );
   }
 }
