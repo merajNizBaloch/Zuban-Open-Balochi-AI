@@ -4,6 +4,8 @@ import { FormEvent, useEffect, useRef, useState } from "react";
 
 type Mode = "stt" | "ocr";
 
+const publicModelServer = process.env.NEXT_PUBLIC_ZUBAN_MODEL_SERVER_URL?.replace(/\/$/, "");
+
 export function MediaWorkbench({ mode }: { mode: Mode }) {
   const [file, setFile] = useState<File | null>(null);
   const [result, setResult] = useState("");
@@ -69,7 +71,14 @@ export function MediaWorkbench({ mode }: { mode: Mode }) {
     setProgress(mode === "ocr" ? "Checking OCR service…" : "Uploading audio…");
 
     try {
-      const response = await fetch("/api/media", { method: "POST", body: form });
+      const directEndpoint = publicModelServer
+        ? publicModelServer + (mode === "stt" ? "/stt" : "/ocr")
+        : "";
+
+      const response = await fetch(directEndpoint || "/api/media", {
+        method: "POST",
+        body: form,
+      });
       const data = (await response.json()) as { text?: string; message?: string; error?: string };
 
       if (response.ok && data.text) {
