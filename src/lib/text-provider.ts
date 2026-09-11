@@ -1,19 +1,28 @@
 import { dictionaryEntries } from "@/lib/dictionary";
-import { detectBalochiScript, normalizeBalochi, normalizeForBalochiLookup } from "@/lib/balochi-language";
+import {
+  detectBalochiScript,
+  normalizeBalochi,
+  normalizeForBalochiLookup,
+} from "@/lib/balochi-language";
 
 type TextMode = "chat" | "translate";
 
-type ConversationMessage = {
+export type ConversationMessage = {
   role: "user" | "assistant";
   content: string;
 };
 
-type TextRequest = {
+export type DialectPreference = "auto" | "western" | "southern" | "eastern";
+export type ScriptPreference = "auto" | "arabic" | "latin";
+
+export type TextRequest = {
   mode: TextMode;
   input: string;
   source?: string;
   target?: string;
   messages?: ConversationMessage[];
+  dialect?: DialectPreference;
+  scriptPreference?: ScriptPreference;
 };
 
 type CompletionPayload = {
@@ -110,29 +119,26 @@ function extractLookupCandidate(input: string) {
 
 function localDictionaryChat(input: string) {
   const candidate = extractLookupCandidate(input);
-
   const balochi = exactBalochiEntry(candidate);
-  if (balochi) {
-    return formatEntry(balochi);
-  }
+
+  if (balochi) return formatEntry(balochi);
 
   const english = englishEntries(candidate);
-  if (english.length) {
-    return [
-      candidate + " → " +
-        english
-          .slice(0, 6)
-          .map((entry) => {
-            const latin = entry.latin?.[0] ? " (" + entry.latin[0] + ")" : "";
-            return entry.word + latin;
-          })
-          .join(" / "),
-      "",
-      "Source: Zubán dictionary · exact English meaning match.",
-    ].join("\n");
-  }
+  if (!english.length) return "";
 
-  return "";
+  return [
+    candidate +
+      " → " +
+      english
+        .slice(0, 6)
+        .map((entry) => {
+          const latin = entry.latin?.[0] ? " (" + entry.latin[0] + ")" : "";
+          return entry.word + latin;
+        })
+        .join(" / "),
+    "",
+    "Source: Zubán dictionary · exact English meaning match.",
+  ].join("\n");
 }
 
 function localDictionaryTranslation(
@@ -144,8 +150,7 @@ function localDictionaryTranslation(
   const to = target?.toLocaleLowerCase();
 
   if (from === "balochi" && to === "english") {
-    const entry = exactBalochiEntry(input);
-    return entry ? entry.meanings.join(", ") : "";
+    return exactBalochiEntry(input)?.meanings.join(", ") ?? "";
   }
 
   if (from === "english" && to === "balochi") {
@@ -165,7 +170,8 @@ function localDictionaryTranslation(
 }
 
 function glossaryContext(input: string) {
-  const normalized = input.toLocaleLowerCase();
+  const normalized = normalizeBalochi(input).toLocaleLowerCase();
+
   const matches = dictionaryEntries
     .filter((entry) => {
       if (normalized.includes(entry.word.toLocaleLowerCase())) return true;
@@ -187,6 +193,70 @@ function glossaryContext(input: string) {
   ].join("\n");
 }
 
+function systemPrompt(request: TextRequest) {
+  const normalizedInput = normalizeBalochi(request.input);
+  const detectedScript = detectBalochiScript(request.input);
+  const lexicalContext = glossaryContext(normalizedInput);
+  const dialect = request.dialect ?? "auto";
+  const scriptPreference = request.scriptPreference ?? "auto";
+
+  if (request.mode === "translate") {
+    return [
+      "You are Zubán Translate, a Balochi language translation assistant.",
+      `Translate from ${request.source ?? "auto"} to ${request.target ?? "Balochi"}.`,
+      "Return only the translation unless a short dialect note is genuinely necessary.",
+      "Preserve names, numbers and meaning. Do not invent Balochi forms when uncertain.",
+      "Balochi has dialect and orthographic variation; prefer natural wording and be explicit only when ambiguity matters.",
+      "Detected input script: " + detectedScript + ".",
+      lexicalContext,
+    ]
+      .filter(Boolean)
+      .join("\n");
+  }
+
+  return [
+    "You are Zubán, an open Balochi language assistant.",
+    "Help with Balochi language, writing, translation, culture-neutral everyday questions and language learning.",
+    "Be concise by default. Respect dialect and script differences and do not present one regional form as universally correct.",
+    "When you are unsure about a Balochi word or grammar point, say so rather than inventing it.",
+    "Detected input script: " + detectedScript + ".",
+    dialect === "auto"
+      ? "Dialect preference: auto. Do not assume a dialect when the user's form is ambiguous."
+      : "Dialect preference: " + dialect + ". Prefer that variety while acknowledging alternatives when relevant.",
+    scriptPreference === "auto"
+      ? "Script preference: auto. Follow the user's script when possible."
+      : "Script preference: " + scriptPreference + ". Use that output script for Balochi unless the user explicitly asks otherwise.",
+    lexicalContext,
+  ]
+    .filter(Boolean)
+    .join("\n");
+}
+
+function conversationFor(request: TextRequest) {
+  return request.mode === "chat" && request.messages?.length
+    ? request.messages.slice(-20)
+    : [{ role: "user" as const, content: request.input }];
+}
+
+function providerPayload(request: TextRequest, stream = false) {
+  const provider = resolveProvider();
+  if (!provider) return null;
+
+  return {
+    provider,
+    body: {
+      model: provider.model,
+      messages: [
+        { role: "system", content: systemPrompt(request) },
+        ...conversationFor(request),
+      ],
+      temperature: request.mode === "translate" ? 0.1 : 0.25,
+      max_tokens: 1200,
+      ...(stream ? { stream: true } : {}),
+    },
+  };
+}
+
 export function textProviderStatus() {
   const provider = resolveProvider();
 
@@ -196,6 +266,25 @@ export function textProviderStatus() {
     model: provider?.model ?? null,
     dictionaryFallback: true,
   };
+}
+
+export async function streamChatModel(request: TextRequest) {
+  const resolved = providerPayload({ ...request, mode: "chat" }, true);
+  if (!resolved) return null;
+
+  const response = await fetch(resolved.provider.endpoint, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...(resolved.provider.apiKey
+        ? { Authorization: "Bearer " + resolved.provider.apiKey }
+        : {}),
+    },
+    body: JSON.stringify(resolved.body),
+    cache: "no-store",
+  });
+
+  return response;
 }
 
 export async function runTextModel(request: TextRequest) {
@@ -223,52 +312,22 @@ export async function runTextModel(request: TextRequest) {
       message:
         request.mode === "translate"
           ? "No AI model is connected. Exact English ↔ Balochi dictionary words work offline, but sentence translation needs HF_TOKEN, a custom endpoint, or Ollama."
-          : "No AI model is connected. You can still ask for meanings of words in the Zubán dictionary, for example “What does آپ mean?”. Full chat needs HF_TOKEN, a custom endpoint, or Ollama.",
+          : "No AI model is connected. You can still ask for meanings of words in the Zubán dictionary. Full chat needs HF_TOKEN, a custom endpoint, or Ollama.",
     };
   }
 
-  const normalizedInput = normalizeBalochi(request.input);
-  const detectedScript = detectBalochiScript(request.input);
-  const lexicalContext = glossaryContext(normalizedInput);
+  const resolved = providerPayload(request);
+  if (!resolved) throw new Error("Text provider is not configured.");
 
-  const system =
-    request.mode === "translate"
-      ? [
-          "You are Zubán Translate, a Balochi language translation assistant.",
-          `Translate from ${request.source ?? "auto"} to ${request.target ?? "Balochi"}.`,
-          "Return only the translation unless a short dialect note is genuinely necessary.",
-          "Preserve names, numbers and meaning. Do not invent Balochi forms when uncertain.",
-          "Balochi has dialect and orthographic variation; prefer natural wording and be explicit only when ambiguity matters.",
-          "Detected input script: " + detectedScript + ".",
-          lexicalContext,
-        ].join("\n")
-      : [
-          "You are Zubán, an open Balochi language assistant.",
-          "Help with Balochi language, writing, translation, culture-neutral everyday questions and language learning.",
-          "Be concise by default. Respect dialect and script differences and do not present one regional form as universally correct.",
-          "When you are unsure about a Balochi word or grammar point, say so rather than inventing it.",
-          "Use Arabic-script Balochi when the user writes in Arabic script and Latin Balochi when they use Latin, unless they ask for another script.",
-          "Detected input script: " + detectedScript + ".",
-          lexicalContext,
-        ].join("\n");
-
-  const conversation =
-    request.mode === "chat" && request.messages?.length
-      ? request.messages.slice(-20)
-      : [{ role: "user" as const, content: request.input }];
-
-  const response = await fetch(provider.endpoint, {
+  const response = await fetch(resolved.provider.endpoint, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      ...(provider.apiKey ? { Authorization: `Bearer ${provider.apiKey}` } : {}),
+      ...(resolved.provider.apiKey
+        ? { Authorization: "Bearer " + resolved.provider.apiKey }
+        : {}),
     },
-    body: JSON.stringify({
-      model: provider.model,
-      messages: [{ role: "system", content: system }, ...conversation],
-      temperature: request.mode === "translate" ? 0.1 : 0.25,
-      max_tokens: 1200,
-    }),
+    body: JSON.stringify(resolved.body),
     cache: "no-store",
   });
 
@@ -288,7 +347,7 @@ export async function runTextModel(request: TextRequest) {
     configured: true,
     output,
     message: "",
-    provider: provider.provider,
-    model: provider.model,
+    provider: resolved.provider.provider,
+    model: resolved.provider.model,
   };
 }
