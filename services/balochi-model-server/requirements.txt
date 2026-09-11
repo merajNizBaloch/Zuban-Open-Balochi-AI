@@ -1,0 +1,12 @@
+fastapi==0.116.1
+uvicorn[standard]==0.35.0
+python-multipart==0.0.20
+torch>=2.4
+transformers>=4.46,<5
+huggingface-hub>=0.34
+sentencepiece>=0.2
+soundfile>=0.13
+numpy>=1.26
+pydub>=0.25
+pillow>=10
+pytesseract>=0.3.13
