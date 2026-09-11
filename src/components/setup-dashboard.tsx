@@ -7,6 +7,7 @@ type Status = {
   textProvider?: string | null;
   textModel?: string | null;
   dictionaryFallback?: boolean;
+  browserTextFallback?: boolean;
   modelServerConfigured?: boolean;
   modelServerReachable?: boolean;
   modelServerDevice?: string | null;
@@ -39,13 +40,15 @@ export function SetupDashboard() {
     ? [
         {
           title: "Chat + Translate",
-          state: status.text ? "ready" : status.dictionaryFallback ? "limited" : "missing",
+          state: status.text ? "ready" : status.browserTextFallback ? "limited" : status.dictionaryFallback ? "limited" : "missing",
           detail: status.text
             ? `Connected through ${status.textProvider ?? "custom provider"} · ${status.textModel ?? "configured model"}`
-            : status.dictionaryFallback
-              ? "Dictionary lookup and exact English ↔ Balochi words work. Full conversational AI is not connected."
-              : "No text provider is configured.",
-          env: status.text ? undefined : "HF_TOKEN or ZUBAN_TEXT_API_URL or OLLAMA_BASE_URL",
+            : status.browserTextFallback
+              ? "Chat and Translate can use browser AI fallback. A server-side provider is still recommended for predictable production behavior."
+              : status.dictionaryFallback
+                ? "Dictionary lookup and exact English ↔ Balochi words work without a model."
+                : "No text provider is configured.",
+          env: status.text ? undefined : "Optional: HF_TOKEN or ZUBAN_TEXT_API_URL or OLLAMA_BASE_URL",
         },
         {
           title: "Balochi model server",
@@ -130,7 +133,7 @@ export function SetupDashboard() {
         <div>
           <h2>Recommended production configuration</h2>
           <p>
-            One Hugging Face token enables Chat + Translate. One model-server URL enables Balochi STT and TTS. After deployment, POST /warmup once to pre-load the speech models.
+            Chat and Translate can fall back to browser AI without a developer key. For a controlled production deployment, configure Hugging Face, a custom endpoint, or Ollama. One model-server URL enables Balochi STT and TTS.
           </p>
         </div>
         <pre>{`HF_TOKEN=hf_...
