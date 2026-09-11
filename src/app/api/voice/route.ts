@@ -2,6 +2,12 @@ import { NextResponse } from "next/server";
 
 const allowedSpeakers = new Set(["ayn_kader", "doda", "doden"]);
 
+function ttsEndpoint() {
+  if (process.env.ZUBAN_TTS_API_URL) return process.env.ZUBAN_TTS_API_URL;
+  const base = process.env.ZUBAN_MODEL_SERVER_URL?.replace(/\/$/, "");
+  return base ? base + "/tts" : undefined;
+}
+
 export async function POST(request: Request) {
   const body = (await request.json()) as { text?: string; speaker?: string };
 
@@ -16,7 +22,7 @@ export async function POST(request: Request) {
     );
   }
 
-  const endpoint = process.env.ZUBAN_TTS_API_URL;
+  const endpoint = ttsEndpoint();
   const key = process.env.ZUBAN_TTS_API_KEY;
   const model = process.env.ZUBAN_TTS_MODEL || "Aynkader/Balochi-TTS-Three-Speakers";
   const speaker = allowedSpeakers.has(body.speaker ?? "") ? body.speaker : "ayn_kader";
@@ -25,7 +31,7 @@ export async function POST(request: Request) {
     return NextResponse.json(
       {
         message:
-          "Balochi voice needs the open model server. Deploy services/balochi-model-server and set ZUBAN_TTS_API_URL to its /tts endpoint.",
+          "Balochi voice needs the model server. Deploy services/balochi-model-server and set ZUBAN_MODEL_SERVER_URL.",
       },
       { status: 503 },
     );
