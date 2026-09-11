@@ -2342,3 +2342,9 @@ body:has(.zuban-chat) .site-footer {
     align-items: flex-start;
   }
 }
+
+
+.service-dot.limited {
+  background: #e2a63b;
+  box-shadow: 0 0 0 4px rgba(226, 166, 59, .13);
+}
