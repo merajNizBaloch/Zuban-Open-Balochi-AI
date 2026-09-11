@@ -1,183 +1,125 @@
 "use client";
 
-type PuterModel = {
-  id?: string;
-  name?: string;
-  provider?: string;
-  cost?: {
-    input?: number;
-    output?: number;
-  };
+type BrowserMessage = {
+  role: "system" | "user" | "assistant";
+  content: string;
 };
 
-type PuterChunk = {
-  type?: string;
-  text?: string;
-  message?: string;
+type BrowserAiOptions = {
+  temperature?: number;
+  maxTokens?: number;
+  onProgress?: (progress: { progress: number; text: string }) => void;
 };
 
-type PuterResponse = {
-  message?: {
-    content?: string | Array<{ type?: string; text?: string }>;
-  };
+type CompletionChunk = {
+  choices?: Array<{
+    delta?: { content?: string | null };
+  }>;
 };
 
-type PuterApi = {
-  ai: {
-    chat: (
-      messages: Array<{ role: string; content: string }>,
-      options?: {
-        model?: string;
-        stream?: boolean;
+type CompletionResponse = {
+  choices?: Array<{
+    message?: { content?: string | null };
+  }>;
+};
+
+type LocalEngine = {
+  chat: {
+    completions: {
+      create: (request: {
+        messages: BrowserMessage[];
         temperature?: number;
         max_tokens?: number;
-      },
-    ) => Promise<PuterResponse | AsyncIterable<PuterChunk>>;
-    listModels: () => Promise<PuterModel[]>;
+        stream?: boolean;
+        stream_options?: { include_usage?: boolean };
+      }) => Promise<CompletionResponse | AsyncIterable<CompletionChunk>>;
+    };
   };
+  interruptGenerate: () => void;
 };
 
-declare global {
-  interface Window {
-    puter?: PuterApi;
-  }
-}
+const MODEL_ID = "Llama-3.2-1B-Instruct-q4f16_1-MLC";
 
-let scriptPromise: Promise<PuterApi> | null = null;
-let preferredModelPromise: Promise<string | undefined> | null = null;
+let enginePromise: Promise<LocalEngine> | null = null;
+let engineInstance: LocalEngine | null = null;
 
-function loadPuter() {
+function requireWebGpu() {
   if (typeof window === "undefined") {
-    return Promise.reject(new Error("Browser AI is only available in the browser."));
+    throw new Error("Local AI is only available in the browser.");
   }
 
-  if (window.puter) return Promise.resolve(window.puter);
-  if (scriptPromise) return scriptPromise;
-
-  scriptPromise = new Promise<PuterApi>((resolve, reject) => {
-    const existing = document.querySelector<HTMLScriptElement>(
-      'script[data-zuban-puter="true"]',
+  if (!("gpu" in navigator)) {
+    throw new Error(
+      "This browser does not support WebGPU. Use a recent Chrome, Edge, or Safari browser, or connect a server-side model.",
     );
+  }
+}
 
-    const ready = () => {
-      if (window.puter) resolve(window.puter);
-      else reject(new Error("Browser AI loaded without an API object."));
-    };
+async function getEngine(onProgress?: BrowserAiOptions["onProgress"]) {
+  requireWebGpu();
 
-    if (existing) {
-      existing.addEventListener("load", ready, { once: true });
-      existing.addEventListener(
-        "error",
-        () => reject(new Error("Browser AI could not be loaded.")),
-        { once: true },
-      );
-      return;
+  if (engineInstance) return engineInstance;
+  if (enginePromise) return enginePromise;
+
+  enginePromise = (async () => {
+    try {
+      const webllm = await import("@mlc-ai/web-llm");
+      const engine = (await webllm.CreateMLCEngine(MODEL_ID, {
+        initProgressCallback: (report) => {
+          onProgress?.({
+            progress:
+              typeof report.progress === "number"
+                ? Math.max(0, Math.min(1, report.progress))
+                : 0,
+            text: report.text || "Preparing local AI…",
+          });
+        },
+      })) as LocalEngine;
+
+      engineInstance = engine;
+      return engine;
+    } catch (error) {
+      enginePromise = null;
+      throw error;
     }
+  })();
 
-    const script = document.createElement("script");
-    script.src = "https://js.puter.com/v2/";
-    script.async = true;
-    script.dataset.zubanPuter = "true";
-    script.addEventListener("load", ready, { once: true });
-    script.addEventListener(
-      "error",
-      () => {
-        scriptPromise = null;
-        reject(new Error("Browser AI could not be loaded."));
-      },
-      { once: true },
-    );
-    document.head.appendChild(script);
-  });
-
-  return scriptPromise;
-}
-
-function modelScore(model: PuterModel) {
-  const value = ((model.id ?? "") + " " + (model.name ?? "")).toLocaleLowerCase();
-
-  let family = 100;
-  if (value.includes("qwen")) family = 0;
-  else if (value.includes("gemma")) family = 10;
-  else if (value.includes("llama")) family = 20;
-  else if (value.includes("mistral")) family = 30;
-  else if (value.includes("deepseek")) family = 40;
-
-  const input = model.cost?.input ?? 0;
-  const output = model.cost?.output ?? 0;
-  return family * 1_000_000 + input + output;
-}
-
-async function preferredOpenModel(puter: PuterApi) {
-  if (!preferredModelPromise) {
-    preferredModelPromise = (async () => {
-      try {
-        const models = await puter.ai.listModels();
-        const openFamilies = models
-          .filter((model) => {
-            const value =
-              ((model.id ?? "") + " " + (model.name ?? "")).toLocaleLowerCase();
-            return /qwen|gemma|llama|mistral|deepseek/.test(value);
-          })
-          .sort((a, b) => modelScore(a) - modelScore(b));
-
-        return openFamilies[0]?.id;
-      } catch {
-        return undefined;
-      }
-    })();
-  }
-
-  return preferredModelPromise;
-}
-
-function contentFromResponse(response: PuterResponse) {
-  const content = response.message?.content;
-  if (typeof content === "string") return content.trim();
-
-  if (Array.isArray(content)) {
-    return content
-      .filter((item) => item.type === "text" || typeof item.text === "string")
-      .map((item) => item.text ?? "")
-      .join("")
-      .trim();
-  }
-
-  return "";
+  return enginePromise;
 }
 
 export async function browserAiComplete(
-  messages: Array<{ role: "system" | "user" | "assistant"; content: string }>,
-  options?: { temperature?: number; maxTokens?: number },
+  messages: BrowserMessage[],
+  options?: BrowserAiOptions,
 ) {
-  const puter = await loadPuter();
-  const model = await preferredOpenModel(puter);
+  const engine = await getEngine(options?.onProgress);
 
-  const response = (await puter.ai.chat(messages, {
-    ...(model ? { model } : {}),
+  const response = (await engine.chat.completions.create({
+    messages,
     temperature: options?.temperature ?? 0.25,
-    max_tokens: options?.maxTokens ?? 1200,
-  })) as PuterResponse;
+    max_tokens: options?.maxTokens ?? 900,
+    stream: false,
+  })) as CompletionResponse;
 
-  const text = contentFromResponse(response);
-  if (!text) throw new Error("Browser AI returned no text.");
+  const text = response.choices?.[0]?.message?.content?.trim() ?? "";
 
-  return { text, model: model ?? "automatic" };
+  if (!text) throw new Error("Local AI returned no text.");
+
+  return { text, model: MODEL_ID };
 }
 
 export async function browserAiStream(
-  messages: Array<{ role: "system" | "user" | "assistant"; content: string }>,
+  messages: BrowserMessage[],
   onChunk: (text: string) => void,
-  options?: { temperature?: number; maxTokens?: number },
+  options?: BrowserAiOptions,
 ) {
-  const puter = await loadPuter();
-  const model = await preferredOpenModel(puter);
+  const engine = await getEngine(options?.onProgress);
 
-  const response = await puter.ai.chat(messages, {
-    ...(model ? { model } : {}),
-    stream: true,
+  const response = await engine.chat.completions.create({
+    messages,
     temperature: options?.temperature ?? 0.25,
     max_tokens: options?.maxTokens ?? 1200,
+    stream: true,
+    stream_options: { include_usage: true },
   });
 
   let text = "";
@@ -187,27 +129,35 @@ export async function browserAiStream(
     typeof response === "object" &&
     Symbol.asyncIterator in response
   ) {
-    for await (const part of response as AsyncIterable<PuterChunk>) {
-      if (part.type === "error") {
-        throw new Error(part.message || "Browser AI request failed.");
-      }
+    for await (const chunk of response as AsyncIterable<CompletionChunk>) {
+      const delta = chunk.choices?.[0]?.delta?.content ?? "";
+      if (!delta) continue;
 
-      if (part.text) {
-        text += part.text;
-        onChunk(text);
-      }
+      text += delta;
+      onChunk(text);
     }
   } else {
-    text = contentFromResponse(response as PuterResponse);
+    const complete = response as CompletionResponse;
+    text = complete.choices?.[0]?.message?.content?.trim() ?? "";
     if (text) onChunk(text);
   }
 
-  if (!text.trim()) throw new Error("Browser AI returned no text.");
-  return { text: text.trim(), model: model ?? "automatic" };
+  if (!text.trim()) throw new Error("Local AI returned no text.");
+
+  return { text: text.trim(), model: MODEL_ID };
+}
+
+export function stopBrowserAiGeneration() {
+  engineInstance?.interruptGenerate();
+}
+
+export function browserAiModelName() {
+  return MODEL_ID;
 }
 
 export function isMissingServerModelMessage(value: string) {
   const text = value.toLocaleLowerCase();
+
   return (
     text.includes("no ai model is connected") ||
     text.includes("no text model is connected") ||
