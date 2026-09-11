@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { ModelStatus } from "@/components/model-status";
 
 const layers = [
@@ -12,10 +13,15 @@ export default function TechnologyPage() {
   return (
     <section className="section technology-page">
       <div className="shell">
-        <h1 className="page-title">Technology.</h1>
-        <p className="lead wide">
-          Zubán keeps the product separate from the underlying models. A better open model can replace an older one without rebuilding the interface.
-        </p>
+        <div className="technology-title-row">
+          <div>
+            <h1 className="page-title">Technology.</h1>
+            <p className="lead wide">
+              Zubán keeps the product separate from the underlying models. A better open model can replace an older one without rebuilding the interface.
+            </p>
+          </div>
+          <Link className="button secondary" href="/setup">Check setup →</Link>
+        </div>
 
         <div className="technology-status">
           <div className="section-heading">
@@ -39,13 +45,13 @@ export default function TechnologyPage() {
           <article className="info-card">
             <h3>Text model</h3>
             <p>
-              Chat and Translate use an OpenAI-compatible chat-completions endpoint. This can point to an open/self-hosted model rather than a single vendor.
+              Chat and Translate support Hugging Face Inference Providers, a custom OpenAI-compatible endpoint, or local Ollama. Without one, exact dictionary lookups still work.
             </p>
           </article>
           <article className="info-card">
             <h3>Media models</h3>
             <p>
-              Speech, voice and OCR use separate adapters, so each can be hosted or improved independently.
+              Speech and voice use the shared Balochi model server. OCR can use that server or fall back to browser OCR.
             </p>
           </article>
         </div>
