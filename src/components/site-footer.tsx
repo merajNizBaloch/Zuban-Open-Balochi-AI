@@ -1,4 +1,3 @@
-import Image from "next/image";
 import Link from "next/link";
 import { githubUrl } from "@/lib/site";
 
@@ -8,13 +7,18 @@ export function SiteFooter() {
       <div className="culture-band" aria-hidden="true" />
       <div className="shell footer-simple">
         <div className="footer-brand">
-          <Image
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
             className="footer-logo"
-            src="/zuban-mark.webp"
-            alt="Zubán"
-            width={512}
-            height={512}
+            src="/zuban-mark.webp?v=4"
+            alt=""
+            width="72"
+            height="72"
           />
+          <div>
+            <strong>Zubán</strong>
+            <span>Open Balochi language technology.</span>
+          </div>
         </div>
 
         <div className="footer-links">
