@@ -32,8 +32,32 @@ export function ZubanChat() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [hydrated, setHydrated] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    try {
+      const saved = window.localStorage.getItem("zuban-chat-v1");
+      if (saved) {
+        const parsed = JSON.parse(saved) as ChatMessage[];
+        if (Array.isArray(parsed)) setMessages(parsed.slice(-40));
+      }
+    } catch {
+      // Ignore unavailable or malformed local storage.
+    } finally {
+      setHydrated(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!hydrated) return;
+    try {
+      window.localStorage.setItem("zuban-chat-v1", JSON.stringify(messages.slice(-40)));
+    } catch {
+      // Chat still works when local storage is unavailable.
+    }
+  }, [messages, hydrated]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
@@ -119,6 +143,11 @@ export function ZubanChat() {
   function newChat() {
     setMessages([]);
     setInput("");
+    try {
+      window.localStorage.removeItem("zuban-chat-v1");
+    } catch {
+      // Ignore unavailable local storage.
+    }
     textareaRef.current?.focus();
   }
 
