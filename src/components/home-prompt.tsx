@@ -1,9 +1,11 @@
 "use client";
 
 import { FormEvent, useState } from "react";
+import { useExperience } from "@/components/experience-provider";
 
 export function HomePrompt() {
   const [value, setValue] = useState("");
+  const { t } = useExperience();
 
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -18,8 +20,8 @@ export function HomePrompt() {
       <input
         value={value}
         onChange={(event) => setValue(event.target.value)}
-        placeholder="Ask something in Balochi…"
-        aria-label="Ask Zubán"
+        placeholder={t("home.ask", "Ask something in Balochi…")}
+        aria-label={t("home.ask", "Ask Zubán")}
         dir="auto"
       />
       <button type="submit" disabled={!value.trim()} aria-label="Open in Zubán Chat">
