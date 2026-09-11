@@ -5,10 +5,21 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { githubUrl, primaryNav } from "@/lib/site";
 import { ZubanLogo } from "@/components/zuban-logo";
+import { useExperience } from "@/components/experience-provider";
 
 export function SiteHeader() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const { language, setLanguage, theme, toggleTheme, t } = useExperience();
+
+  const navLabels: Record<string, string> = {
+    "/chat": t("nav.chat", "Chat"),
+    "/translate": t("nav.translate", "Translate"),
+    "/dictionary": t("nav.dictionary", "Dictionary"),
+    "/language": t("nav.language", "Language"),
+    "/community": t("nav.community", "Community"),
+    "/research": t("nav.research", "Research"),
+  };
 
   return (
     <header className="site-header">
@@ -26,8 +37,28 @@ export function SiteHeader() {
           ))}
         </nav>
 
+        <div className="experience-controls" aria-label="Display preferences">
+          <button
+            className="theme-switch"
+            type="button"
+            onClick={toggleTheme}
+            aria-label={theme === "light" ? "Use Makran Night mode" : "Use light mode"}
+            title={theme === "light" ? "Makran Night" : "Light"}
+          >
+            <span className="theme-orbit" aria-hidden="true"><i /></span>
+          </button>
+          <button
+            className="language-switch"
+            type="button"
+            onClick={() => setLanguage(language === "en" ? "bal" : "en")}
+            aria-label={language === "en" ? "View website in Balochi" : "View website in English"}
+          >
+            {language === "en" ? "بلوچی" : "EN"}
+          </button>
+        </div>
+
         <a className="github-link" href={githubUrl} target="_blank" rel="noreferrer">
-          GitHub ↗
+          {t("nav.github", "GitHub")} ↗
         </a>
 
         <button
@@ -52,12 +83,20 @@ export function SiteHeader() {
               href={item.href}
               onClick={() => setOpen(false)}
             >
-              {item.label}
+              {navLabels[item.href] ?? item.label}
               <span>↗</span>
             </Link>
           ))}
+          <div className="mobile-experience-controls">
+            <button type="button" onClick={toggleTheme}>
+              {theme === "light" ? "Makran Night" : "Light"}
+            </button>
+            <button type="button" onClick={() => setLanguage(language === "en" ? "bal" : "en")}>
+              {language === "en" ? "بلوچی" : "English"}
+            </button>
+          </div>
           <a href={githubUrl} target="_blank" rel="noreferrer">
-            GitHub
+            {t("nav.github", "GitHub")}
             <span>↗</span>
           </a>
         </nav>
