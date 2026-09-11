@@ -1,6 +1,23 @@
+---
+title: Zubán Balochi Model Server
+emoji: 🗣️
+colorFrom: blue
+colorTo: cyan
+sdk: docker
+app_port: 7860
+short_description: Open Balochi speech, voice and OCR inference for Zubán.
+---
+
 # Zubán model server
 
-This optional service hosts the Balochi-specific models that are too large for a normal Vercel function.
+Open inference service for the Balochi-specific model adapters used by Zubán.
+
+## Endpoints
+
+- `GET /health`
+- `POST /stt`
+- `POST /tts`
+- `POST /ocr`
 
 ## Models
 
@@ -11,12 +28,11 @@ This optional service hosts the Balochi-specific models that are too large for a
 ## Run with Docker
 
 ```bash
-cd services/balochi-model-server
 docker build -t zuban-model-server .
 docker run --rm -p 7860:7860 zuban-model-server
 ```
 
-Then set in the Next.js app:
+Then configure the Zubán web app:
 
 ```env
 ZUBAN_STT_API_URL=http://localhost:7860/stt
@@ -24,12 +40,23 @@ ZUBAN_TTS_API_URL=http://localhost:7860/tts
 ZUBAN_OCR_API_URL=http://localhost:7860/ocr
 ```
 
-The first start downloads the model files from Hugging Face. GPU is recommended for STT/TTS; CPU works but can be slow.
+## Deploy as a Hugging Face Docker Space
 
-## Hugging Face Space
+This directory is formatted as a Docker Space. The GitHub repository also contains an optional sync workflow.
 
-This directory is also suitable for a Docker Space. Create a Docker Space and copy these files into it, then point the three Zubán environment URLs at the Space endpoints.
+Create a Hugging Face Space, then add these GitHub repository settings:
 
-## Important model limitations
+- Repository variable: `HF_SPACE_ID` → for example `your-hf-name/zuban-balochi-model-server`
+- Repository secret: `HF_SPACE_TOKEN` → a fine-grained Hugging Face write token for that Space
 
-The current STT model returns **Latin-script Balochi**. The current TTS model is also trained for **Latin-script Balochi** and performs best on short text. OCR is not yet Balochi-specific; it uses related Arabic-script language models until a dedicated Balochi OCR dataset/model is trained.
+After those are set, pushes affecting this directory can sync it to the Space.
+
+## Hardware
+
+The service can start on CPU, but Balochi Whisper and SpeechT5 are much more practical on GPU hardware. The first request downloads model weights from Hugging Face.
+
+## Known limitations
+
+- STT currently returns **Latin-script Balochi**.
+- TTS is trained for **Latin-script Balochi** and performs best on short text.
+- OCR is not Balochi-specific yet; it uses related Arabic-script OCR models while a dedicated Balochi OCR dataset/model is developed.
