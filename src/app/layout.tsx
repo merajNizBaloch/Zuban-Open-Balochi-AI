@@ -13,8 +13,8 @@ export const metadata: Metadata = {
   applicationName: "Zubán",
   keywords: ["Balochi", "Baluchi", "Balochi AI", "Balochi dictionary", "Balochi translation", "Balochi speech"],
   icons: {
-    icon: "/zuban-mark.webp",
-    apple: "/zuban-mark.webp",
+    icon: "/zuban-mark.png",
+    apple: "/zuban-mark.png",
   },
   openGraph: {
     title: "Zubán — Balochi Language Technology",
