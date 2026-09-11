@@ -4264,3 +4264,225 @@ body {
     animation: none;
   }
 }
+
+
+/* Bundled brand mark + subtle AI atmosphere */
+.brand-logo,
+.home-primary-logo,
+.footer-logo,
+.chat-empty-logo,
+.assistant-avatar img,
+.chat-title img {
+  opacity: 1 !important;
+  visibility: visible !important;
+  mix-blend-mode: normal;
+  filter: none;
+}
+
+.brand-logo {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+  transform: scale(1.13);
+  transform-origin: center;
+}
+
+.home-hero-centered {
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.home-center-wrap {
+  position: relative;
+  z-index: 2;
+}
+
+.home-logo-wrap {
+  position: relative;
+  z-index: 3;
+  width: 194px;
+  height: 194px;
+  margin-bottom: 14px;
+}
+
+.home-primary-logo {
+  width: 188px;
+  height: 188px;
+  object-fit: contain;
+  transform: scale(1.12);
+  transform-origin: center;
+  filter: drop-shadow(0 12px 24px rgba(6, 46, 90, .08));
+}
+
+.home-ai-atmosphere {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.home-neural-field {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: .42;
+}
+
+.neural-cluster {
+  fill: none;
+  stroke: rgba(3, 159, 171, .18);
+  stroke-width: 1.1;
+  vector-effect: non-scaling-stroke;
+}
+
+.neural-cluster path {
+  stroke-dasharray: 5 12;
+  animation: zubanNeuralDrift 18s linear infinite;
+}
+
+.neural-cluster circle {
+  fill: rgba(3, 159, 171, .25);
+  stroke: rgba(6, 46, 90, .16);
+  stroke-width: .8;
+  animation: zubanNodePulse 5.8s ease-in-out infinite;
+}
+
+.neural-right path {
+  animation-delay: -7s;
+}
+
+.neural-right circle {
+  animation-delay: -2.3s;
+}
+
+.neural-lower {
+  opacity: .55;
+}
+
+.ai-speech-bubble {
+  position: absolute;
+  min-width: 56px;
+  min-height: 34px;
+  display: grid;
+  place-items: center;
+  padding: 7px 13px;
+  border: 1px solid rgba(6, 46, 90, .09);
+  border-radius: 17px 17px 17px 6px;
+  background: rgba(255, 255, 255, .5);
+  box-shadow: 0 8px 24px rgba(6, 46, 90, .025);
+  backdrop-filter: blur(8px);
+  color: rgba(6, 46, 90, .42);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .01em;
+}
+
+.ai-speech-bubble::after {
+  content: "";
+  position: absolute;
+  left: 9px;
+  bottom: -4px;
+  width: 7px;
+  height: 7px;
+  border-left: 1px solid rgba(6, 46, 90, .07);
+  border-bottom: 1px solid rgba(6, 46, 90, .07);
+  background: rgba(255, 255, 255, .5);
+  transform: rotate(-45deg);
+}
+
+.ai-speech-one {
+  left: 8%;
+  top: 28%;
+  animation: zubanBubbleFloat 9s ease-in-out infinite;
+}
+
+.ai-speech-two {
+  right: 8%;
+  top: 22%;
+  animation: zubanBubbleFloat 10.5s ease-in-out -3s infinite;
+}
+
+.ai-speech-three {
+  right: 15%;
+  bottom: 20%;
+  min-width: 48px;
+  color: rgba(3, 159, 171, .48);
+  animation: zubanBubbleFloat 8.5s ease-in-out -5s infinite;
+}
+
+@keyframes zubanNeuralDrift {
+  to { stroke-dashoffset: -68; }
+}
+
+@keyframes zubanNodePulse {
+  0%, 100% { opacity: .35; transform: scale(.92); }
+  50% { opacity: .8; transform: scale(1.12); }
+}
+
+@keyframes zubanBubbleFloat {
+  0%, 100% { transform: translate3d(0, 0, 0); opacity: .38; }
+  50% { transform: translate3d(0, -7px, 0); opacity: .62; }
+}
+
+@media (max-width: 860px) {
+  .home-neural-field {
+    opacity: .3;
+    transform: scale(1.12);
+  }
+
+  .ai-speech-one {
+    left: 3%;
+  }
+
+  .ai-speech-two {
+    right: 3%;
+  }
+
+  .ai-speech-three {
+    display: none;
+  }
+}
+
+@media (max-width: 620px) {
+  .home-logo-wrap {
+    width: 148px;
+    height: 148px;
+  }
+
+  .home-primary-logo {
+    width: 144px;
+    height: 144px;
+  }
+
+  .home-neural-field {
+    opacity: .2;
+  }
+
+  .ai-speech-bubble {
+    min-width: 48px;
+    min-height: 30px;
+    padding: 6px 10px;
+    font-size: 9px;
+    opacity: .4;
+  }
+
+  .ai-speech-one {
+    left: 1%;
+    top: 19%;
+  }
+
+  .ai-speech-two {
+    right: 1%;
+    top: 23%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .neural-cluster path,
+  .neural-cluster circle,
+  .ai-speech-bubble {
+    animation: none !important;
+  }
+}
