@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { reusableResources } from "@/lib/resources";
+import { UiText } from "@/components/ui-text";
 
 const tracks = [
   ["Corpus", "Dialect- and script-aware text collection with provenance."],
@@ -15,8 +16,8 @@ export default function ResearchPage() {
     <section className="section research-page">
       <div className="shell">
         <div className="page-intro-center">
-          <p className="eyebrow">RESEARCH</p>
-          <h1 className="page-title">Open research for Balochi.</h1>
+          <p className="eyebrow"><UiText id="page.research.eyebrow" fallback="RESEARCH" /></p>
+          <h1 className="page-title"><UiText id="page.research.title" fallback="Open research for Balochi." /></h1>
           <p className="lead wide">
             Methods, datasets, limitations and reproducible evaluations for a low-resource language.
           </p>
