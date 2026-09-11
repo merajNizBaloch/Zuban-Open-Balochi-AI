@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import { githubUrl } from "@/lib/site";
 
 const types = [
@@ -22,6 +22,31 @@ export function ContributionForm() {
   const [script, setScript] = useState("Arabic");
   const [source, setSource] = useState("");
   const [license, setLicense] = useState("");
+
+  useEffect(() => {
+    let cancelled = false;
+
+    queueMicrotask(() => {
+      if (cancelled) return;
+
+      const params = new URLSearchParams(window.location.search);
+      const requestedType = params.get("type");
+      const requestedScript = params.get("script");
+
+      if (requestedType && types.includes(requestedType)) setType(requestedType);
+      if (params.get("title")) setTitle(params.get("title")!.slice(0, 180));
+      if (params.get("details")) setDetails(params.get("details")!.slice(0, 12000));
+      if (params.get("dialect")) setDialect(params.get("dialect")!.slice(0, 180));
+      if (params.get("source")) setSource(params.get("source")!.slice(0, 1200));
+      if (requestedScript && ["Arabic", "Latin", "Both", "Not applicable"].includes(requestedScript)) {
+        setScript(requestedScript);
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const issueUrl = useMemo(() => {
     const body = [
