@@ -7,7 +7,16 @@ let backend = "cpu";
 
 async function getTransformers() {
   if (!transformersPromise) {
-    transformersPromise = import(TRANSFORMERS_CDN);
+    transformersPromise = import(TRANSFORMERS_CDN).then((mod) => {
+      mod.env.allowLocalModels = false;
+
+      if (mod.env?.backends?.onnx?.wasm) {
+        mod.env.backends.onnx.wasm.numThreads = 1;
+        mod.env.backends.onnx.wasm.proxy = false;
+      }
+
+      return mod;
+    });
   }
   return transformersPromise;
 }
@@ -38,12 +47,30 @@ async function createGenerator(id) {
       activeBackend,
     );
 
-    return transformers.pipeline("text-generation", MODEL_ID, {
+    let finalizationTimer = null;
+    let rejectFinalization;
+
+    const finalizationTimeout = new Promise((_, reject) => {
+      rejectFinalization = reject;
+    });
+
+    const pipelinePromise = transformers.pipeline("text-generation", MODEL_ID, {
       ...(device === "webgpu" ? { device: "webgpu" } : {}),
       dtype,
       progress_callback: (report) => {
         const progress =
           typeof report.progress === "number" ? report.progress : 0;
+
+        if (progress >= 1 && !finalizationTimer) {
+          finalizationTimer = setTimeout(() => {
+            rejectFinalization(
+              new Error(
+                "Local model initialization timed out after download. Server AI is recommended on this device.",
+              ),
+            );
+          }, 30_000);
+        }
+
         const label =
           progress >= 1 && report.file
             ? "Download complete · starting model…"
@@ -56,6 +83,12 @@ async function createGenerator(id) {
         postProgress(id, progress, label, activeBackend);
       },
     });
+
+    try {
+      return await Promise.race([pipelinePromise, finalizationTimeout]);
+    } finally {
+      if (finalizationTimer) clearTimeout(finalizationTimer);
+    }
   };
 
   if ("gpu" in navigator) {
