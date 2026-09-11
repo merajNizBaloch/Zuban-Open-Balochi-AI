@@ -10,10 +10,10 @@ export function SiteFooter() {
         <div className="footer-brand">
           <Image
             className="footer-logo"
-            src="/zuban-white.svg"
+            src="/zuban-mark.webp"
             alt="Zubán"
-            width={1254}
-            height={1254}
+            width={512}
+            height={512}
           />
         </div>
 
