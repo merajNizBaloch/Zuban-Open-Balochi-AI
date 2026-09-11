@@ -87,6 +87,11 @@ export function TranslationWorkbench() {
             setOutput(result.text);
             setNotice("");
           } catch (browserError) {
+            if (browserError instanceof DOMException && browserError.name === "AbortError") {
+              setNotice(t("translate.cancelled", "Translation stopped."));
+              return;
+            }
+
             const detail =
               browserError instanceof Error
                 ? browserError.message
