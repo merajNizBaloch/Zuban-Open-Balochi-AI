@@ -1,5 +1,5 @@
 const TRANSFORMERS_CDN = "https://cdn.jsdelivr.net/npm/@huggingface/transformers@4.2.0";
-const MODEL_ID = "onnx-community/Qwen2.5-0.5B-Instruct";
+const MODEL_ID = "onnx-community/SmolLM2-135M-Instruct-ONNX-MHA";
 
 let transformersPromise = null;
 let generatorPromise = null;
@@ -27,25 +27,30 @@ async function createGenerator(id) {
 
   const load = async (device) => {
     const activeBackend = device === "webgpu" ? "webgpu" : "cpu";
+    const dtype = device === "webgpu" ? "q4f16" : "q4";
+
     postProgress(
       id,
       0,
       activeBackend === "webgpu"
-        ? "Loading accelerated local AI…"
-        : "Loading CPU local AI…",
+        ? "Loading compact accelerated local AI…"
+        : "Loading compact CPU local AI…",
       activeBackend,
     );
 
     return transformers.pipeline("text-generation", MODEL_ID, {
       ...(device === "webgpu" ? { device: "webgpu" } : {}),
-      dtype: "q4",
+      dtype,
       progress_callback: (report) => {
         const progress =
           typeof report.progress === "number" ? report.progress : 0;
         const label =
           report.status === "progress" && report.file
             ? "Downloading " + report.file
-            : report.status || "Preparing local model…";
+            : report.status === "ready"
+              ? "Finalizing local model…"
+              : report.status || "Preparing local model…";
+
         postProgress(id, progress, label, activeBackend);
       },
     });
@@ -56,11 +61,11 @@ async function createGenerator(id) {
       const generator = await load("webgpu");
       backend = "webgpu";
       return generator;
-    } catch (error) {
+    } catch {
       self.postMessage({
         type: "backend-fallback",
         id,
-        text: "GPU acceleration is unavailable. Switching to CPU mode…",
+        text: "GPU acceleration is unavailable. Switching to compact CPU mode…",
       });
     }
   }
@@ -125,7 +130,7 @@ self.onmessage = async (event) => {
     });
 
     const result = await generator(data.messages, {
-      max_new_tokens: Math.min(Number(data.maxTokens) || 512, 768),
+      max_new_tokens: Math.min(Number(data.maxTokens) || 256, 384),
       do_sample: Number(data.temperature) > 0,
       temperature: Number(data.temperature) || 0.2,
       repetition_penalty: 1.08,
