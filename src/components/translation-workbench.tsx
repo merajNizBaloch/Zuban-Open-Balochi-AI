@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, useState } from "react";
-import { browserAiComplete, isMissingServerModelMessage } from "@/lib/browser-ai";
+import { browserAiComplete, isMissingServerModelMessage, stopBrowserAiGeneration } from "@/lib/browser-ai";
 import { useExperience } from "@/components/experience-provider";
 
 type ApiResult = {
@@ -72,7 +72,7 @@ export function TranslationWorkbench() {
               ],
               {
                 temperature: 0.1,
-                maxTokens: 900,
+                maxTokens: 220,
                 onProgress: ({ progress, text }) => {
                   const percent = Math.round(progress * 100);
                   setNotice(
@@ -132,6 +132,12 @@ export function TranslationWorkbench() {
     } catch {
       // Clipboard may be blocked in some browsers.
     }
+  }
+
+  function cancelTranslation() {
+    stopBrowserAiGeneration();
+    setLoading(false);
+    setNotice(t("translate.cancelled", "Translation stopped."));
   }
 
   return (
@@ -220,9 +226,15 @@ export function TranslationWorkbench() {
 
       <div className="translate-actions">
         <p>{t("translate.note", "Dialect-sensitive output may vary. Verify important translations with a fluent speaker.")}</p>
-        <button className="button primary" type="submit" disabled={!input.trim() || loading || source === target}>
-          {loading ? t("translate.loading", "Translating…") : t("translate.action", "Translate")}
-        </button>
+        {loading ? (
+          <button className="button secondary" type="button" onClick={cancelTranslation}>
+            {t("translate.cancel", "Stop")}
+          </button>
+        ) : (
+          <button className="button primary" type="submit" disabled={!input.trim() || source === target}>
+            {t("translate.action", "Translate")}
+          </button>
+        )}
       </div>
     </form>
   );
