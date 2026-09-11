@@ -24,7 +24,7 @@ export async function GET() {
   const text = textProviderStatus();
   const media = await sharedModelServer();
 
-  const degraded = !text.configured || (media.configured && !media.reachable);
+  const degraded = media.configured && !media.reachable;
 
   return NextResponse.json(
     {
@@ -36,6 +36,7 @@ export async function GET() {
         provider: text.provider,
         model: text.model,
         dictionaryFallback: text.dictionaryFallback,
+        browserFallback: true,
       },
       modelServer: media,
       ocr: {
