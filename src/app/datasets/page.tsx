@@ -1,4 +1,5 @@
 import { reusableResources } from "@/lib/resources";
+import { UiText } from "@/components/ui-text";
 
 const zubanDatasets = [
   ["Zubán Corpus", "Text", "Collecting", "Dialect/script-labelled text with source and license provenance."],
@@ -14,8 +15,8 @@ export default function DatasetsPage() {
     <section className="section datasets-page">
       <div className="shell">
         <div className="page-intro-center">
-          <p className="eyebrow">DATASETS</p>
-          <h1 className="page-title">Open data with a memory.</h1>
+          <p className="eyebrow"><UiText id="page.datasets.eyebrow" fallback="DATASETS" /></p>
+          <h1 className="page-title"><UiText id="page.datasets.title" fallback="Open data with a memory." /></h1>
           <p className="lead wide">
             Every useful record should retain its script, dialect, source, license and verification state.
           </p>
