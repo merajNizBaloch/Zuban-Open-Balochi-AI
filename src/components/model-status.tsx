@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useExperience } from "@/components/experience-provider";
 
 type Status = {
   text: boolean;
@@ -15,6 +16,7 @@ type Status = {
 };
 
 export function ModelStatus() {
+  const { language, t } = useExperience();
   const [status, setStatus] = useState<Status | null>(null);
 
   useEffect(() => {
@@ -35,42 +37,48 @@ export function ModelStatus() {
   const services = [
     {
       key: "text",
-      type: "Text model",
-      label: "Chat + Translate",
+      type: t("status.text", "Text model"),
+      label: t("status.chat", "Chat + Translate"),
       online: Boolean(status?.text || status?.browserTextFallback),
       limited: !status?.text && Boolean(status?.browserTextFallback || status?.dictionaryFallback),
       detail: status?.text
         ? (status.textProvider === "huggingface" ? "Hugging Face · " : status.textProvider === "ollama" ? "Ollama · " : "") +
           (status.textModel ?? "configured model")
         : status?.browserTextFallback
-          ? "On-device WebGPU AI · no login required"
+          ? (language === "bal" ? "WebGPU ءَ مقامی AI · لاگن لازم نہ انت" : "On-device WebGPU AI · no login required")
           : status?.dictionaryFallback
-            ? "Dictionary mode · exact word lookup/translation"
-            : "Text AI unavailable",
+            ? (language === "bal" ? "لبزنامگ موڈ · درست لبز درگیج / ترجمه" : "Dictionary mode · exact word lookup/translation")
+            : (language === "bal" ? "متن AI دستیاب نہ انت" : "Text AI unavailable"),
     },
     {
       key: "stt",
       type: "STT",
-      label: "Speech to text",
+      label: t("status.stt", "Speech to text"),
       online: Boolean(status?.speechToText),
       limited: false,
-      detail: status?.speechToText ? "Balochi STT endpoint connected" : "Deploy the Balochi Whisper service",
+      detail: status?.speechToText
+        ? (language === "bal" ? "بلوچی STT endpoint جڑ بوتگ" : "Balochi STT endpoint connected")
+        : (language === "bal" ? "بلوچی Whisper سروس deploy کن" : "Deploy the Balochi Whisper service"),
     },
     {
       key: "tts",
       type: "TTS",
-      label: "Text to speech",
+      label: t("status.tts", "Text to speech"),
       online: Boolean(status?.textToSpeech),
       limited: false,
-      detail: status?.textToSpeech ? "Balochi TTS endpoint connected" : "Deploy the Balochi SpeechT5 service",
+      detail: status?.textToSpeech
+        ? (language === "bal" ? "بلوچی TTS endpoint جڑ بوتگ" : "Balochi TTS endpoint connected")
+        : (language === "bal" ? "بلوچی SpeechT5 سروس deploy کن" : "Deploy the Balochi SpeechT5 service"),
     },
     {
       key: "ocr",
-      type: "Vision",
-      label: "OCR",
+      type: t("status.vision", "Vision"),
+      label: t("status.ocr", "OCR"),
       online: Boolean(status?.ocr),
       limited: status?.ocrProvider !== "model endpoint",
-      detail: status?.ocrProvider === "model endpoint" ? "OCR model endpoint" : "Browser Urdu + Persian + Arabic OCR",
+      detail: status?.ocrProvider === "model endpoint"
+        ? (language === "bal" ? "OCR ماڈل endpoint" : "OCR model endpoint")
+        : (language === "bal" ? "براوزر اردو + فارسی + عربی OCR" : "Browser Urdu + Persian + Arabic OCR"),
     },
   ];
 
@@ -83,7 +91,7 @@ export function ModelStatus() {
             <strong>{service.label}</strong>
           </div>
           <span className={service.online ? (service.limited ? "service-dot limited" : "service-dot online") : "service-dot"} />
-          <small>{status === null ? "Checking…" : service.detail}</small>
+          <small>{status === null ? t("status.checking", "Checking…") : service.detail}</small>
         </div>
       ))}
     </div>
