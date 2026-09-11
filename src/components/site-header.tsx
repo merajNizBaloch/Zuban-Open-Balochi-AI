@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
@@ -10,19 +9,20 @@ export function SiteHeader() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
-
   return (
     <header className="site-header">
       <div className="shell header-inner">
         <Link className="brand brand-logo-link" href="/" aria-label="Zubán home">
-          <Image
+          {/* Using a normal img avoids image-optimizer issues for the generated transparent mark. */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
             className="brand-logo"
-            src="/zuban-mark.webp"
-            alt="Zubán"
-            width={512}
-            height={512}
-            priority
+            src="/zuban-mark.webp?v=4"
+            alt=""
+            width="48"
+            height="48"
           />
+          <span className="brand-word">Zubán</span>
         </Link>
 
         <nav className="main-nav desktop-nav" aria-label="Primary navigation">
