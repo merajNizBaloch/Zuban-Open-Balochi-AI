@@ -4,76 +4,67 @@ import { tools } from "@/lib/site";
 export default function Home() {
   return (
     <>
-      <section className="home-hero">
-        <div className="shell home-hero-grid">
-          <div className="home-hero-copy">
-            <div className="hero-brand-lockup" aria-label="Zubán">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/zuban-mark.webp?v=4" alt="" width="112" height="112" />
-              <span>Zubán</span>
-            </div>
-
-            <h1>Balochi language technology, built in the open.</h1>
-            <p className="home-intro">
-              Chat, translate, speech, OCR, datasets and research for Balochi.
-            </p>
-            <div className="hero-actions">
-              <Link className="button primary" href="/chat">Open Zubán</Link>
-              <Link className="text-link" href="/contribute">Contribute →</Link>
-            </div>
+      <section className="home-hero home-hero-centered">
+        <div className="shell home-center-wrap">
+          <div className="home-logo-wrap">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              className="home-primary-logo"
+              src="/zuban-mark.png?v=1"
+              alt="Zubán"
+              width="320"
+              height="320"
+              fetchPriority="high"
+            />
           </div>
 
-          <div className="home-logo-stage" aria-hidden="true">
-            <div className="home-mark-orbit">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                className="home-logo-mark"
-                src="/zuban-mark.webp?v=4"
-                alt=""
-                width="420"
-                height="420"
-              />
-            </div>
+          <p className="home-brand-name">Zubán</p>
+
+          <h1>Open Balochi language technology.</h1>
+
+          <p className="home-intro home-intro-centered">
+            Chat, translate, read, listen, speak and build better tools for Balochi.
+          </p>
+
+          <div className="hero-actions hero-actions-centered">
+            <Link className="button primary" href="/chat">Open Zubán</Link>
+            <Link className="button secondary" href="/contribute">Contribute</Link>
           </div>
         </div>
       </section>
 
-      <section className="home-tools">
+      <section className="home-tools home-tools-centered">
         <div className="shell">
-          <div className="home-section-title">
+          <div className="home-section-title home-section-title-centered">
             <h2>Tools</h2>
-            <p>Simple tools for using, studying and building with Balochi.</p>
+            <p>Use Zubán for everyday Balochi language work.</p>
           </div>
 
-          <div className="clean-tool-list">
+          <div className="home-tool-grid">
             {tools.map((tool) => (
-              <Link href={tool.href} className="clean-tool-row" key={tool.href}>
-                <span className="clean-tool-number">{tool.index}</span>
-                <div>
-                  <h3>{tool.title}</h3>
-                  <p>{tool.description}</p>
-                </div>
-                <span className="clean-tool-arrow">↗</span>
+              <Link href={tool.href} className="home-tool-card" key={tool.href}>
+                <span className="home-tool-number">{tool.index}</span>
+                <h3>{tool.title}</h3>
+                <p>{tool.description}</p>
+                <span className="home-tool-open">Open →</span>
               </Link>
             ))}
           </div>
         </div>
       </section>
 
-      <section className="home-about">
-        <div className="shell home-about-grid">
-          <div>
-            <h2>Open technology. Shared knowledge.</h2>
-          </div>
-          <div>
-            <p>
-              Zubán brings Balochi language tools, datasets, speech, OCR and research into one open project that people can use, study and improve together.
-            </p>
-            <div className="home-about-links">
-              <Link href="/research">Research →</Link>
-              <Link href="/datasets">Datasets →</Link>
-              <Link href="/technology">Technology →</Link>
-            </div>
+      <section className="home-about home-about-centered">
+        <div className="shell home-about-center">
+          <h2>Built for Balochi. Open to everyone.</h2>
+          <p>
+            Zubán brings language tools, dictionaries, speech, OCR, datasets and research
+            into one open project that speakers, students, researchers and developers can improve together.
+          </p>
+
+          <div className="home-about-links home-about-links-centered">
+            <Link href="/research">Research →</Link>
+            <Link href="/datasets">Datasets →</Link>
+            <Link href="/technology">Technology →</Link>
           </div>
         </div>
       </section>
