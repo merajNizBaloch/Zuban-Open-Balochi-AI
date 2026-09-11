@@ -6,19 +6,19 @@ Zubán combines a public product, reusable model adapters, open language resourc
 
 ## What works
 
-- **Chat** — conversational interface with thread history, local persistence, and OpenAI-compatible model adapter.
+- **Chat** — ChatGPT-style conversation UI with thread history, local persistence, sourced dictionary hints, and open-model providers.
 - **Translate** — Balochi / English / Urdu / Persian translation workspace.
 - **Dictionary** — searchable Balochi dictionary seed derived from Wiktionary with source attribution.
-- **Speech-to-text** — file upload and browser microphone recording.
-- **Text-to-speech** — Balochi voice generation through a configurable endpoint, with playback and download.
-- **OCR** — document image upload, preview, extraction, and copy workflow.
+- **Speech-to-text** — audio upload and browser microphone recording, ready for the open Balochi Whisper model.
+- **Text-to-speech** — three Balochi SpeechT5 voices with playback and download.
+- **OCR** — image upload, preview and extraction. If no server is configured, OCR runs in the browser using Urdu + Persian + Arabic Tesseract language data as a Balochi-script fallback.
 - **Research** — reusable Balochi models/resources registry.
 - **Datasets** — external resources plus Zubán dataset roadmap/status.
 - **Contribute** — structured contribution form that opens a pre-filled GitHub issue.
-- **Technology** — live model-adapter status on the current deployment.
-- Responsive navigation and mobile layouts.
+- **Technology** — live provider/model status.
+- Responsive navigation, app metadata and automated CI.
 
-Model-backed tools require a configured model service. The product does not return fake results when a service is missing.
+The product does not invent fake model outputs when a service is unavailable.
 
 ## Local development
 
@@ -32,13 +32,26 @@ npm run dev
 
 Then open `http://localhost:3000`.
 
-## Model adapters
+## 1. Chat + Translate
 
-Zubán deliberately keeps model hosting separate from the frontend.
+### Hugging Face Inference Providers
 
-### Chat + Translate
+The easiest hosted setup is a Hugging Face token with **Make calls to Inference Providers** permission:
 
-Set:
+```env
+HF_TOKEN=hf_...
+ZUBAN_HF_TEXT_MODEL=Qwen/Qwen3-8B:cheapest
+```
+
+Zubán automatically uses:
+
+```text
+https://router.huggingface.co/v1/chat/completions
+```
+
+The default open model is Qwen3-8B. You can replace it with any compatible chat-completion model served by Hugging Face Inference Providers.
+
+### Custom OpenAI-compatible endpoint
 
 ```env
 ZUBAN_TEXT_API_URL=https://your-host/v1/chat/completions
@@ -46,49 +59,54 @@ ZUBAN_TEXT_API_KEY=
 ZUBAN_TEXT_MODEL=your-model-id
 ```
 
-The endpoint must accept an OpenAI-compatible chat-completions payload and return:
+A custom endpoint takes priority over Hugging Face.
 
-```json
-{
-  "choices": [
-    {
-      "message": {
-        "content": "..."
-      }
-    }
-  ]
-}
+### Local Ollama
+
+```env
+OLLAMA_BASE_URL=http://localhost:11434
+OLLAMA_MODEL=qwen3:8b
 ```
 
-Hugging Face Inference Providers expose an OpenAI-compatible router at `https://router.huggingface.co/v1/chat/completions`; a token with inference permission is required.
+This lets Chat and Translate run against a fully local open model.
 
-### Speech-to-text
+## 2. Balochi Speech + Voice
 
-Set `ZUBAN_STT_API_URL`. Zubán sends a multipart form with `file` and optional `model`. The service should return:
+The repository includes a deployable FastAPI service:
 
-```json
-{ "text": "transcription" }
+```text
+services/balochi-model-server
 ```
 
-The existing Balochi Whisper work can be self-hosted behind this adapter.
+It uses:
 
-### Text-to-speech
+- STT: `Aynkader/Balochi_STT` — fine-tuned Whisper-small for Balochi, returning Latin-script Balochi.
+- TTS: `Aynkader/Balochi-TTS-Three-Speakers` — SpeechT5 with Ayn Káder, Dódá and Dódén voices.
+- OCR: Tesseract Urdu + Persian + Arabic as an interim Arabic-script fallback.
 
-Set `ZUBAN_TTS_API_URL`. Zubán sends:
+Run it:
 
-```json
-{ "text": "Balochi text", "model": "optional-model-id" }
+```bash
+cd services/balochi-model-server
+docker build -t zuban-model-server .
+docker run --rm -p 7860:7860 zuban-model-server
 ```
 
-The endpoint should return an `audio/*` response.
+Connect the Next.js app:
 
-### OCR
-
-Set `ZUBAN_OCR_API_URL`. Zubán sends an image as multipart form data and expects:
-
-```json
-{ "text": "extracted text" }
+```env
+ZUBAN_STT_API_URL=http://localhost:7860/stt
+ZUBAN_TTS_API_URL=http://localhost:7860/tts
+ZUBAN_OCR_API_URL=http://localhost:7860/ocr
 ```
+
+The same Docker directory can be deployed as a Hugging Face Docker Space. GPU is recommended for STT/TTS.
+
+## 3. OCR without a server
+
+OCR works even when `ZUBAN_OCR_API_URL` is empty. The browser dynamically loads Tesseract.js and the Urdu, Persian and Arabic language packs.
+
+This is an **interim fallback**, not a claim of Balochi-specific OCR accuracy. A dedicated Balochi OCR dataset/model is still a research task.
 
 ## Dictionary data
 
