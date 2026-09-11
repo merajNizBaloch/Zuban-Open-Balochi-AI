@@ -9,12 +9,17 @@ export function SiteHeader() {
         <Link className="brand" href="/" aria-label="Zubán home">
           <Image src="/zuban-mark.svg" alt="" width={30} height={30} />
           <span>Zubán</span>
-          <small>OPEN BALOCHI AI</small>
         </Link>
+
         <nav className="main-nav" aria-label="Primary navigation">
-          {primaryNav.map((item) => <Link key={item.href} href={item.href}>{item.label}</Link>)}
+          {primaryNav.map((item) => (
+            <Link key={item.href} href={item.href}>{item.label}</Link>
+          ))}
         </nav>
-        <a className="github-link" href={githubUrl} target="_blank" rel="noreferrer">GitHub ↗</a>
+
+        <a className="github-link" href={githubUrl} target="_blank" rel="noreferrer">
+          GitHub ↗
+        </a>
       </div>
     </header>
   );
