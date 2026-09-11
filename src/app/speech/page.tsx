@@ -14,12 +14,12 @@ export default function SpeechPage() {
 
         <div className="lab-stack">
           <article>
-            <div className="lab-heading"><div><h2>Speech to text</h2></div></div>
+            <div className="lab-heading"><div><h2><UiText id="speech.stt" fallback="Speech to text" /></h2></div></div>
             <MediaWorkbench mode="stt" />
           </article>
 
           <article>
-            <div className="lab-heading"><div><h2>Text to speech</h2></div></div>
+            <div className="lab-heading"><div><h2><UiText id="speech.tts" fallback="Text to speech" /></h2></div></div>
             <VoiceWorkbench />
           </article>
         </div>
