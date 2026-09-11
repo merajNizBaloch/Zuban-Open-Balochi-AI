@@ -1,3 +1,5 @@
+import { UiText } from "@/components/ui-text";
+
 const groups = [
   {
     label: "Live",
@@ -36,8 +38,8 @@ export default function RoadmapPage() {
     <section className="section roadmap-page">
       <div className="shell">
         <div className="page-intro-center">
-          <p className="eyebrow">ROADMAP</p>
-          <h1 className="page-title">What Zubán is building.</h1>
+          <p className="eyebrow"><UiText id="page.roadmap.eyebrow" fallback="ROADMAP" /></p>
+          <h1 className="page-title"><UiText id="page.roadmap.title" fallback="What Zubán is building." /></h1>
           <p className="lead wide">
             Production tools, deployment work and research stay separate so experimental work is never presented as finished language technology.
           </p>
