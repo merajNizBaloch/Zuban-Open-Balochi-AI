@@ -1,3 +1,9 @@
+/**
+ * Dictionary data in this file is derived from the Baluchi-English Wiktionary
+ * dictionary by Vuizur/Wiktionary-Dictionaries and is CC BY-SA 3.0 / GFDL.
+ * This data licensing is separate from Zubán's Apache-2.0 software license.
+ */
+
 export type DictionaryEntry = {
   word: string;
   latin?: string[];
