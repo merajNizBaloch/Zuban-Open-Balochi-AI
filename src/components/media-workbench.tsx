@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 
 type Mode = "stt" | "ocr";
 
@@ -9,6 +9,21 @@ export function MediaWorkbench({ mode }: { mode: Mode }) {
   const [result, setResult] = useState("");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
+  const [recording, setRecording] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState("");
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const chunksRef = useRef<Blob[]>([]);
+
+  useEffect(() => {
+    if (mode !== "ocr" || !file) {
+      setPreviewUrl("");
+      return;
+    }
+
+    const url = URL.createObjectURL(file);
+    setPreviewUrl(url);
+    return () => URL.revokeObjectURL(url);
+  }, [file, mode]);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -34,27 +49,134 @@ export function MediaWorkbench({ mode }: { mode: Mode }) {
     }
   }
 
+  async function startRecording() {
+    if (mode !== "stt" || recording) return;
+
+    if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === "undefined") {
+      setMessage("Microphone recording is not supported in this browser. You can still upload an audio file.");
+      return;
+    }
+
+    try {
+      setMessage("");
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const recorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = recorder;
+      chunksRef.current = [];
+
+      recorder.ondataavailable = (event) => {
+        if (event.data.size > 0) chunksRef.current.push(event.data);
+      };
+
+      recorder.onstop = () => {
+        const mime = recorder.mimeType || "audio/webm";
+        const blob = new Blob(chunksRef.current, { type: mime });
+        const extension = mime.includes("ogg") ? "ogg" : mime.includes("mp4") ? "m4a" : "webm";
+        setFile(new File([blob], "zuban-recording." + extension, { type: mime }));
+        stream.getTracks().forEach((track) => track.stop());
+        setRecording(false);
+      };
+
+      recorder.start();
+      setRecording(true);
+    } catch {
+      setMessage("Microphone permission was not granted.");
+      setRecording(false);
+    }
+  }
+
+  function stopRecording() {
+    if (!recording) return;
+    mediaRecorderRef.current?.stop();
+  }
+
+  async function copyResult() {
+    if (!result) return;
+    try {
+      await navigator.clipboard.writeText(result);
+    } catch {
+      setMessage("Copy is not available in this browser.");
+    }
+  }
+
+  function reset() {
+    setFile(null);
+    setResult("");
+    setMessage("");
+  }
+
   const accepts = mode === "stt" ? "audio/*" : "image/*";
 
   return (
     <form className="media-workbench" onSubmit={submit}>
-      <label className="file-drop">
-        <span className="lab-icon">{mode === "stt" ? "WAV" : "OCR"}</span>
-        <strong>{file ? file.name : mode === "stt" ? "Choose a Balochi audio file" : "Choose a printed Balochi image"}</strong>
-        <span>{mode === "stt" ? "Audio is forwarded only to the configured STT endpoint." : "Images are forwarded only to the configured OCR endpoint."}</span>
-        <input accept={accepts} type="file" onChange={(event) => setFile(event.target.files?.[0] ?? null)} />
-      </label>
+      <div className="media-input-area">
+        {previewUrl ? (
+          <div className="ocr-preview">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={previewUrl} alt="Selected Balochi document" />
+          </div>
+        ) : null}
+
+        <label className="file-drop">
+          <span className="lab-icon">{mode === "stt" ? "WAV" : "OCR"}</span>
+          <strong>
+            {file
+              ? file.name
+              : mode === "stt"
+                ? "Choose Balochi audio"
+                : "Choose a printed Balochi image"}
+          </strong>
+          <span>
+            {mode === "stt"
+              ? "Upload an audio file or record directly from your microphone."
+              : "Use a clear, well-lit image with readable printed text."}
+          </span>
+          <input
+            accept={accepts}
+            type="file"
+            onChange={(event) => {
+              setFile(event.target.files?.[0] ?? null);
+              setResult("");
+              setMessage("");
+            }}
+          />
+        </label>
+
+        {mode === "stt" && (
+          <div className="record-controls">
+            {!recording ? (
+              <button className="record-button" type="button" onClick={() => void startRecording()}>
+                <span className="record-dot" />
+                Record microphone
+              </button>
+            ) : (
+              <button className="record-button recording" type="button" onClick={stopRecording}>
+                <span className="record-stop" />
+                Stop recording
+              </button>
+            )}
+          </div>
+        )}
+      </div>
 
       <div className="workbench-actions">
-        <span>{mode === "stt" ? "Speech → text" : "Image → text"} · experimental adapter</span>
-        <button className="button primary" disabled={!file || loading} type="submit">
-          {loading ? "Processing…" : mode === "stt" ? "Transcribe" : "Extract text"}
-        </button>
+        <span>
+          {file ? Math.max(1, Math.round(file.size / 1024)).toLocaleString() + " KB selected" : mode === "stt" ? "Audio up to 15 MB" : "Image up to 15 MB"}
+        </span>
+        <div className="media-actions">
+          {(file || result) && <button className="quiet-button" type="button" onClick={reset}>Reset</button>}
+          <button className="button primary" disabled={!file || loading || recording} type="submit">
+            {loading ? "Processing…" : mode === "stt" ? "Transcribe" : "Extract text"}
+          </button>
+        </div>
       </div>
 
       {(result || message) && (
         <div className="media-result">
-          <span className="pane-label">RESULT</span>
+          <div className="result-toolbar">
+            <span>{result ? "Result" : "Status"}</span>
+            {result && <button type="button" onClick={() => void copyResult()}>Copy</button>}
+          </div>
           {result && <p className="model-output">{result}</p>}
           {message && <div className="system-note">{message}</div>}
         </div>
