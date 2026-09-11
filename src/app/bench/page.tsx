@@ -8,18 +8,16 @@ export default function BenchPage() {
         <div className="page-intro-center">
           <p className="eyebrow"><UiText id="page.bench.eyebrow" fallback="ZUBÁN BENCH" /></p>
           <h1 className="page-title"><UiText id="page.bench.title" fallback="Reproduce before we claim." /></h1>
-          <p className="lead wide">
-            Upstream model-card numbers are useful context, but they do not become Zubán results until the model is evaluated on an independent, versioned test set.
-          </p>
+          <p className="lead wide"><UiText id="bench.lead" fallback="Upstream model-card numbers are useful context, but they do not become Zubán results until the model is evaluated on an independent, versioned test set." /></p>
         </div>
 
         <div className="bench-table">
           <div className="bench-row bench-head">
-            <span>Task</span>
-            <span>System</span>
-            <span>Upstream</span>
+            <span><UiText id="bench.task" fallback="Task" /></span>
+            <span><UiText id="bench.system" fallback="System" /></span>
+            <span><UiText id="bench.upstream" fallback="Upstream" /></span>
             <span>Zubán</span>
-            <span>Metric</span>
+            <span><UiText id="bench.metric" fallback="Metric" /></span>
           </div>
 
           {benchmarkRecords.map((record) => (
@@ -45,16 +43,16 @@ export default function BenchPage() {
 
         <div className="bench-principles">
           <article>
-            <strong>Separate train / dev / test</strong>
-            <p>Benchmark examples must not silently leak into model training.</p>
+            <strong><UiText id="bench.separate" fallback="Separate train / dev / test" /></strong>
+            <p><UiText id="bench.separate.desc" fallback="Benchmark examples must not silently leak into model training." /></p>
           </article>
           <article>
-            <strong>Keep dialect metadata</strong>
-            <p>One aggregate score should not hide regional performance differences.</p>
+            <strong><UiText id="bench.dialect" fallback="Keep dialect metadata" /></strong>
+            <p><UiText id="bench.dialect.desc" fallback="One aggregate score should not hide regional performance differences." /></p>
           </article>
           <article>
-            <strong>Human review matters</strong>
-            <p>Automatic metrics are not enough for low-resource translation and script quality.</p>
+            <strong><UiText id="bench.human" fallback="Human review matters" /></strong>
+            <p><UiText id="bench.human.desc" fallback="Automatic metrics are not enough for low-resource translation and script quality." /></p>
           </article>
         </div>
       </div>
