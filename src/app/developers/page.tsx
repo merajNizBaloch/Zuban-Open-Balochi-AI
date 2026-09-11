@@ -1,3 +1,5 @@
+import { UiText } from "@/components/ui-text";
+
 const endpoints = [
   ["GET", "/api/dictionary?q=water", "Search sourced Balochi dictionary entries by script, Latin form, or English meaning."],
   ["POST", "/api/language", "Normalize Balochi text, detect script, or convert Arabic ↔ Latin."],
@@ -38,8 +40,8 @@ export default function DevelopersPage() {
     <section className="section developers-page">
       <div className="shell">
         <div className="page-intro-center">
-          <p className="eyebrow">DEVELOPERS</p>
-          <h1 className="page-title">Build with Zubán.</h1>
+          <p className="eyebrow"><UiText id="page.developers.eyebrow" fallback="DEVELOPERS" /></p>
+          <h1 className="page-title"><UiText id="page.developers.title" fallback="Build with Zubán." /></h1>
           <p className="lead wide">
             The same open language services used by the website are exposed as simple HTTP endpoints for experiments, education and Balochi-language products.
           </p>
