@@ -1,5 +1,6 @@
 import { CommunityQueue } from "@/components/community-queue";
 import { ContributionForm } from "@/components/contribution-form";
+import { UiText } from "@/components/ui-text";
 
 const principles = [
   ["Context", "Say which dialect, region or source the contribution belongs to when you know it."],
@@ -12,8 +13,8 @@ export default function CommunityPage() {
     <section className="section community-page">
       <div className="shell">
         <div className="page-intro-center">
-          <p className="eyebrow">COMMUNITY</p>
-          <h1 className="page-title">Build the language layer together.</h1>
+          <p className="eyebrow"><UiText id="page.community.eyebrow" fallback="COMMUNITY" /></p>
+          <h1 className="page-title"><UiText id="page.community.title" fallback="Build the language layer together." /></h1>
           <p className="lead wide">
             Contribute words, sentences, corrections, pronunciation guidance, datasets and research.
             Every submission stays connected to its source and public review history.
