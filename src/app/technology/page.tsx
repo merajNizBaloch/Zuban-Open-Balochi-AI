@@ -45,7 +45,7 @@ export default function TechnologyPage() {
           <article className="info-card">
             <h3>Text model</h3>
             <p>
-              Chat and Translate prefer Hugging Face, a custom OpenAI-compatible endpoint, or local Ollama when configured. Without one, the product can fall back to browser AI and still retains exact dictionary lookup.
+              Chat and Translate prefer Hugging Face, a custom OpenAI-compatible endpoint, or local Ollama when configured. Without one, the product can run a small model locally through WebGPU with no user login, while exact dictionary lookup remains available.
             </p>
           </article>
           <article className="info-card">
