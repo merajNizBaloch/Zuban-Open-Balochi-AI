@@ -1,0 +1,5 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect x="12.201" y="12.201" width="39.598" height="39.598" rx="3" transform="rotate(45 12.201 12.201)" stroke="currentColor" stroke-width="2"/>
+  <path d="M20 23H44L20 41H44" stroke="currentColor" stroke-width="4" stroke-linecap="square" stroke-linejoin="miter"/>
+  <path d="M32 11V17M32 47V53M11 32H17M47 32H53" stroke="currentColor" stroke-width="2"/>
+</svg>

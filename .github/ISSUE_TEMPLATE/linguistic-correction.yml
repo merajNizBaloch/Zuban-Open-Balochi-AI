@@ -1,0 +1,21 @@
+name: Linguistic correction
+description: Report a Balochi spelling, translation, dialect, or language-quality issue.
+title: "[Language]: "
+body:
+  - type: textarea
+    id: observed
+    attributes:
+      label: What did you see?
+    validations:
+      required: true
+  - type: textarea
+    id: correction
+    attributes:
+      label: Suggested correction
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Dialect, region, or source context
+      description: Please include the variety or source when you know it.

@@ -1,0 +1,36 @@
+name: Data contribution
+description: Propose an open or properly licensed Balochi dataset, dictionary, corpus, recording collection, or archive.
+title: "[Data]: "
+body:
+  - type: textarea
+    id: source
+    attributes:
+      label: Source
+      description: Where does this material come from?
+    validations:
+      required: true
+  - type: textarea
+    id: license
+    attributes:
+      label: License or permission
+      description: Explain how the material may legally be reused.
+    validations:
+      required: true
+  - type: dropdown
+    id: type
+    attributes:
+      label: Data type
+      options:
+        - Text corpus
+        - Parallel or translation
+        - Dictionary or lexicon
+        - Speech or audio
+        - OCR or document images
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: dialect
+    attributes:
+      label: Dialect, region, and script
+      description: Add what is known. Uncertainty is acceptable when stated.

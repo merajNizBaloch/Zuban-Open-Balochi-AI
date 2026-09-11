@@ -27,22 +27,28 @@ Zubán is an open initiative to build useful Balochi language technology while c
 7. Reproducible research.
 8. No fake AI outputs — experimental capabilities are labelled clearly.
 
-## Technology
+## Local development
 
-The web platform is built with **Next.js + TypeScript** and uses provider adapters for AI services. Zubán is intentionally not locked to a proprietary AI vendor. Text, speech, TTS and OCR backends can be connected to open/self-hosted models through environment variables.
+Copy `.env.example` to `.env.local`, then:
+
+```bash
+npm install
+npm run dev
+```
+
+The text tools accept any OpenAI-compatible or self-hosted chat-completions endpoint through environment variables. No proprietary provider is hard-coded.
 
 ## Project status
 
-**Alpha / foundation stage.** The product shell and contribution/research infrastructure are being built first. Model quality, datasets and dialect coverage will improve openly and incrementally.
+**Alpha / foundation stage.** The interface, open-source workflow and text-provider adapter are present. Balochi datasets and model adapters will be audited and integrated incrementally.
 
 ## Contributing
 
-Contributions from Balochi speakers, linguists, developers, researchers, writers, students and institutions are welcome. See `CONTRIBUTING.md`.
+Contributions from Balochi speakers, linguists, researchers, developers, writers, students and institutions are welcome. See `CONTRIBUTING.md`.
 
 ## Licensing
 
 - Software: **Apache-2.0**
-- Documentation: intended for open reuse with attribution.
 - Datasets: licensed per dataset/source. Zubán preserves source and license provenance rather than applying one blanket license to third-party material.
 
 ---
