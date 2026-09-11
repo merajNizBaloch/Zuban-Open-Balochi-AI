@@ -22,6 +22,7 @@ export function SiteFooter() {
           <Link href="/datasets"><UiText id="footer.datasets" fallback="Datasets" /></Link>
           <Link href="/developers"><UiText id="footer.developers" fallback="Developers" /></Link>
           <Link href="/roadmap"><UiText id="footer.roadmap" fallback="Roadmap" /></Link>
+          <Link href="/disclaimer"><UiText id="footer.disclaimer" fallback="Disclaimer" /></Link>
           <a href={githubUrl} target="_blank" rel="noreferrer">GitHub ↗</a>
         </div>
       </div>
