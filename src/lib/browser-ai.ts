@@ -81,7 +81,10 @@ function loadPuter() {
     script.addEventListener("load", ready, { once: true });
     script.addEventListener(
       "error",
-      () => reject(new Error("Browser AI could not be loaded.")),
+      () => {
+        scriptPromise = null;
+        reject(new Error("Browser AI could not be loaded."));
+      },
       { once: true },
     );
     document.head.appendChild(script);
@@ -170,27 +173,33 @@ export async function browserAiStream(
   const puter = await loadPuter();
   const model = await preferredOpenModel(puter);
 
-  const response = (await puter.ai.chat(messages, {
+  const response = await puter.ai.chat(messages, {
     ...(model ? { model } : {}),
     stream: true,
     temperature: options?.temperature ?? 0.25,
     max_tokens: options?.maxTokens ?? 1200,
-  })) as AsyncIterable<PuterChunk>;
+  });
 
   let text = "";
 
-  for await (const part of response) {
-    if (part.type === "error") {
-      throw new Error(part.message || "Browser AI request failed.");
-    }
+  if (
+    response &&
+    typeof response === "object" &&
+    Symbol.asyncIterator in response
+  ) {
+    for await (const part of response as AsyncIterable<PuterChunk>) {
+      if (part.type === "error") {
+        throw new Error(part.message || "Browser AI request failed.");
+      }
 
-    if (part.type === "text" && part.text) {
-      text += part.text;
-      onChunk(text);
-    } else if (part.text) {
-      text += part.text;
-      onChunk(text);
+      if (part.text) {
+        text += part.text;
+        onChunk(text);
+      }
     }
+  } else {
+    text = contentFromResponse(response as PuterResponse);
+    if (text) onChunk(text);
   }
 
   if (!text.trim()) throw new Error("Browser AI returned no text.");
