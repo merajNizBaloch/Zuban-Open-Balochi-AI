@@ -2,6 +2,7 @@
 
 import { FormEvent, useState } from "react";
 import { browserAiComplete, isMissingServerModelMessage } from "@/lib/browser-ai";
+import { useExperience } from "@/components/experience-provider";
 
 type ApiResult = {
   configured?: boolean;
@@ -13,6 +14,7 @@ type ApiResult = {
 const languages = ["Balochi", "English", "Urdu", "Persian"] as const;
 
 export function TranslationWorkbench() {
+  const { t } = useExperience();
   const [source, setSource] = useState<string>("English");
   const [target, setTarget] = useState<string>("Balochi");
   const [input, setInput] = useState("");
@@ -132,7 +134,7 @@ export function TranslationWorkbench() {
     <form className="translate-workspace" onSubmit={translate}>
       <div className="translate-language-bar">
         <label>
-          <span>From</span>
+          <span>{t("translate.from", "From")}</span>
           <select value={source} onChange={(event) => setSource(event.target.value)}>
             {languages.map((language) => <option key={language}>{language}</option>)}
           </select>
@@ -145,7 +147,7 @@ export function TranslationWorkbench() {
         </button>
 
         <label>
-          <span>To</span>
+          <span>{t("translate.to", "To")}</span>
           <select value={target} onChange={(event) => setTarget(event.target.value)}>
             {languages.map((language) => <option key={language}>{language}</option>)}
           </select>
@@ -156,7 +158,7 @@ export function TranslationWorkbench() {
         <div className="translate-panel source">
           <div className="translate-panel-toolbar">
             <span>{source}</span>
-            {input && <button type="button" onClick={clear}>Clear</button>}
+            {input && <button type="button" onClick={clear}>{t("translate.clear", "Clear")}</button>}
           </div>
           <textarea
             value={input}
@@ -171,7 +173,7 @@ export function TranslationWorkbench() {
         <div className="translate-panel result" aria-live="polite">
           <div className="translate-panel-toolbar">
             <span>{target}</span>
-            {output && <button type="button" onClick={() => void copyOutput()}>Copy</button>}
+            {output && <button type="button" onClick={() => void copyOutput()}>{t("translate.copy", "Copy")}</button>}
           </div>
 
           {loading ? (
@@ -201,21 +203,21 @@ export function TranslationWorkbench() {
                   )
                 }
               >
-                Suggest a better translation →
+                {t("translate.review", "Suggest a better translation →")}
               </a>
             </>
           ) : notice ? (
             <div className="translate-notice">{notice}</div>
           ) : (
-            <p className="translate-placeholder">Translation will appear here.</p>
+            <p className="translate-placeholder">{t("translate.placeholder", "Translation will appear here.")}</p>
           )}
         </div>
       </div>
 
       <div className="translate-actions">
-        <p>Dialect-sensitive output may vary. Verify important translations with a fluent speaker.</p>
+        <p>{t("translate.note", "Dialect-sensitive output may vary. Verify important translations with a fluent speaker.")}</p>
         <button className="button primary" type="submit" disabled={!input.trim() || loading || source === target}>
-          {loading ? "Translating…" : "Translate"}
+          {loading ? t("translate.loading", "Translating…") : t("translate.action", "Translate")}
         </button>
       </div>
     </form>
