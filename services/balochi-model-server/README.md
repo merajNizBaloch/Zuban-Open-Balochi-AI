@@ -15,6 +15,7 @@ Open inference service for the Balochi-specific model adapters used by Zubán.
 ## Endpoints
 
 - `GET /health`
+- `POST /warmup`
 - `POST /stt`
 - `POST /tts`
 - `POST /ocr`
@@ -35,10 +36,11 @@ docker run --rm -p 7860:7860 zuban-model-server
 Then configure the Zubán web app:
 
 ```env
-ZUBAN_STT_API_URL=http://localhost:7860/stt
-ZUBAN_TTS_API_URL=http://localhost:7860/tts
-ZUBAN_OCR_API_URL=http://localhost:7860/ocr
+ZUBAN_MODEL_SERVER_URL=http://localhost:7860
+NEXT_PUBLIC_ZUBAN_MODEL_SERVER_URL=http://localhost:7860
 ```
+
+The public variable lets browsers upload media directly to this service. CORS defaults to `*`; set `ZUBAN_CORS_ORIGINS=https://your-site.example` to restrict it.
 
 ## Deploy as a Hugging Face Docker Space
 
@@ -53,7 +55,15 @@ After those are set, pushes affecting this directory can sync it to the Space.
 
 ## Hardware
 
-The service can start on CPU, but Balochi Whisper and SpeechT5 are much more practical on GPU hardware. The first request downloads model weights from Hugging Face.
+The default `Dockerfile` installs CPU-only PyTorch and is intended for low-cost/free CPU hosting. `Dockerfile.gpu` is included for GPU deployments.
+
+The first STT/TTS request downloads model weights from Hugging Face. You can pre-load them after deployment:
+
+```bash
+curl -X POST https://your-model-server.example/warmup
+```
+
+`GET /health` reports whether the STT and TTS weights are currently loaded.
 
 ## Known limitations
 
