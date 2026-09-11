@@ -17,7 +17,7 @@ export function SiteHeader() {
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             className="brand-logo"
-            src="/zuban-mark.webp?v=4"
+            src="/zuban-mark.png?v=1"
             alt=""
             width="48"
             height="48"
