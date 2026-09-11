@@ -72,6 +72,9 @@ const balochiCopy: Record<string, string> = {
   "translate.placeholder": "ترجمه اِدا پیداک بیت.",
   "translate.review": "بهتر ترجمه پیشنهاد کن →",
   "translate.note": "لهجہ ءِ سببءَ ترجمه بدل بوہت. مهمیں ترجمه روانی گپ‌زن ءَ بچار.",
+  "page.translate.eyebrow": "ترجمه",
+  "page.translate.title": "بلوچی ترجمه.",
+  "page.translate.lead": "بلوچی، انگریزی، اردو و فارسی یکجاہ.",
 
   "page.dictionary.eyebrow": "لبزنامگ",
   "page.dictionary.title": "بلوچی لبزنامگ.",
@@ -123,6 +126,7 @@ const ExperienceContext = createContext<ExperienceContextValue | null>(null);
 export function ExperienceProvider({ children }: { children: ReactNode }) {
   const [language, setLanguageState] = useState<UiLanguage>("en");
   const [theme, setThemeState] = useState<UiTheme>("light");
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
     const storedLanguage = window.localStorage.getItem("zuban-ui-language");
@@ -135,9 +139,13 @@ export function ExperienceProvider({ children }: { children: ReactNode }) {
     if (storedTheme === "makran" || storedTheme === "light") {
       setThemeState(storedTheme);
     }
+
+    setReady(true);
   }, []);
 
   useEffect(() => {
+    if (!ready) return;
+
     const root = document.documentElement;
     root.dataset.theme = theme;
     root.dataset.language = language;
@@ -147,7 +155,7 @@ export function ExperienceProvider({ children }: { children: ReactNode }) {
 
     window.localStorage.setItem("zuban-theme", theme);
     window.localStorage.setItem("zuban-ui-language", language);
-  }, [language, theme]);
+  }, [language, theme, ready]);
 
   const value = useMemo<ExperienceContextValue>(
     () => ({
