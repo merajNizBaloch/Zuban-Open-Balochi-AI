@@ -46,7 +46,7 @@ export function SetupDashboard() {
           detail: status.text
             ? `Connected through ${status.textProvider ?? "custom provider"} · ${status.textModel ?? "configured model"}`
             : status.browserTextFallback
-              ? "Chat and Translate can use private on-device WebGPU AI with no user account. A server-side provider is still recommended for predictable production behavior."
+              ? "Chat and Translate can run locally in the browser with no user account. Zubán uses WebGPU when available and automatically falls back to CPU/WASM when it is not."
               : status.dictionaryFallback
                 ? "Dictionary lookup and exact English ↔ Balochi words work without a model."
                 : "No text provider is configured.",
@@ -136,8 +136,8 @@ export function SetupDashboard() {
           <h2>{t("setup.recommended", "Recommended production configuration")}</h2>
           <p>
             {language === "bal"
-              ? "Chat و Translate بی لاگن WebGPU ءَ مقامی AI کارمرز کنگ بہ کنت. Production ءِ واستہ Hugging Face، custom endpoint یا Ollama کنفیگر کنگ بهتر اِنت."
-              : "Chat and Translate can use on-device WebGPU AI without a login. For a controlled production deployment, configure Hugging Face, a custom endpoint, or Ollama."}
+              ? "Chat و Translate بی لاگن براوزرءَ مقامی AI کارمرز کنگ بہ کنت. WebGPU دستیاب نہ بیت CPU/WASM خودکار fallback بیت."
+              : "Chat and Translate can run locally without a login using WebGPU or CPU/WASM. For a controlled production deployment, a server-side model is still recommended."}
           </p>
         </div>
         <pre>{`HF_TOKEN=hf_...
