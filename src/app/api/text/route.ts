@@ -78,7 +78,7 @@ export async function POST(request: Request) {
     return NextResponse.json(
       {
         message:
-          "Server AI is temporarily unavailable. Zubán can fall back to local AI.",
+          "Server AI is temporarily unavailable. Please try again.",
         detail,
       },
       { status: 503 },
