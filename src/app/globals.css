@@ -8651,3 +8651,73 @@ html[data-theme="makran"] .docs-version-meta em {
     min-width: 210px;
   }
 }
+
+
+/* Zuban DocX install and offline state */
+.docs-pwa-controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.docs-pwa-controls > span {
+  min-height: 28px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 7px;
+  border: 1px solid #d5e0e4;
+  border-radius: 999px;
+  background: #f8fbfb;
+  color: #6c8495;
+  font-size: 8px;
+  font-weight: 750;
+  white-space: nowrap;
+}
+
+.docs-pwa-controls > span::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #6fc59e;
+}
+
+.docs-pwa-controls > span.offline::before {
+  background: #d19b55;
+}
+
+.docs-pwa-controls > button {
+  min-height: 28px;
+  padding: 4px 8px;
+  border: 1px solid #8ccbd0;
+  border-radius: 7px;
+  background: #edf8f8;
+  color: #067b84;
+  cursor: pointer;
+  font-size: 8px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.docs-pwa-controls > button:hover {
+  background: #e1f4f4;
+}
+
+html[data-theme="makran"] .docs-pwa-controls > span,
+html[data-theme="makran"] .docs-pwa-controls > button {
+  border-color: #4a425f;
+  background: #28213d;
+  color: #d8d0dd;
+}
+
+html[data-theme="makran"] .docs-pwa-controls > button {
+  border-color: rgba(75, 214, 202, .34);
+  color: #7be6dc;
+}
+
+@media (max-width: 720px) {
+  .docs-pwa-controls > span {
+    display: none;
+  }
+}
