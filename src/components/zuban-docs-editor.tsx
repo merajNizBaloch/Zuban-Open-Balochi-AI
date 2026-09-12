@@ -6,8 +6,10 @@ import { DocxPwaControls } from "@/components/docx-pwa-controls";
 import {
   getDocxStorageEstimate,
   loadDocxLibrary,
+  loadPersonalDictionary,
   migrateDocxFromLocalStorage,
   saveDocxLibrary,
+  savePersonalDictionary,
 } from "@/lib/docx-storage";
 import {
   ChangeEvent,
@@ -548,6 +550,7 @@ export function ZubanDocsEditor() {
   } | null>(null);
   const [liveSpellcheck, setLiveSpellcheck] = useState(true);
   const [liveSpellCount, setLiveSpellCount] = useState(0);
+  const [personalWords, setPersonalWords] = useState<string[]>([]);
   const [spellIssues, setSpellIssues] = useState<
     Array<{ word: string; suggestions: string[] }>
   >([]);
@@ -624,6 +627,22 @@ export function ZubanDocsEditor() {
   }, []);
 
   useEffect(() => {
+    let cancelled = false;
+
+    void loadPersonalDictionary()
+      .then((words) => {
+        if (!cancelled) setPersonalWords(words);
+      })
+      .catch(() => {
+        if (!cancelled) setPersonalWords([]);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
     if (!ready) return;
     const timer = window.setTimeout(() => {
       void saveDocxLibrary(documents, activeId)
@@ -686,7 +705,12 @@ export function ZubanDocsEditor() {
           (data: {
             unknown?: Array<{ word: string; suggestions: string[] }>;
           }) => {
-            const unknown = data.unknown ?? [];
+            const personal = new Set(
+              personalWords.map((word) => word.toLocaleLowerCase()),
+            );
+            const unknown = (data.unknown ?? []).filter(
+              (item) => !personal.has(item.word.toLocaleLowerCase()),
+            );
             highlightUnknownWords(unknown.map((item) => item.word));
           },
         )
@@ -696,7 +720,13 @@ export function ZubanDocsEditor() {
     }, 1200);
 
     return () => window.clearTimeout(timer);
-  }, [activeDocument?.html, activeDocument?.id, liveSpellcheck, ready]);
+  }, [
+    activeDocument?.html,
+    activeDocument?.id,
+    liveSpellcheck,
+    ready,
+    personalWords,
+  ]);
 
 
   useEffect(() => {
@@ -1354,6 +1384,28 @@ export function ZubanDocsEditor() {
     setLiveSpellCount(ranges.length);
   }
 
+  function addPersonalWord(word: string) {
+    const clean = word.trim();
+    if (!clean) return;
+
+    setPersonalWords((current) => {
+      const next = Array.from(new Set([...current, clean]));
+      void savePersonalDictionary(next);
+      return next;
+    });
+    setSpellIssues((current) => current.filter((issue) => issue.word !== clean));
+    setNotice("Added to your personal Balochi dictionary.");
+  }
+
+  function removePersonalWord(word: string) {
+    setPersonalWords((current) => {
+      const next = current.filter((item) => item !== word);
+      void savePersonalDictionary(next);
+      return next;
+    });
+    setNotice("Removed from your personal dictionary.");
+  }
+
   async function checkDocumentSpelling() {
     const text = editorRef.current?.innerText ?? metrics.text;
     const words = Array.from(
@@ -1383,7 +1435,12 @@ export function ZubanDocsEditor() {
       const data = (await response.json()) as {
         unknown?: Array<{ word: string; suggestions: string[] }>;
       };
-      const unknown = data.unknown ?? [];
+      const personal = new Set(
+        personalWords.map((word) => word.toLocaleLowerCase()),
+      );
+      const unknown = (data.unknown ?? []).filter(
+        (item) => !personal.has(item.word.toLocaleLowerCase()),
+      );
       setSpellIssues(unknown);
       setToolBody(
         unknown.length
@@ -3253,10 +3310,42 @@ export function ZubanDocsEditor() {
                   ) : (
                     <span>No suggestion yet</span>
                   )}
+                  <button
+                    className="docs-keep-word"
+                    type="button"
+                    onClick={() => addPersonalWord(issue.word)}
+                  >
+                    Keep word
+                  </button>
                 </div>
               ))}
             </div>
           ) : null}
+
+          <div className="docs-personal-dictionary">
+            <div>
+              <strong>My Balochi words</strong>
+              <span>
+                {personalWords.length
+                  ? personalWords.length + " saved on this device"
+                  : "No personal words yet"}
+              </span>
+            </div>
+            {personalWords.length ? (
+              <div className="docs-personal-word-list">
+                {personalWords.slice(0, 40).map((word) => (
+                  <button
+                    key={word}
+                    type="button"
+                    title="Remove from personal dictionary"
+                    onClick={() => removePersonalWord(word)}
+                  >
+                    {word} ×
+                  </button>
+                ))}
+              </div>
+            ) : null}
+          </div>
         </aside>
       ) : null}
 
