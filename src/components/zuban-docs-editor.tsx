@@ -389,12 +389,14 @@ export function ZubanDocsEditor() {
   const editorRef = useRef<HTMLDivElement>(null);
   const importRef = useRef<HTMLInputElement>(null);
   const imageRef = useRef<HTMLInputElement>(null);
+  const replaceImageRef = useRef<HTMLInputElement>(null);
   const selectionRef = useRef<Range | null>(null);
   const [documents, setDocuments] = useState<ZubanDocument[]>([]);
   const [activeId, setActiveId] = useState("");
   const [ready, setReady] = useState(false);
   const [saved, setSaved] = useState(true);
   const [search, setSearch] = useState("");
+  const [libraryView, setLibraryView] = useState<LibraryView>("all");
   const [focusMode, setFocusMode] = useState(false);
   const [zoom, setZoom] = useState(100);
   const [lineHeight, setLineHeight] = useState(1.75);
@@ -407,6 +409,7 @@ export function ZubanDocsEditor() {
   const [showKeyboard, setShowKeyboard] = useState(false);
   const [phoneticTyping, setPhoneticTyping] = useState(true);
   const [keyboardShift, setKeyboardShift] = useState(false);
+  const [keyboardLayout, setKeyboardLayout] = useState<KeyboardLayout>("phonetic");
   const [newScript, setNewScript] = useState<ScriptMode>("arabic");
   const [newTemplate, setNewTemplate] = useState<TemplateId>("blank");
 
@@ -478,13 +481,22 @@ export function ZubanDocsEditor() {
 
   const filteredDocuments = useMemo(() => {
     const query = search.trim().toLocaleLowerCase();
-    if (!query) return documents;
 
-    return documents.filter((document) => {
-      const haystack = document.title + " " + stripHtml(document.html);
-      return haystack.toLocaleLowerCase().includes(query);
-    });
-  }, [documents, search]);
+    return documents
+      .filter((document) => {
+        if (libraryView === "favorites" && !document.favorite) return false;
+        if (!query) return true;
+        const haystack = document.title + " " + stripHtml(document.html);
+        return haystack.toLocaleLowerCase().includes(query);
+      })
+      .sort((a, b) => {
+        if (libraryView === "recent") return b.updatedAt - a.updatedAt;
+        if (Boolean(a.favorite) !== Boolean(b.favorite)) {
+          return a.favorite ? -1 : 1;
+        }
+        return b.updatedAt - a.updatedAt;
+      });
+  }, [documents, search, libraryView]);
 
   const metrics = useMemo(
     () =>
@@ -582,6 +594,17 @@ export function ZubanDocsEditor() {
     setActiveId(remaining[0].id);
     setSaved(false);
     setNotice("Document deleted.");
+  }
+
+  function toggleFavorite(id: string) {
+    setDocuments((current) =>
+      current.map((document) =>
+        document.id === id
+          ? { ...document, favorite: !document.favorite, updatedAt: Date.now() }
+          : document,
+      ),
+    );
+    setSaved(false);
   }
 
   function switchScript(script: ScriptMode) {
@@ -682,11 +705,17 @@ export function ZubanDocsEditor() {
       insertCharacter(" ");
       return;
     } else {
+      const baseMap =
+        keyboardLayout === "traditional" ? traditionalArabicMap : arabicPhysicalMap;
+      const shiftMap =
+        keyboardLayout === "traditional"
+          ? traditionalArabicShiftMap
+          : arabicShiftMap;
       const output =
         activeDocument.script === "arabic"
           ? keyboardShift
-            ? arabicShiftMap[key] ?? arabicPhysicalMap[key] ?? key
-            : arabicPhysicalMap[key] ?? key
+            ? shiftMap[key] ?? baseMap[key] ?? key
+            : baseMap[key] ?? key
           : keyboardShift
             ? key.toUpperCase()
             : key;
@@ -942,9 +971,15 @@ export function ZubanDocsEditor() {
       /^[a-zA-Z]$/.test(event.key)
     ) {
       const key = event.key.toLowerCase();
+      const baseMap =
+        keyboardLayout === "traditional" ? traditionalArabicMap : arabicPhysicalMap;
+      const shiftMap =
+        keyboardLayout === "traditional"
+          ? traditionalArabicShiftMap
+          : arabicShiftMap;
       const mapped = event.shiftKey
-        ? arabicShiftMap[key] ?? arabicPhysicalMap[key]
-        : arabicPhysicalMap[key];
+        ? shiftMap[key] ?? baseMap[key]
+        : baseMap[key];
 
       if (mapped) {
         event.preventDefault();
@@ -1345,11 +1380,19 @@ export function ZubanDocsEditor() {
             {qwertyRows.map((row, rowIndex) => (
               <div className="docs-qwerty-row" key={rowIndex}>
                 {row.map(({ key }) => {
+                  const baseMap =
+                    keyboardLayout === "traditional"
+                      ? traditionalArabicMap
+                      : arabicPhysicalMap;
+                  const shiftMap =
+                    keyboardLayout === "traditional"
+                      ? traditionalArabicShiftMap
+                      : arabicShiftMap;
                   const output =
                     activeDocument.script === "arabic"
                       ? keyboardShift
-                        ? arabicShiftMap[key] ?? arabicPhysicalMap[key] ?? key
-                        : arabicPhysicalMap[key] ?? key
+                        ? shiftMap[key] ?? baseMap[key] ?? key
+                        : baseMap[key] ?? key
                       : keyboardShift
                         ? key.toUpperCase()
                         : key;
