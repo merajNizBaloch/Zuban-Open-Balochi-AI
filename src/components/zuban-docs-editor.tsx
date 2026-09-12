@@ -1666,6 +1666,18 @@ export function ZubanDocsEditor() {
     }
   }
 
+  const pagePreset =
+    (activeDocument?.pageSize ?? "a4") === "letter"
+      ? { width: 816, height: 1056 }
+      : { width: 794, height: 1123 };
+  const landscape = (activeDocument?.orientation ?? "portrait") === "landscape";
+  const pageWidthPx = landscape ? pagePreset.height : pagePreset.width;
+  const pageHeightPx = landscape ? pagePreset.width : pagePreset.height;
+  const pageMarginPx = Math.max(
+    24,
+    Math.round((activeDocument?.marginMm ?? 20) * 3.78),
+  );
+
   if (!ready || !activeDocument) {
     return (
       <section className="docs-editor-loading">
@@ -1694,6 +1706,13 @@ export function ZubanDocsEditor() {
         type="file"
         accept="image/png,image/jpeg,image/webp,image/gif"
         onChange={insertImage}
+      />
+      <input
+        ref={replaceImageRef}
+        className="docs-hidden-input"
+        type="file"
+        accept="image/png,image/jpeg,image/webp,image/gif"
+        onChange={replaceSelectedImage}
       />
 
       <aside className="docs-sidebar">
@@ -1829,6 +1848,25 @@ export function ZubanDocsEditor() {
           </div>
 
           <div className="docs-top-actions">
+            <button
+              type="button"
+              onClick={() => setShowFind((value) => !value)}
+            >
+              Find
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowPageSetup((value) => !value)}
+            >
+              Page
+            </button>
+            <button
+              type="button"
+              onMouseDown={captureSelection}
+              onClick={() => setShowLanguageTools((value) => !value)}
+            >
+              Balochi Tools
+            </button>
             <button type="button" onClick={() => setShowInspector((value) => !value)}>
               Inspect
             </button>
@@ -1918,13 +1956,63 @@ export function ZubanDocsEditor() {
           </div>
           <div className="docs-toolbar-group">
             <select
+              defaultValue="18"
+              aria-label="Font size"
+              title="Font size"
+              onChange={(event) =>
+                applyInlineStyle({ fontSize: event.target.value + "px" })
+              }
+            >
+              {[10, 11, 12, 14, 16, 18, 20, 24, 28, 32, 36, 48, 60, 72].map(
+                (size) => (
+                  <option key={size} value={size}>{size}px</option>
+                ),
+              )}
+            </select>
+            <label className="docs-color-control" title="Text color">
+              A
+              <input
+                type="color"
+                defaultValue="#163d61"
+                onChange={(event) => applyInlineStyle({ color: event.target.value })}
+              />
+            </label>
+            <label className="docs-color-control highlight" title="Highlight">
+              ▰
+              <input
+                type="color"
+                defaultValue="#fff2a8"
+                onChange={(event) =>
+                  applyInlineStyle({ backgroundColor: event.target.value })
+                }
+              />
+            </label>
+            <button type="button" onClick={() => command("outdent")} title="Decrease indent">⇤</button>
+            <button type="button" onClick={() => command("indent")} title="Increase indent">⇥</button>
+          </div>
+          <div className="docs-toolbar-group">
+            <select
               value={lineHeight}
               aria-label="Line spacing"
               onChange={(event) => setLineHeight(Number(event.target.value))}
             >
+              <option value={1.2}>1.2×</option>
               <option value={1.5}>1.5×</option>
               <option value={1.75}>1.75×</option>
               <option value={2}>2×</option>
+              <option value={2.5}>2.5×</option>
+            </select>
+            <select
+              value={activeDocument.paragraphSpacing ?? 18}
+              aria-label="Paragraph spacing"
+              onChange={(event) => setParagraphSpacing(Number(event.target.value))}
+            >
+              <option value={0}>0px after</option>
+              <option value={8}>8px after</option>
+              <option value={12}>12px after</option>
+              <option value={18}>18px after</option>
+              <option value={24}>24px after</option>
+              <option value={32}>32px after</option>
             </select>
             <select
               value={zoom}
@@ -1938,7 +2026,48 @@ export function ZubanDocsEditor() {
               <option value={125}>125%</option>
             </select>
           </div>
+          <div className="docs-toolbar-group">
+            <details className="docs-insert-menu">
+              <summary>＋ Insert</summary>
+              <div>
+                <button type="button" onClick={() => insertTable(2, 2)}>2 × 2 table</button>
+                <button type="button" onClick={() => insertTable(3, 3)}>3 × 3 table</button>
+                <button type="button" onClick={() => insertTable(4, 4)}>4 × 4 table</button>
+                <button type="button" onClick={chooseImage}>Image</button>
+                <button type="button" onClick={insertPageBreak}>Page break</button>
+              </div>
+            </details>
+            <details className="docs-insert-menu">
+              <summary>Table</summary>
+              <div>
+                <button type="button" onClick={() => changeTable("row")}>Add row below</button>
+                <button type="button" onClick={() => changeTable("column")}>Add column right</button>
+                <button type="button" onClick={() => changeTable("merge")}>Merge with next cell</button>
+                <button type="button" onClick={() => changeTable("borders")}>Toggle borders</button>
+                <button type="button" onClick={() => changeTable("delete-row")}>Delete row</button>
+                <button type="button" onClick={() => changeTable("delete-column")}>Delete column</button>
+              </div>
+            </details>
+          </div>
         </div>
+
+        {selectedImage ? (
+          <div className="docs-image-toolbar">
+            <strong>Image</strong>
+            <button type="button" onClick={() => updateSelectedImage({ width: 25 })}>25%</button>
+            <button type="button" onClick={() => updateSelectedImage({ width: 50 })}>50%</button>
+            <button type="button" onClick={() => updateSelectedImage({ width: 75 })}>75%</button>
+            <button type="button" onClick={() => updateSelectedImage({ width: 100 })}>100%</button>
+            <button type="button" onClick={() => updateSelectedImage({ align: "left" })}>Left</button>
+            <button type="button" onClick={() => updateSelectedImage({ align: "center" })}>Center</button>
+            <button type="button" onClick={() => updateSelectedImage({ align: "right" })}>Right</button>
+            <button type="button" onClick={() => updateSelectedImage({ wrap: true })}>Wrap text</button>
+            <button type="button" onClick={() => updateSelectedImage({ wrap: false })}>No wrap</button>
+            <button type="button" onClick={chooseReplacementImage}>Replace</button>
+            <button className="docs-danger" type="button" onClick={deleteSelectedImage}>Delete</button>
+            <button type="button" onClick={() => setSelectedImage(null)}>×</button>
+          </div>
+        ) : null}
 
         {guardMessage ? (
           <div className="docs-guard-message">
@@ -1951,7 +2080,12 @@ export function ZubanDocsEditor() {
         <div className="docs-canvas-wrap">
           <div
             className="docs-paper"
+            data-page-size={activeDocument.pageSize ?? "a4"}
+            data-orientation={activeDocument.orientation ?? "portrait"}
             style={{
+              width: pageWidthPx,
+              minHeight: pageHeightPx,
+              maxWidth: "calc(100vw - var(--docs-sidebar) - 96px)",
               transform: `scale(${zoom / 100})`,
               transformOrigin: "top center",
             }}
@@ -1959,6 +2093,16 @@ export function ZubanDocsEditor() {
             <div className="docs-page-ruler" aria-hidden="true">
               <span>0</span><i /><i /><i /><i /><span>8</span>
             </div>
+            {(activeDocument.headerText || activeDocument.showDate) ? (
+              <div
+                className="docs-page-header"
+                dir={activeDocument.script === "arabic" ? "rtl" : "ltr"}
+                style={{ paddingInline: pageMarginPx }}
+              >
+                <span>{activeDocument.headerText}</span>
+                {activeDocument.showDate ? <span>{new Date().toLocaleDateString()}</span> : null}
+              </div>
+            ) : null}
             <div
               ref={editorRef}
               className="docs-content"
@@ -1970,7 +2114,12 @@ export function ZubanDocsEditor() {
               aria-label="Balochi document editor"
               dir={activeDocument.script === "arabic" ? "rtl" : "ltr"}
               lang="bal"
-              style={{ lineHeight, fontFamily: currentFont }}
+              style={{
+                lineHeight,
+                fontFamily: currentFont,
+                padding: pageMarginPx,
+                minHeight: Math.max(520, pageHeightPx - 150),
+              }}
               onInput={onEditorInput}
               onBeforeInput={onBeforeInput}
               onPaste={onPaste}
@@ -1978,7 +2127,18 @@ export function ZubanDocsEditor() {
               onMouseUp={captureSelection}
               onKeyUp={captureSelection}
               onFocus={captureSelection}
+              onClick={handleEditorClick}
             />
+            {(activeDocument.footerText || activeDocument.showPageNumbers) ? (
+              <div
+                className="docs-page-footer"
+                dir={activeDocument.script === "arabic" ? "rtl" : "ltr"}
+                style={{ paddingInline: pageMarginPx }}
+              >
+                <span>{activeDocument.footerText}</span>
+                {activeDocument.showPageNumbers ? <span>Page 1</span> : null}
+              </div>
+            ) : null}
           </div>
         </div>
 
