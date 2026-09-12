@@ -8759,3 +8759,85 @@ html[data-theme="makran"] .docs-status-spelling:hover {
   border-color: rgba(75, 214, 202, .34);
   color: #7be6dc;
 }
+
+
+/* Zuban DocX personal Balochi dictionary */
+.docs-spell-list > div {
+  position: relative;
+}
+
+.docs-keep-word {
+  justify-self: start;
+  padding: 4px 8px !important;
+  border-style: dashed !important;
+  background: transparent !important;
+  color: #6f8494 !important;
+}
+
+.docs-keep-word:hover {
+  border-color: #8fc8cd !important;
+  color: #067b84 !important;
+}
+
+.docs-personal-dictionary {
+  display: grid;
+  gap: 9px;
+  padding-top: 12px;
+  border-top: 1px solid #e1e8eb;
+}
+
+.docs-personal-dictionary > div:first-child {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.docs-personal-dictionary strong {
+  color: #365a75;
+  font-size: 10px;
+}
+
+.docs-personal-dictionary span {
+  color: #8a9aa4;
+  font-size: 8px;
+}
+
+.docs-personal-word-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.docs-personal-word-list button {
+  padding: 4px 7px;
+  border: 1px solid #d8e2e6;
+  border-radius: 999px;
+  background: #f8fbfb;
+  color: #526f84;
+  cursor: pointer;
+  font-size: 8px;
+}
+
+.docs-personal-word-list button:hover {
+  border-color: #d7a9a9;
+  color: #9b3c45;
+}
+
+html[data-theme="makran"] .docs-personal-dictionary {
+  border-color: #3d3652;
+}
+
+html[data-theme="makran"] .docs-personal-dictionary strong {
+  color: #efe3c8;
+}
+
+html[data-theme="makran"] .docs-personal-dictionary span {
+  color: #aaa2b3;
+}
+
+html[data-theme="makran"] .docs-personal-word-list button {
+  border-color: #4a425f;
+  background: #28213d;
+  color: #d6ceda;
+}
