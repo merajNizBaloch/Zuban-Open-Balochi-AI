@@ -8986,3 +8986,154 @@ html[data-theme="makran"] .docs-note-quote {
 html[data-theme="makran"] .docs-note-list p {
   color: #efe3c8;
 }
+
+
+/* Zuban DocX version comparison */
+.docs-version-list article {
+  display: grid;
+  gap: 7px;
+  padding: 10px;
+  border: 1px solid #e0e7ea;
+  border-radius: 9px;
+  background: #fff;
+}
+
+.docs-version-list article > span {
+  color: #758a99;
+  font-size: 9px;
+  line-height: 1.45;
+}
+
+.docs-version-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.docs-version-actions button {
+  min-height: 28px;
+  padding: 4px 8px;
+  border: 1px solid #d4dee3;
+  border-radius: 6px;
+  background: #f8fbfb;
+  color: #526f84;
+  cursor: pointer;
+  font-size: 8px;
+  font-weight: 750;
+}
+
+.docs-version-actions button:hover {
+  border-color: #8fc8cd;
+  color: #067b84;
+}
+
+.docs-version-compare {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid #cbdfe2;
+  border-radius: 10px;
+  background: #f8fbfb;
+}
+
+.docs-version-compare-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.docs-version-compare-head > div {
+  display: grid;
+  gap: 2px;
+}
+
+.docs-version-compare-head strong {
+  color: #365a75;
+  font-size: 11px;
+}
+
+.docs-version-compare-head span {
+  color: #8a9aa4;
+  font-size: 8px;
+}
+
+.docs-version-compare-head button {
+  width: 26px;
+  height: 26px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: #8496a1;
+  cursor: pointer;
+}
+
+.docs-version-stats {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.docs-version-stats span {
+  padding: 3px 7px;
+  border: 1px solid #dbe5e8;
+  border-radius: 999px;
+  background: #fff;
+  color: #708695;
+  font-size: 8px;
+}
+
+.docs-diff-preview {
+  max-height: 230px;
+  overflow: auto;
+  padding: 10px;
+  border: 1px solid #e1e8eb;
+  border-radius: 8px;
+  background: #fff;
+  color: #607b8d;
+  font-size: 10px;
+  line-height: 1.7;
+}
+
+.docs-diff-preview del {
+  padding: 1px 3px;
+  border-radius: 3px;
+  background: #fdeaea;
+  color: #a0454c;
+  text-decoration-color: #c65b62;
+}
+
+.docs-diff-preview ins {
+  padding: 1px 3px;
+  border-radius: 3px;
+  background: #e9f7ef;
+  color: #317a55;
+  text-decoration: none;
+}
+
+html[data-theme="makran"] :where(
+  .docs-version-list article,
+  .docs-version-compare,
+  .docs-diff-preview,
+  .docs-version-stats span
+) {
+  border-color: #4a425f;
+  background: #28213d;
+}
+
+html[data-theme="makran"] .docs-version-compare-head strong {
+  color: #efe3c8;
+}
+
+html[data-theme="makran"] .docs-diff-preview {
+  color: #d7cfdd;
+}
+
+html[data-theme="makran"] .docs-diff-preview del {
+  background: rgba(198, 91, 98, .17);
+  color: #ef9fa5;
+}
+
+html[data-theme="makran"] .docs-diff-preview ins {
+  background: rgba(75, 214, 202, .12);
+  color: #7be6dc;
+}
