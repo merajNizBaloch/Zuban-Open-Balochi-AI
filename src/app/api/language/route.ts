@@ -7,10 +7,53 @@ import {
 } from "@/lib/balochi-language";
 
 type RequestBody = {
-  action?: "normalize" | "transliterate" | "detect";
+  action?: "normalize" | "transliterate" | "transliterate-html" | "detect";
   input?: string;
   target?: TransliterationTarget;
 };
+
+function transliterateHtml(
+  html: string,
+  target: TransliterationTarget,
+) {
+  let dictionaryMatches = 0;
+  let ruleBasedSegments = 0;
+
+  const output = html.replace(/<[^>]+>|[^<]+/g, (segment) => {
+    if (segment.startsWith("<")) return segment;
+
+    return segment
+      .split(/(&[#a-zA-Z0-9]+;)/g)
+      .map((part) => {
+        if (!part || /^&[#a-zA-Z0-9]+;$/.test(part)) return part;
+
+        const leading = part.match(/^\s*/)?.[0] ?? "";
+        const trailing = part.match(/\s*$/)?.[0] ?? "";
+        const core = part.slice(
+          leading.length,
+          Math.max(leading.length, part.length - trailing.length),
+        );
+
+        if (!core) return part;
+
+        const result = transliterateBalochi(core, target);
+        dictionaryMatches += result.dictionaryMatches;
+        ruleBasedSegments += result.ruleBasedSegments;
+        return leading + result.output + trailing;
+      })
+      .join("");
+  });
+
+  return {
+    output,
+    dictionaryMatches,
+    ruleBasedSegments,
+    warning:
+      ruleBasedSegments > 0
+        ? "Some unknown words used approximate script conversion."
+        : "Document text converted using the Zubán dictionary and script rules.",
+  };
+}
 
 export async function POST(request: Request) {
   let body: RequestBody;
@@ -26,7 +69,8 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Input is required." }, { status: 400 });
   }
 
-  if (input.length > 12000) {
+  const maxLength = body.action === "transliterate-html" ? 250000 : 12000;
+  if (input.length > maxLength) {
     return NextResponse.json({ error: "Input is too long." }, { status: 400 });
   }
 
@@ -52,6 +96,14 @@ export async function POST(request: Request) {
     }
 
     return NextResponse.json(transliterateBalochi(input, body.target));
+  }
+
+  if (body.action === "transliterate-html") {
+    if (body.target !== "arabic" && body.target !== "latin") {
+      return NextResponse.json({ error: "A valid target script is required." }, { status: 400 });
+    }
+
+    return NextResponse.json(transliterateHtml(input, body.target));
   }
 
   return NextResponse.json({ error: "Unknown language action." }, { status: 400 });
