@@ -21,8 +21,13 @@ export default function ZubanDocsPage() {
               documents, and export your work without switching language tools.
             </p>
             <div className="hero-actions">
-              <Link className="button primary" href="/docs/editor">
-                Open Zuban Docs
+              <Link
+                className="button primary"
+                href="/docs/editor"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Open Zuban Docs ↗
               </Link>
               <a className="button secondary" href="#features">
                 Explore features
@@ -135,8 +140,13 @@ export default function ZubanDocsPage() {
             <p className="eyebrow">START WRITING</p>
             <h2>Your Balochi document workspace is ready.</h2>
           </div>
-          <Link className="button primary" href="/docs/editor">
-            Create a document →
+          <Link
+            className="button primary"
+            href="/docs/editor"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Create a document ↗
           </Link>
         </div>
       </section>
