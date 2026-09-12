@@ -2185,6 +2185,23 @@ export function ZubanDocsEditor() {
           <div className="docs-top-actions">
             <button
               type="button"
+              onClick={() => {
+                setCommandQuery("");
+                setShowCommandPalette(true);
+              }}
+              title="Commands · Ctrl/⌘ + K"
+            >
+              Commands
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowOutline((value) => !value)}
+              title="Outline · Ctrl/⌘ + Shift + O"
+            >
+              Outline
+            </button>
+            <button
+              type="button"
               onClick={() => setShowFind((value) => !value)}
             >
               Find
@@ -2288,6 +2305,14 @@ export function ZubanDocsEditor() {
               ))}
             </select>
             <button type="button" onClick={chooseImage} title="Add image">▧ Image</button>
+            <button
+              type="button"
+              onMouseDown={captureSelection}
+              onClick={insertLink}
+              title="Insert link"
+            >
+              ↗ Link
+            </button>
           </div>
           <div className="docs-toolbar-group">
             <select
@@ -2398,6 +2423,21 @@ export function ZubanDocsEditor() {
             <button type="button" onClick={() => updateSelectedImage({ align: "right" })}>Right</button>
             <button type="button" onClick={() => updateSelectedImage({ wrap: true })}>Wrap text</button>
             <button type="button" onClick={() => updateSelectedImage({ wrap: false })}>No wrap</button>
+            <label className="docs-image-alt">
+              <span>Alt text</span>
+              <input
+                key={selectedImage.src + selectedImage.alt}
+                defaultValue={selectedImage.alt}
+                placeholder="Describe this image"
+                onBlur={(event) => {
+                  selectedImage.alt = event.target.value.trim();
+                  updateActive({
+                    html: editorRef.current?.innerHTML ?? activeDocument.html,
+                  });
+                  setNotice("Image description saved.");
+                }}
+              />
+            </label>
             <button type="button" onClick={chooseReplacementImage}>Replace</button>
             <button className="docs-danger" type="button" onClick={deleteSelectedImage}>Delete</button>
             <button type="button" onClick={() => setSelectedImage(null)}>×</button>
@@ -2911,7 +2951,7 @@ export function ZubanDocsEditor() {
           <div className="docs-version-head">
             <div>
               <strong>Document versions</strong>
-              <span>Manual checkpoints stored locally.</span>
+              <span>Manual and automatic recovery points stored locally.</span>
             </div>
             <button type="button" onClick={() => setShowSnapshots(false)}>×</button>
           </div>
@@ -2926,12 +2966,15 @@ export function ZubanDocsEditor() {
                   key={snapshot.id}
                   onClick={() => restoreSnapshot(snapshot)}
                 >
-                  <strong>{new Date(snapshot.createdAt).toLocaleString()}</strong>
+                  <div className="docs-version-meta">
+                    <strong>{new Date(snapshot.createdAt).toLocaleString()}</strong>
+                    <em>{snapshot.source === "auto" ? "Auto recovery" : "Manual"}</em>
+                  </div>
                   <span>{stripHtml(snapshot.html).slice(0, 90) || "Empty snapshot"}</span>
                 </button>
               ))
             ) : (
-              <p>No checkpoints yet. Save one before a major edit.</p>
+              <p>No versions yet. Manual checkpoints and automatic recovery points will appear here.</p>
             )}
           </div>
         </aside>
@@ -2976,11 +3019,7 @@ export function ZubanDocsEditor() {
                   onClick={() => setNewTemplate(template.id)}
                 >
                   <span className="docs-template-icon">
-                    {template.id === "blank" ? "□" :
-                      template.id === "essay" ? "¶" :
-                      template.id === "letter" ? "✉" :
-                      template.id === "story" ? "◈" :
-                      template.id === "notes" ? "≡" : "❧"}
+                    {templateIcon(template.id)}
                   </span>
                   <strong>{template.label}</strong>
                   <span>{template.description}</span>
