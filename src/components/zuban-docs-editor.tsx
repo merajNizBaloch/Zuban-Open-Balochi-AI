@@ -3,6 +3,12 @@
 import Link from "next/link";
 import { ZubanLogo } from "@/components/zuban-logo";
 import {
+  getDocxStorageEstimate,
+  loadDocxLibrary,
+  migrateDocxFromLocalStorage,
+  saveDocxLibrary,
+} from "@/lib/docx-storage";
+import {
   ChangeEvent,
   FormEvent,
   KeyboardEvent,
@@ -509,6 +515,7 @@ export function ZubanDocsEditor() {
   const [activeId, setActiveId] = useState("");
   const [ready, setReady] = useState(false);
   const [saved, setSaved] = useState(true);
+  const [storageLabel, setStorageLabel] = useState("Local");
   const [search, setSearch] = useState("");
   const [libraryView, setLibraryView] = useState<LibraryView>("all");
   const [focusMode, setFocusMode] = useState(false);
@@ -550,33 +557,58 @@ export function ZubanDocsEditor() {
   useEffect(() => {
     let cancelled = false;
 
-    queueMicrotask(() => {
-      if (cancelled) return;
-
-      let nextDocuments: ZubanDocument[] = [];
+    async function loadLocalLibrary() {
+      let library:
+        | {
+            documents: ZubanDocument[];
+            activeId: string;
+          }
+        | null = null;
 
       try {
-        const raw = window.localStorage.getItem(STORAGE_KEY);
-        if (raw) {
-          const parsed = JSON.parse(raw) as ZubanDocument[];
-          if (Array.isArray(parsed)) nextDocuments = parsed;
+        library = await loadDocxLibrary<ZubanDocument>();
+
+        if (!library?.documents?.length) {
+          library = await migrateDocxFromLocalStorage<ZubanDocument>(
+            STORAGE_KEY,
+            ACTIVE_KEY,
+          );
         }
       } catch {
-        nextDocuments = [];
+        library = null;
       }
 
-      if (!nextDocuments.length) nextDocuments = [makeDocument()];
+      if (cancelled) return;
 
-      const storedActive = window.localStorage.getItem(ACTIVE_KEY);
+      const nextDocuments =
+        library?.documents?.length ? library.documents : [makeDocument()];
       const nextActive =
-        storedActive && nextDocuments.some((item) => item.id === storedActive)
-          ? storedActive
+        library?.activeId &&
+        nextDocuments.some((item) => item.id === library?.activeId)
+          ? library.activeId
           : nextDocuments[0].id;
 
       setDocuments(nextDocuments);
       setActiveId(nextActive);
       setReady(true);
-    });
+
+      try {
+        const estimate = await getDocxStorageEstimate();
+        if (!cancelled && estimate?.quota) {
+          const usageMb = estimate.usage / 1024 / 1024;
+          const quotaMb = estimate.quota / 1024 / 1024;
+          setStorageLabel(
+            usageMb >= 1
+              ? usageMb.toFixed(1) + " MB local"
+              : "Local · " + Math.round(quotaMb) + " MB+ available",
+          );
+        }
+      } catch {
+        setStorageLabel("Local");
+      }
+    }
+
+    void loadLocalLibrary();
 
     return () => {
       cancelled = true;
@@ -586,14 +618,21 @@ export function ZubanDocsEditor() {
   useEffect(() => {
     if (!ready) return;
     const timer = window.setTimeout(() => {
-      try {
-        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(documents));
-        window.localStorage.setItem(ACTIVE_KEY, activeId);
-        setSaved(true);
-      } catch {
-        setSaved(false);
-        setNotice("This document is getting too large to save here. Try a smaller image.");
-      }
+      void saveDocxLibrary(documents, activeId)
+        .then(async () => {
+          setSaved(true);
+          const estimate = await getDocxStorageEstimate().catch(() => null);
+          if (estimate?.quota) {
+            const usageMb = estimate.usage / 1024 / 1024;
+            setStorageLabel(
+              usageMb >= 1 ? usageMb.toFixed(1) + " MB local" : "Local",
+            );
+          }
+        })
+        .catch(() => {
+          setSaved(false);
+          setNotice("I couldn’t save this document on this device.");
+        });
     }, 350);
 
     return () => window.clearTimeout(timer);
@@ -720,10 +759,15 @@ export function ZubanDocsEditor() {
   );
 
   const saveNow = useCallback(() => {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(documents));
-    window.localStorage.setItem(ACTIVE_KEY, activeId);
-    setSaved(true);
-    setNotice("Document saved on this device.");
+    void saveDocxLibrary(documents, activeId)
+      .then(() => {
+        setSaved(true);
+        setNotice("Document saved on this device.");
+      })
+      .catch(() => {
+        setSaved(false);
+        setNotice("I couldn’t save this document on this device.");
+      });
   }, [documents, activeId]);
 
   function openCreateDialog() {
