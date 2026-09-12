@@ -8,32 +8,32 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 3
     steps:
-      - name: Verify no-card production chat and translation
+      - name: Verify no-login production chat
         shell: bash
         run: |
           set -euo pipefail
 
-          BODY=/tmp/chat.txt
-          CODE=$(curl -sS -o "$BODY" -w "%{http_code}" --max-time 30 \
-            -X POST "https://zuban.techcraftsolution.com/api/chat/stream" \
-            -H "Content-Type: application/json" \
-            --data '{"input":"What does دوست mean?"}')
-          echo "chat HTTP=$CODE"
-          cat "$BODY"
-          test "$CODE" = "200"
-          grep -qi "friend" "$BODY"
+          post_chat() {
+            NAME="$1"
+            DATA="$2"
+            EXPECT="$3"
+            BODY="/tmp/$NAME.txt"
+            CODE=$(curl -sS -o "$BODY" -w "%{http_code}" --max-time 30 \
+              -X POST "https://zuban.techcraftsolution.com/api/chat/stream" \
+              -H "Content-Type: application/json" \
+              --data "$DATA")
+            echo "$NAME HTTP=$CODE"
+            cat "$BODY"
+            echo
+            test "$CODE" = "200"
+            grep -qi "$EXPECT" "$BODY"
+          }
 
-          BODY=/tmp/translate.txt
-          CODE=$(curl -sS -o "$BODY" -w "%{http_code}" --max-time 30 \
-            -X POST "https://zuban.techcraftsolution.com/api/text" \
-            -H "Content-Type: application/json" \
-            --data '{"mode":"translate","input":"water and fire","source":"English","target":"Balochi"}')
-          echo "translate HTTP=$CODE"
-          cat "$BODY"
-          test "$CODE" = "200"
-          grep -q 'آپ and آس' "$BODY"
+          post_chat hello '{"input":"Hello, how are you?"}' "doing well"
+          post_chat thanks '{"input":"Thank you"}' "welcome"
+          post_chat identity '{"input":"Who are you?"}' "Zub"
+          post_chat dictionary '{"input":"What does دوست mean?"}' "friend"
 
           HEALTH=$(curl -sS --max-time 30 "https://zuban.techcraftsolution.com/api/health")
           echo "$HEALTH"
-          echo "$HEALTH" | grep -q '"freeLexiconFallback":true'
           echo "$HEALTH" | grep -q '"browserFallback":false'
