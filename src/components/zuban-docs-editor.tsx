@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { ZubanLogo } from "@/components/zuban-logo";
+import { DocxPwaControls } from "@/components/docx-pwa-controls";
 import {
   getDocxStorageEstimate,
   loadDocxLibrary,
@@ -2227,6 +2228,7 @@ export function ZubanDocsEditor() {
           </div>
 
           <div className="docs-top-actions">
+            <DocxPwaControls />
             <button
               type="button"
               onClick={() => {
