@@ -664,7 +664,7 @@ export async function runTextModel(request: TextRequest) {
           output: parallel.output,
           message: parallel.exact
             ? ""
-            : "Matched a close sentence from Zubán’s sourced English–Balochi parallel corpus.",
+            : "This is the closest translation I found. You can suggest a better one if needed.",
           provider: "parallel-corpus",
           model: "Zubán Parallel Corpus",
           coverage: parallel.confidence,
@@ -683,7 +683,7 @@ export async function runTextModel(request: TextRequest) {
           configured: true,
           output: local.output,
           message: local.partial
-            ? "No close sentence match was found. Zubán translated the words it could verify and preserved the rest."
+            ? "I could translate part of this. A few words were left unchanged."
             : "",
           provider: "dictionary",
           model: "Zubán Lexicon",
@@ -696,7 +696,7 @@ export async function runTextModel(request: TextRequest) {
         configured: true,
         output: request.input,
         message:
-          "This language pair is not yet covered by Zubán’s sourced translator, so the original text was preserved.",
+          "I can translate between English and Balochi right now.",
         provider: "dictionary",
         model: "Zubán Lexicon",
         coverage: 0,
