@@ -37,48 +37,44 @@ export function ModelStatus() {
   const services = [
     {
       key: "text",
-      type: t("status.text", "Text model"),
+      type: t("status.text", "Writing"),
       label: t("status.chat", "Chat + Translate"),
-      online: Boolean(status?.text || status?.browserTextFallback),
+      online: Boolean(status?.text || status?.browserTextFallback || status?.dictionaryFallback),
       limited: !status?.text && Boolean(status?.browserTextFallback || status?.dictionaryFallback),
-      detail: status?.text
-        ? (status.textProvider === "huggingface" ? "Hugging Face · " : status.textProvider === "ollama" ? "Ollama · " : "") +
-          (status.textModel ?? "configured model")
-        : status?.browserTextFallback
-          ? (language === "bal" ? "براوزر مقامی AI · GPU یا CPU/WASM · لاگن لازم نہ انت" : "Browser local AI · GPU or CPU/WASM · no login required")
-          : status?.dictionaryFallback
-            ? (language === "bal" ? "لبزنامگ موڈ · درست لبز درگیج / ترجمه" : "Dictionary mode · exact word lookup/translation")
-            : (language === "bal" ? "متن AI دستیاب نہ انت" : "Text AI unavailable"),
+      detail:
+        status?.text || status?.dictionaryFallback
+          ? (language === "bal" ? "کار کنت" : "Ready to use")
+          : (language === "bal" ? "هنوز محدود اِنت" : "Limited right now"),
     },
     {
       key: "stt",
-      type: "STT",
+      type: language === "bal" ? "گُشدار" : "Listening",
       label: t("status.stt", "Speech to text"),
       online: Boolean(status?.speechToText),
       limited: false,
       detail: status?.speechToText
-        ? (language === "bal" ? "بلوچی STT endpoint جڑ بوتگ" : "Balochi STT endpoint connected")
-        : (language === "bal" ? "بلوچی Whisper سروس deploy کن" : "Deploy the Balochi Whisper service"),
+        ? (language === "bal" ? "کار کنت" : "Ready to use")
+        : (language === "bal" ? "هنوز دستیاب نہ انت" : "Not available yet"),
     },
     {
       key: "tts",
-      type: "TTS",
+      type: language === "bal" ? "آواز" : "Speaking",
       label: t("status.tts", "Text to speech"),
       online: Boolean(status?.textToSpeech),
       limited: false,
       detail: status?.textToSpeech
-        ? (language === "bal" ? "بلوچی TTS endpoint جڑ بوتگ" : "Balochi TTS endpoint connected")
-        : (language === "bal" ? "بلوچی SpeechT5 سروس deploy کن" : "Deploy the Balochi SpeechT5 service"),
+        ? (language === "bal" ? "کار کنت" : "Ready to use")
+        : (language === "bal" ? "هنوز دستیاب نہ انت" : "Not available yet"),
     },
     {
       key: "ocr",
-      type: t("status.vision", "Vision"),
-      label: t("status.ocr", "OCR"),
+      type: language === "bal" ? "عکس" : "Images",
+      label: t("status.ocr", "Read text from images"),
       online: Boolean(status?.ocr),
-      limited: status?.ocrProvider !== "model endpoint",
-      detail: status?.ocrProvider === "model endpoint"
-        ? (language === "bal" ? "OCR ماڈل endpoint" : "OCR model endpoint")
-        : (language === "bal" ? "براوزر اردو + فارسی + عربی OCR" : "Browser Urdu + Persian + Arabic OCR"),
+      limited: false,
+      detail: status?.ocr
+        ? (language === "bal" ? "کار کنت" : "Ready to use")
+        : (language === "bal" ? "هنوز دستیاب نہ انت" : "Not available yet"),
     },
   ];
 
