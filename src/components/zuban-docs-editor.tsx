@@ -30,6 +30,7 @@ type ZubanDocument = {
   updatedAt: number;
   snapshots: Snapshot[];
   template?: TemplateId;
+  fontFamily?: string;
 };
 
 type Template = {
@@ -54,6 +55,62 @@ const arabicCharacters = [
 const latinCharacters = [
   "ā", "ē", "ī", "ō", "ū", "š", "ž", "ṭ", "ḍ", "ṛ", "ŋ", "č", "ǰ", "’",
 ];
+
+type KeyboardKey = {
+  key: string;
+  label?: string;
+  shifted?: string;
+};
+
+const qwertyRows: KeyboardKey[][] = [
+  [
+    { key: "q" }, { key: "w" }, { key: "e" }, { key: "r" }, { key: "t" },
+    { key: "y" }, { key: "u" }, { key: "i" }, { key: "o" }, { key: "p" },
+  ],
+  [
+    { key: "a" }, { key: "s" }, { key: "d" }, { key: "f" }, { key: "g" },
+    { key: "h" }, { key: "j" }, { key: "k" }, { key: "l" },
+  ],
+  [
+    { key: "z" }, { key: "x" }, { key: "c" }, { key: "v" }, { key: "b" },
+    { key: "n" }, { key: "m" },
+  ],
+];
+
+const arabicPhysicalMap: Record<string, string> = {
+  a: "ا", b: "ب", c: "چ", d: "د", e: "ے", f: "ف", g: "گ", h: "ہ",
+  i: "ی", j: "ج", k: "ک", l: "ل", m: "م", n: "ن", o: "و", p: "پ",
+  q: "ق", r: "ر", s: "س", t: "ت", u: "ؤ", v: "و", w: "و", x: "خ",
+  y: "ی", z: "ز",
+};
+
+const arabicShiftMap: Record<string, string> = {
+  a: "آ", d: "ڈ", h: "ھ", n: "ں", r: "ڑ", s: "ش", t: "ٹ", z: "ژ",
+};
+
+const arabicFonts = [
+  ["Zuban Default", "\"Noto Naskh Arabic\", \"Noto Sans Arabic\", serif"],
+  ["Noto Naskh Arabic", "\"Noto Naskh Arabic\", serif"],
+  ["Noto Sans Arabic", "\"Noto Sans Arabic\", sans-serif"],
+  ["Noto Nastaliq Urdu", "\"Noto Nastaliq Urdu\", serif"],
+  ["Scheherazade New", "\"Scheherazade New\", serif"],
+  ["Amiri", "Amiri, serif"],
+  ["Lateef", "Lateef, serif"],
+  ["Jameel Noori Nastaleeq", "\"Jameel Noori Nastaleeq\", \"Noto Nastaliq Urdu\", serif"],
+  ["Tahoma", "Tahoma, sans-serif"],
+  ["Arial", "Arial, sans-serif"],
+] as const;
+
+const latinFonts = [
+  ["Zuban Roman", "\"Noto Sans\", Arial, sans-serif"],
+  ["Noto Sans", "\"Noto Sans\", sans-serif"],
+  ["Noto Serif", "\"Noto Serif\", serif"],
+  ["Georgia", "Georgia, serif"],
+  ["Times New Roman", "\"Times New Roman\", serif"],
+  ["Arial", "Arial, sans-serif"],
+  ["Verdana", "Verdana, sans-serif"],
+  ["Tahoma", "Tahoma, sans-serif"],
+] as const;
 
 const templates: Template[] = [
   {
@@ -233,6 +290,8 @@ function documentMetrics(html: string, script: ScriptMode) {
 export function ZubanDocsEditor() {
   const editorRef = useRef<HTMLDivElement>(null);
   const importRef = useRef<HTMLInputElement>(null);
+  const imageRef = useRef<HTMLInputElement>(null);
+  const selectionRef = useRef<Range | null>(null);
   const [documents, setDocuments] = useState<ZubanDocument[]>([]);
   const [activeId, setActiveId] = useState("");
   const [ready, setReady] = useState(false);
@@ -247,6 +306,9 @@ export function ZubanDocsEditor() {
   const [showInspector, setShowInspector] = useState(false);
   const [showCreate, setShowCreate] = useState(false);
   const [showShortcuts, setShowShortcuts] = useState(false);
+  const [showKeyboard, setShowKeyboard] = useState(false);
+  const [phoneticTyping, setPhoneticTyping] = useState(true);
+  const [keyboardShift, setKeyboardShift] = useState(false);
   const [newScript, setNewScript] = useState<ScriptMode>("arabic");
   const [newTemplate, setNewTemplate] = useState<TemplateId>("blank");
 
@@ -292,9 +354,14 @@ export function ZubanDocsEditor() {
   useEffect(() => {
     if (!ready) return;
     const timer = window.setTimeout(() => {
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(documents));
-      window.localStorage.setItem(ACTIVE_KEY, activeId);
-      setSaved(true);
+      try {
+        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(documents));
+        window.localStorage.setItem(ACTIVE_KEY, activeId);
+        setSaved(true);
+      } catch {
+        setSaved(false);
+        setNotice("This document is getting too large to save here. Try a smaller image.");
+      }
     }, 350);
 
     return () => window.clearTimeout(timer);
@@ -331,6 +398,11 @@ export function ZubanDocsEditor() {
 
   const charactersForMode =
     activeDocument?.script === "latin" ? latinCharacters : arabicCharacters;
+  const fontsForMode =
+    activeDocument?.script === "latin" ? latinFonts : arabicFonts;
+  const currentFont =
+    activeDocument?.fontFamily ??
+    (activeDocument?.script === "latin" ? latinFonts[0][1] : arabicFonts[0][1]);
 
   const updateActive = useCallback(
     (patch: Partial<ZubanDocument>) => {
@@ -472,10 +544,136 @@ export function ZubanDocsEditor() {
     setNotice("Formatting cleared from the selection.");
   }
 
+  function captureSelection() {
+    const selection = window.getSelection();
+    if (
+      !selection ||
+      !selection.rangeCount ||
+      !editorRef.current?.contains(selection.anchorNode)
+    ) {
+      return;
+    }
+
+    selectionRef.current = selection.getRangeAt(0).cloneRange();
+  }
+
+  function restoreSelection() {
+    editorRef.current?.focus();
+    const selection = window.getSelection();
+    if (!selection || !selectionRef.current) return;
+    selection.removeAllRanges();
+    selection.addRange(selectionRef.current);
+  }
+
   function insertCharacter(character: string) {
+    restoreSelection();
     editorRef.current?.focus();
     document.execCommand("insertText", false, character);
+    captureSelection();
     if (editorRef.current) updateActive({ html: editorRef.current.innerHTML });
+  }
+
+  function pressVirtualKey(key: string) {
+    if (key === "BACKSPACE") {
+      restoreSelection();
+      document.execCommand("delete");
+    } else if (key === "ENTER") {
+      restoreSelection();
+      document.execCommand("insertLineBreak");
+    } else if (key === "SPACE") {
+      insertCharacter(" ");
+      return;
+    } else {
+      const output =
+        activeDocument.script === "arabic"
+          ? keyboardShift
+            ? arabicShiftMap[key] ?? arabicPhysicalMap[key] ?? key
+            : arabicPhysicalMap[key] ?? key
+          : keyboardShift
+            ? key.toUpperCase()
+            : key;
+
+      insertCharacter(output);
+      setKeyboardShift(false);
+      return;
+    }
+
+    captureSelection();
+    if (editorRef.current) updateActive({ html: editorRef.current.innerHTML });
+  }
+
+  function changeDocumentFont(fontFamily: string) {
+    updateActive({ fontFamily });
+    setNotice("Font changed.");
+  }
+
+  function chooseImage() {
+    captureSelection();
+    imageRef.current?.click();
+  }
+
+  async function insertImage(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      setNotice("Choose an image file.");
+      return;
+    }
+
+    if (file.size > 8_000_000) {
+      setNotice("Please choose an image smaller than 8 MB.");
+      return;
+    }
+
+    const source = await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result ?? ""));
+      reader.onerror = () => reject(new Error("read"));
+      reader.readAsDataURL(file);
+    }).catch(() => "");
+
+    if (!source) {
+      setNotice("I couldn’t add that image.");
+      return;
+    }
+
+    const image = new Image();
+    image.onload = () => {
+      const maxWidth = 1400;
+      const scale = Math.min(1, maxWidth / Math.max(1, image.width));
+      const canvas = window.document.createElement("canvas");
+      canvas.width = Math.max(1, Math.round(image.width * scale));
+      canvas.height = Math.max(1, Math.round(image.height * scale));
+      const context = canvas.getContext("2d");
+
+      if (!context) {
+        setNotice("I couldn’t add that image.");
+        return;
+      }
+
+      context.drawImage(image, 0, 0, canvas.width, canvas.height);
+      const compressed = canvas.toDataURL("image/webp", 0.82);
+      const safeAlt = escapeHtml(file.name.replace(/\.[^.]+$/, ""));
+
+      restoreSelection();
+      document.execCommand(
+        "insertHTML",
+        false,
+        '<figure class="docs-inline-image"><img src="' +
+          compressed +
+          '" alt="' +
+          safeAlt +
+          '"><figcaption contenteditable="true">Add a caption…</figcaption></figure><p><br></p>',
+      );
+
+      captureSelection();
+      if (editorRef.current) updateActive({ html: editorRef.current.innerHTML });
+      setNotice("Image added.");
+    };
+    image.onerror = () => setNotice("I couldn’t add that image.");
+    image.src = source;
   }
 
   function titleChange(value: string) {
@@ -567,7 +765,7 @@ export function ZubanDocsEditor() {
 
   function exportLibraryBackup() {
     downloadFile(
-      "zuban-docs-backup.json",
+      "zuban-docx-backup.json",
       JSON.stringify(
         {
           version: 1,
@@ -637,6 +835,26 @@ export function ZubanDocsEditor() {
   }
 
   function handleEditorKeyDown(event: KeyboardEvent<HTMLDivElement>) {
+    if (
+      activeDocument.script === "arabic" &&
+      phoneticTyping &&
+      !event.ctrlKey &&
+      !event.metaKey &&
+      !event.altKey &&
+      /^[a-zA-Z]$/.test(event.key)
+    ) {
+      const key = event.key.toLowerCase();
+      const mapped = event.shiftKey
+        ? arabicShiftMap[key] ?? arabicPhysicalMap[key]
+        : arabicPhysicalMap[key];
+
+      if (mapped) {
+        event.preventDefault();
+        insertCharacter(mapped);
+        return;
+      }
+    }
+
     if (!(event.ctrlKey || event.metaKey)) return;
 
     const key = event.key.toLowerCase();
@@ -675,7 +893,7 @@ export function ZubanDocsEditor() {
     return (
       <section className="docs-editor-loading">
         <span className="pulse" />
-        Loading Zuban Docs…
+        Loading Zuban DocX…
       </section>
     );
   }
@@ -693,12 +911,20 @@ export function ZubanDocsEditor() {
         onChange={importDocument}
       />
 
+      <input
+        ref={imageRef}
+        className="docs-hidden-input"
+        type="file"
+        accept="image/png,image/jpeg,image/webp,image/gif"
+        onChange={insertImage}
+      />
+
       <aside className="docs-sidebar">
         <div className="docs-sidebar-head">
           <Link href="/docs" className="docs-app-brand">
             <span>Z</span>
             <div>
-              <strong>Zuban Docs</strong>
+              <strong>Zuban DocX</strong>
               <small>بلوچی نویسگ</small>
             </div>
           </Link>
@@ -858,6 +1084,19 @@ export function ZubanDocsEditor() {
           </div>
           <div className="docs-toolbar-group">
             <select
+              value={currentFont}
+              aria-label="Balochi font"
+              onChange={(event) => changeDocumentFont(event.target.value)}
+              title="Balochi font"
+            >
+              {fontsForMode.map(([label, value]) => (
+                <option key={label} value={value}>{label}</option>
+              ))}
+            </select>
+            <button type="button" onClick={chooseImage} title="Add image">▧ Image</button>
+          </div>
+          <div className="docs-toolbar-group">
+            <select
               value={lineHeight}
               aria-label="Line spacing"
               onChange={(event) => setLineHeight(Number(event.target.value))}
@@ -877,25 +1116,6 @@ export function ZubanDocsEditor() {
               <option value={110}>110%</option>
               <option value={125}>125%</option>
             </select>
-          </div>
-        </div>
-
-        <div className="docs-character-bar">
-          <span>
-            {activeDocument.script === "arabic"
-              ? "Balochi keyboard"
-              : "Latin Balochi keyboard"}
-          </span>
-          <div>
-            {charactersForMode.map((character) => (
-              <button
-                key={character}
-                type="button"
-                onClick={() => insertCharacter(character)}
-              >
-                {character}
-              </button>
-            ))}
           </div>
         </div>
 
@@ -929,11 +1149,14 @@ export function ZubanDocsEditor() {
               aria-label="Balochi document editor"
               dir={activeDocument.script === "arabic" ? "rtl" : "ltr"}
               lang="bal"
-              style={{ lineHeight }}
+              style={{ lineHeight, fontFamily: currentFont }}
               onInput={onEditorInput}
               onBeforeInput={onBeforeInput}
               onPaste={onPaste}
               onKeyDown={handleEditorKeyDown}
+              onMouseUp={captureSelection}
+              onKeyUp={captureSelection}
+              onFocus={captureSelection}
             />
           </div>
         </div>
@@ -960,6 +1183,109 @@ export function ZubanDocsEditor() {
           </div>
         </footer>
       </div>
+
+      <button
+        className={showKeyboard ? "docs-keyboard-fab active" : "docs-keyboard-fab"}
+        type="button"
+        onMouseDown={captureSelection}
+        onClick={() => setShowKeyboard((value) => !value)}
+        title="Balochi keyboard"
+        aria-label="Open Balochi keyboard"
+      >
+        ⌨
+      </button>
+
+      {showKeyboard ? (
+        <aside className="docs-floating-keyboard" aria-label="Balochi keyboard">
+          <div className="docs-keyboard-head">
+            <div>
+              <strong>
+                {activeDocument.script === "arabic"
+                  ? "بلوچی Keyboard"
+                  : "Balōčī Keyboard"}
+              </strong>
+              <span>
+                {activeDocument.script === "arabic"
+                  ? "Type with English keys — Zuban writes Balochi letters."
+                  : "Roman Balochi with quick access to special letters."}
+              </span>
+            </div>
+            <button type="button" onClick={() => setShowKeyboard(false)}>×</button>
+          </div>
+
+          {activeDocument.script === "arabic" ? (
+            <label className="docs-phonetic-toggle">
+              <input
+                type="checkbox"
+                checked={phoneticTyping}
+                onChange={(event) => setPhoneticTyping(event.target.checked)}
+              />
+              <span>Use my physical English keyboard for Balochi</span>
+            </label>
+          ) : (
+            <div className="docs-latin-specials">
+              {latinCharacters.map((character) => (
+                <button
+                  key={character}
+                  type="button"
+                  onMouseDown={captureSelection}
+                  onClick={() => insertCharacter(character)}
+                >
+                  {character}
+                </button>
+              ))}
+            </div>
+          )}
+
+          <div className="docs-qwerty">
+            {qwertyRows.map((row, rowIndex) => (
+              <div className="docs-qwerty-row" key={rowIndex}>
+                {row.map(({ key }) => {
+                  const output =
+                    activeDocument.script === "arabic"
+                      ? keyboardShift
+                        ? arabicShiftMap[key] ?? arabicPhysicalMap[key] ?? key
+                        : arabicPhysicalMap[key] ?? key
+                      : keyboardShift
+                        ? key.toUpperCase()
+                        : key;
+
+                  return (
+                    <button
+                      type="button"
+                      key={key}
+                      onMouseDown={captureSelection}
+                      onClick={() => pressVirtualKey(key)}
+                    >
+                      <span>{output}</span>
+                      <small>{key.toUpperCase()}</small>
+                    </button>
+                  );
+                })}
+              </div>
+            ))}
+
+            <div className="docs-qwerty-row docs-qwerty-actions">
+              <button
+                className={keyboardShift ? "active wide" : "wide"}
+                type="button"
+                onClick={() => setKeyboardShift((value) => !value)}
+              >
+                ⇧ Shift
+              </button>
+              <button className="space" type="button" onClick={() => pressVirtualKey("SPACE")}>
+                Space
+              </button>
+              <button className="wide" type="button" onClick={() => pressVirtualKey("BACKSPACE")}>
+                ⌫
+              </button>
+              <button className="wide" type="button" onClick={() => pressVirtualKey("ENTER")}>
+                ↵
+              </button>
+            </div>
+          </div>
+        </aside>
+      ) : null}
 
       {showInspector ? (
         <aside className="docs-inspector">
