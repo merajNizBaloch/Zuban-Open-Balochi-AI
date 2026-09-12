@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { ZubanLogo } from "@/components/zuban-logo";
 import {
   ChangeEvent,
   FormEvent,
@@ -922,7 +923,13 @@ export function ZubanDocsEditor() {
       <aside className="docs-sidebar">
         <div className="docs-sidebar-head">
           <Link href="/docs" className="docs-app-brand">
-            <span>Z</span>
+            <ZubanLogo
+              className="docs-brand-logo"
+              alt="Zubán"
+              width={38}
+              height={38}
+              priority
+            />
             <div>
               <strong>Zuban DocX</strong>
               <small>بلوچی نویسگ</small>
