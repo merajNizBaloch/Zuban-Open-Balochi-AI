@@ -95,7 +95,8 @@ export default function ZubanDocsPage() {
               <h3>Real document tools</h3>
               <p>
                 Page sizes, margins, headers, footers, page numbers, tables,
-                images, exact font sizes, colors, Find & Replace and real DOCX.
+                images, exact font sizes, colors, Find & Replace, document
+                outline, quick commands and real DOCX.
               </p>
             </article>
             <article>
