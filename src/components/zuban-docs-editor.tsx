@@ -2669,6 +2669,100 @@ export function ZubanDocsEditor() {
         </aside>
       ) : null}
 
+      {showCommandPalette ? (
+        <div
+          className="docs-command-backdrop"
+          role="presentation"
+          onMouseDown={() => setShowCommandPalette(false)}
+        >
+          <section
+            className="docs-command-palette"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Zuban DocX commands"
+            onMouseDown={(event) => event.stopPropagation()}
+          >
+            <div className="docs-command-search">
+              <span>⌘</span>
+              <input
+                autoFocus
+                value={commandQuery}
+                onChange={(event) => setCommandQuery(event.target.value)}
+                placeholder="Type a command…"
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" && filteredCommands[0]) {
+                    event.preventDefault();
+                    runCommand(filteredCommands[0].id);
+                  }
+                }}
+              />
+              <kbd>Esc</kbd>
+            </div>
+            <div className="docs-command-list">
+              {filteredCommands.length ? (
+                filteredCommands.map((item) => (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => runCommand(item.id)}
+                  >
+                    <span className="docs-command-icon">{item.icon}</span>
+                    <span>
+                      <strong>{item.label}</strong>
+                      <small>{item.hint}</small>
+                    </span>
+                  </button>
+                ))
+              ) : (
+                <p>No matching commands.</p>
+              )}
+            </div>
+            <div className="docs-command-foot">
+              <span>Enter to run first result</span>
+              <span>Ctrl / ⌘ + K to open</span>
+            </div>
+          </section>
+        </div>
+      ) : null}
+
+      {showOutline ? (
+        <aside className="docs-tool-panel docs-outline-panel">
+          <div className="docs-panel-head">
+            <div>
+              <strong>Document outline</strong>
+              <span>Jump between titles and headings.</span>
+            </div>
+            <button type="button" onClick={() => setShowOutline(false)}>×</button>
+          </div>
+
+          <div className="docs-outline-summary">
+            <span>{outlineItems.length} heading{outlineItems.length === 1 ? "" : "s"}</span>
+            <span>{metrics.words} words</span>
+          </div>
+
+          <div className="docs-outline-list">
+            {outlineItems.length ? (
+              outlineItems.map((item, outlineIndex) => (
+                <button
+                  key={item.index + "-" + outlineIndex + "-" + item.text}
+                  type="button"
+                  data-level={item.level}
+                  onClick={() => scrollToOutlineItem(item.index)}
+                >
+                  <small>H{item.level}</small>
+                  <span>{item.text}</span>
+                </button>
+              ))
+            ) : (
+              <div className="docs-outline-empty">
+                <strong>No headings yet</strong>
+                <span>Use Title, Heading or Subheading to build an outline.</span>
+              </div>
+            )}
+          </div>
+        </aside>
+      ) : null}
+
       {showFind ? (
         <aside className="docs-tool-panel docs-find-panel">
           <div className="docs-panel-head">
@@ -3050,8 +3144,12 @@ export function ZubanDocsEditor() {
               <button type="button" onClick={() => setShowShortcuts(false)}>×</button>
             </div>
             <div className="docs-shortcut-list">
+              <span>Commands</span><kbd>Ctrl / ⌘ + K</kbd>
+              <span>Find & Replace</span><kbd>Ctrl / ⌘ + F</kbd>
+              <span>Document outline</span><kbd>Ctrl / ⌘ + Shift + O</kbd>
               <span>Save now</span><kbd>Ctrl / ⌘ + S</kbd>
               <span>Save checkpoint</span><kbd>Ctrl / ⌘ + Shift + S</kbd>
+              <span>Insert page break</span><kbd>Ctrl / ⌘ + Enter</kbd>
               <span>Bold</span><kbd>Ctrl / ⌘ + B</kbd>
               <span>Italic</span><kbd>Ctrl / ⌘ + I</kbd>
               <span>Underline</span><kbd>Ctrl / ⌘ + U</kbd>
