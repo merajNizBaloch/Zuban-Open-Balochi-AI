@@ -89,7 +89,7 @@ export function SetupDashboard() {
                 {item.state === "ready"
                   ? t("setup.ready", "Ready")
                   : item.state === "limited"
-                    ? t("setup.fallback", "Fallback")
+                    ? t("setup.fallback", "Limited")
                     : item.state === "missing"
                       ? t("setup.needs", "Needs setup")
                       : t("setup.checking", "Checking")}
