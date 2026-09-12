@@ -5997,6 +5997,14 @@ html[data-language="bal"] .disclaimer-block > div {
   font-weight: 850;
 }
 
+.docs-brand-logo {
+  width: 38px;
+  height: 38px;
+  flex: 0 0 38px;
+  object-fit: contain;
+  border-radius: 10px;
+}
+
 .docs-app-brand > div {
   display: grid;
   gap: 2px;
@@ -7306,9 +7314,8 @@ html[data-theme="makran"] :where(
   color: #aaa2b3;
 }
 
-html[data-theme="makran"] .docs-app-brand > span {
-  background: #4bd6ca;
-  color: #171425;
+html[data-theme="makran"] .docs-brand-logo {
+  filter: drop-shadow(0 0 10px rgba(75,214,202,.12));
 }
 
 html[data-theme="makran"] .docs-script-toggle button.active {
