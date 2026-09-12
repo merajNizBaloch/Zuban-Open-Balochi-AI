@@ -32,3 +32,25 @@ jobs:
 
       - name: Validate Balochi model server Python
         run: python -m py_compile services/balochi-model-server/app.py
+
+      - name: Diagnose production routing
+        shell: bash
+        run: |
+          set +e
+          for URL in \
+            "https://zuban.techcraftsolution.com/" \
+            "https://zuban.techcraftsolution.com/docs" \
+            "https://zuban-open-balochi-ai.vercel.app/" \
+            "https://zuban-open-balochi-ai-tech-craft2.vercel.app/"
+          do
+            echo "===== $URL ====="
+            curl -sS -L -D /tmp/headers.txt -o /tmp/body.txt --max-time 30 "$URL"
+            CODE=$?
+            echo "curl_exit=$CODE"
+            echo "--- headers ---"
+            cat /tmp/headers.txt
+            echo "--- body first 500 ---"
+            head -c 500 /tmp/body.txt
+            echo
+            echo
+          done
