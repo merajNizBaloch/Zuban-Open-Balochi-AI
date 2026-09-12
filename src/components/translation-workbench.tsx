@@ -58,13 +58,13 @@ export function TranslationWorkbench() {
       setNotice(
         data.message ??
           data.error ??
-          "No sourced translation is available for this text in free lexicon mode.",
+          "I couldn’t translate this yet. Try a shorter sentence or different wording.",
       );
     } catch {
       setNotice(
         t(
           "translate.unreachable",
-          "The free translation service could not be reached. Please try again.",
+          "Something went wrong while translating. Please try again.",
         ),
       );
     } finally {
@@ -190,7 +190,7 @@ export function TranslationWorkbench() {
       </div>
 
       <div className="translate-actions">
-        <p>{t("translate.note", "Dialect-sensitive output may vary. Verify important translations with a fluent speaker.")}</p>
+        <p>{t("translate.note", "Balochi can vary by region. For important text, it’s a good idea to check with a fluent speaker.")}</p>
         {loading ? (
           <button className="button secondary" type="button" onClick={cancelTranslation}>
             {t("translate.cancel", "Stop")}
