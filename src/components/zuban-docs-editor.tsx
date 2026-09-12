@@ -2294,6 +2294,233 @@ export function ZubanDocsEditor() {
         </aside>
       ) : null}
 
+      {showFind ? (
+        <aside className="docs-tool-panel docs-find-panel">
+          <div className="docs-panel-head">
+            <div>
+              <strong>Find & Replace</strong>
+              <span>Search inside this document.</span>
+            </div>
+            <button type="button" onClick={() => setShowFind(false)}>×</button>
+          </div>
+          <label>
+            <span>Find</span>
+            <input
+              value={findText}
+              onChange={(event) => {
+                setFindText(event.target.value);
+                setFindCursor(-1);
+              }}
+              placeholder="Text to find"
+            />
+          </label>
+          <label>
+            <span>Replace with</span>
+            <input
+              value={replaceText}
+              onChange={(event) => setReplaceText(event.target.value)}
+              placeholder="Replacement text"
+            />
+          </label>
+          <div className="docs-panel-actions">
+            <button type="button" onClick={findNextOccurrence}>Find next</button>
+            <button type="button" onClick={replaceCurrentMatch}>Replace</button>
+            <button type="button" onClick={replaceAllMatches}>Replace all</button>
+          </div>
+        </aside>
+      ) : null}
+
+      {showPageSetup ? (
+        <aside className="docs-tool-panel docs-page-panel">
+          <div className="docs-panel-head">
+            <div>
+              <strong>Page setup</strong>
+              <span>Size, margins, header and footer.</span>
+            </div>
+            <button type="button" onClick={() => setShowPageSetup(false)}>×</button>
+          </div>
+
+          <div className="docs-form-grid">
+            <label>
+              <span>Page size</span>
+              <select
+                value={activeDocument.pageSize ?? "a4"}
+                onChange={(event) =>
+                  updateActive({
+                    pageSize: event.target.value as "a4" | "letter",
+                  })
+                }
+              >
+                <option value="a4">A4</option>
+                <option value="letter">Letter</option>
+              </select>
+            </label>
+            <label>
+              <span>Orientation</span>
+              <select
+                value={activeDocument.orientation ?? "portrait"}
+                onChange={(event) =>
+                  updateActive({
+                    orientation: event.target.value as "portrait" | "landscape",
+                  })
+                }
+              >
+                <option value="portrait">Portrait</option>
+                <option value="landscape">Landscape</option>
+              </select>
+            </label>
+            <label>
+              <span>Margins</span>
+              <select
+                value={activeDocument.marginMm ?? 20}
+                onChange={(event) =>
+                  updateActive({ marginMm: Number(event.target.value) })
+                }
+              >
+                <option value={10}>Narrow · 10 mm</option>
+                <option value={15}>Compact · 15 mm</option>
+                <option value={20}>Normal · 20 mm</option>
+                <option value={25}>Wide · 25 mm</option>
+                <option value={30}>Extra wide · 30 mm</option>
+              </select>
+            </label>
+          </div>
+
+          <label>
+            <span>Header text</span>
+            <input
+              value={activeDocument.headerText ?? ""}
+              onChange={(event) => updateActive({ headerText: event.target.value })}
+              placeholder="Optional header"
+            />
+          </label>
+          <label>
+            <span>Footer text</span>
+            <input
+              value={activeDocument.footerText ?? ""}
+              onChange={(event) => updateActive({ footerText: event.target.value })}
+              placeholder="Optional footer"
+            />
+          </label>
+
+          <label className="docs-check-row">
+            <input
+              type="checkbox"
+              checked={Boolean(activeDocument.showPageNumbers)}
+              onChange={(event) =>
+                updateActive({ showPageNumbers: event.target.checked })
+              }
+            />
+            <span>Show page numbers</span>
+          </label>
+          <label className="docs-check-row">
+            <input
+              type="checkbox"
+              checked={Boolean(activeDocument.showDate)}
+              onChange={(event) => updateActive({ showDate: event.target.checked })}
+            />
+            <span>Show date in header</span>
+          </label>
+
+          <div className="docs-panel-actions">
+            <button type="button" onMouseDown={captureSelection} onClick={insertPageBreak}>
+              Insert page break
+            </button>
+            <button type="button" onClick={() => window.print()}>
+              Print / Save PDF
+            </button>
+          </div>
+        </aside>
+      ) : null}
+
+      {showLanguageTools ? (
+        <aside className="docs-tool-panel docs-language-panel">
+          <div className="docs-panel-head">
+            <div>
+              <strong>Balochi tools</strong>
+              <span>Work with the text you selected.</span>
+            </div>
+            <button type="button" onClick={() => setShowLanguageTools(false)}>×</button>
+          </div>
+
+          <div className="docs-language-actions">
+            <button type="button" onMouseDown={captureSelection} onClick={lookupSelection}>
+              Word meaning
+            </button>
+            <button
+              type="button"
+              onMouseDown={captureSelection}
+              onClick={() => transliterateSelection("latin")}
+            >
+              Arabic → Roman
+            </button>
+            <button
+              type="button"
+              onMouseDown={captureSelection}
+              onClick={() => transliterateSelection("arabic")}
+            >
+              Roman → Arabic
+            </button>
+            <button
+              type="button"
+              onMouseDown={captureSelection}
+              onClick={() => translateSelection("English")}
+            >
+              Translate → English
+            </button>
+            <button
+              type="button"
+              onMouseDown={captureSelection}
+              onClick={() => translateSelection("Balochi")}
+            >
+              Translate → Balochi
+            </button>
+            <button type="button" onClick={checkDocumentSpelling}>
+              Check spelling
+            </button>
+          </div>
+
+          <div className={toolBusy ? "docs-tool-result loading" : "docs-tool-result"}>
+            <strong>{toolTitle}</strong>
+            <p>{toolBody}</p>
+            {toolReplacement ? (
+              <button
+                type="button"
+                onMouseDown={captureSelection}
+                onClick={() => replaceSelectedText(toolReplacement)}
+              >
+                Replace selected text
+              </button>
+            ) : null}
+          </div>
+
+          {spellIssues.length ? (
+            <div className="docs-spell-list">
+              {spellIssues.slice(0, 30).map((issue) => (
+                <div key={issue.word}>
+                  <strong>{issue.word}</strong>
+                  {issue.suggestions.length ? (
+                    <div>
+                      {issue.suggestions.map((suggestion) => (
+                        <button
+                          key={suggestion}
+                          type="button"
+                          onClick={() => replaceWordEverywhere(issue.word, suggestion)}
+                        >
+                          {suggestion}
+                        </button>
+                      ))}
+                    </div>
+                  ) : (
+                    <span>No suggestion yet</span>
+                  )}
+                </div>
+              ))}
+            </div>
+          ) : null}
+        </aside>
+      ) : null}
+
       {showInspector ? (
         <aside className="docs-inspector">
           <div className="docs-panel-head">
