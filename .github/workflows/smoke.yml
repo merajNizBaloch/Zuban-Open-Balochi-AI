@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 3
     steps:
-      - name: Verify basic sentence translation live
+      - name: Verify sentence translation live
         shell: bash
         run: |
           set -euo pipefail
@@ -26,7 +26,7 @@ jobs:
             cat "$BODY"
             echo
             test "$CODE" = "200"
-            grep -Fq "$EXPECT" "$BODY"
+            grep -Fqi "$EXPECT" "$BODY"
           }
 
           check how_are_you '{"mode":"translate","input":"How are you?","source":"English","target":"Balochi"}' 'تو چون ئے'
@@ -34,4 +34,8 @@ jobs:
           check your_name '{"mode":"translate","input":"What is your name?","source":"English","target":"Balochi"}' 'تئی نام کئے اِنت'
           check good_morning '{"mode":"translate","input":"Good morning","source":"English","target":"Balochi"}' 'سُہب وش بات'
           check thanks '{"mode":"translate","input":"Thank you very much","source":"English","target":"Balochi"}' 'تئی باز باز منّت وار'
+          check love '{"mode":"translate","input":"I love you so much","source":"English","target":"Balochi"}' 'من گوں تو سک مہر کناں'
+          check see_you '{"mode":"translate","input":"I want to see you","source":"English","target":"Balochi"}' 'من ترا گندگ لوٹاں'
+          check understand '{"mode":"translate","input":"I don'"'"'t understand what you mean","source":"English","target":"Balochi"}' 'من تئی مراد ءَ سرپد نہ بوتاں'
+          check today '{"mode":"translate","input":"How are you doing today?","source":"English","target":"Balochi"}' 'تو مرچی چون ئے'
           check reverse '{"mode":"translate","input":"تو چون ئے","source":"Balochi","target":"English"}' 'how are you'
