@@ -36,7 +36,8 @@ export async function GET() {
         provider: text.provider,
         model: text.model,
         dictionaryFallback: text.dictionaryFallback,
-        browserFallback: true,
+        browserFallback: false,
+        freeLexiconFallback: true,
       },
       modelServer: media,
       ocr: {
