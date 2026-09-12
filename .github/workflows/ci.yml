@@ -32,3 +32,17 @@ jobs:
 
       - name: Validate Balochi model server Python
         run: python -m py_compile services/balochi-model-server/app.py
+
+      - name: Live Zuban production chat test
+        shell: bash
+        run: |
+          CODE=$(curl -L -sS -o /tmp/zuban-chat.txt -w "%{http_code}" --max-time 45 \
+            -X POST "https://zuban.techcraftsolution.com/api/chat/stream" \
+            -H "Content-Type: application/json" \
+            --data '{"input":"Hello Zuban. Reply in one short sentence.","messages":[{"role":"user","content":"Hello Zuban. Reply in one short sentence."}],"dialect":"auto","scriptPreference":"auto"}' || true)
+          echo "CHAT_CODE=$CODE"
+          echo "CHAT_BODY:"
+          cat /tmp/zuban-chat.txt 2>/dev/null || true
+          echo
+          test "$CODE" = "200"
+          test -s /tmp/zuban-chat.txt
