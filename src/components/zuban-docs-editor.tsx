@@ -656,6 +656,49 @@ export function ZubanDocsEditor() {
     };
   }, [activeDocument?.id]);
 
+
+  useEffect(() => {
+    if (!ready || !activeDocument || !liveSpellcheck) {
+      clearLiveSpellHighlights();
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      const text = editorRef.current?.innerText ?? metrics.text;
+      const words = Array.from(
+        new Set(
+          (text.match(/[\p{L}\p{M}’'-]+/gu) ?? [])
+            .map((word) => word.replace(/^[’'-]+|[’'-]+$/g, ""))
+            .filter((word) => word.length > 1),
+        ),
+      ).slice(0, 100);
+
+      if (!words.length) {
+        clearLiveSpellHighlights();
+        return;
+      }
+
+      void fetch(
+        "/api/dictionary?check=" + encodeURIComponent(words.join("|")),
+      )
+        .then((response) => response.json())
+        .then(
+          (data: {
+            unknown?: Array<{ word: string; suggestions: string[] }>;
+          }) => {
+            const unknown = data.unknown ?? [];
+            highlightUnknownWords(unknown.map((item) => item.word));
+          },
+        )
+        .catch(() => {
+          clearLiveSpellHighlights();
+        });
+    }, 1200);
+
+    return () => window.clearTimeout(timer);
+  }, [activeDocument?.html, activeDocument?.id, liveSpellcheck, ready]);
+
+
   useEffect(() => {
     if (!notice) return;
     const timer = window.setTimeout(() => setNotice(""), 2200);
@@ -2711,6 +2754,18 @@ export function ZubanDocsEditor() {
             <span>{metrics.characters} characters</span>
             <span title="Saved in your browser">{storageLabel}</span>
             <span>{metrics.purity}% script purity</span>
+            <button
+              className="docs-status-spelling"
+              type="button"
+              onClick={() => setShowLanguageTools(true)}
+              title="Open Balochi spelling tools"
+            >
+              {liveSpellcheck
+                ? liveSpellCount
+                  ? liveSpellCount + " spelling hint" + (liveSpellCount === 1 ? "" : "s")
+                  : "Spelling ready"
+                : "Spelling off"}
+            </button>
             <span>~{metrics.readingMinutes} min</span>
           </div>
           <div>
@@ -3130,7 +3185,34 @@ export function ZubanDocsEditor() {
             <button type="button" onClick={checkDocumentSpelling}>
               Check spelling
             </button>
+            <button
+              type="button"
+              onClick={() => convertWholeDocument("latin")}
+            >
+              Whole document → Roman
+            </button>
+            <button
+              type="button"
+              onClick={() => convertWholeDocument("arabic")}
+            >
+              Whole document → Arabic
+            </button>
           </div>
+
+          <label className="docs-check-row">
+            <input
+              type="checkbox"
+              checked={liveSpellcheck}
+              onChange={(event) => {
+                setLiveSpellcheck(event.target.checked);
+                if (!event.target.checked) clearLiveSpellHighlights();
+              }}
+            />
+            <span>
+              Live spelling hints
+              {liveSpellCount ? " · " + liveSpellCount + " highlighted" : ""}
+            </span>
+          </label>
 
           <div className={toolBusy ? "docs-tool-result loading" : "docs-tool-result"}>
             <strong>{toolTitle}</strong>
@@ -3142,6 +3224,11 @@ export function ZubanDocsEditor() {
                 onClick={() => replaceSelectedText(toolReplacement)}
               >
                 Replace selected text
+              </button>
+            ) : null}
+            {documentConversion ? (
+              <button type="button" onClick={applyWholeDocumentConversion}>
+                Apply to whole document
               </button>
             ) : null}
           </div>
