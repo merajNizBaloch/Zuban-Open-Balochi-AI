@@ -1,4 +1,4 @@
-name: Free Balochi provider probe
+name: Lingva Balochi probe
 
 on:
   pull_request:
@@ -8,30 +8,25 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 4
     steps:
-      - name: Probe no-key translation providers
+      - name: Probe Lingva Balochi translation
         shell: bash
         run: |
           set -euo pipefail
-          Q="Hello, how are you? I am going home to drink water."
+          Q='Hello, how are you? I am going home to drink water.'
 
-          echo "=== LINGVA OFFICIAL ==="
-          curl -sS --max-time 25 \
-            --get "https://lingva.ml/api/v1/en/bal/$Q" \
-            -w "\nHTTP=%{http_code}\n" || true
-
-          echo "=== LINGVA JAE ==="
-          curl -sS --max-time 25 \
-            --get "https://translate.jae.fi/api/v1/en/bal/$Q" \
-            -w "\nHTTP=%{http_code}\n" || true
-
-          echo "=== LINGVA DR460 ==="
-          curl -sS --max-time 25 \
-            --get "https://translate.dr460nf1r3.org/api/v1/en/bal/$Q" \
-            -w "\nHTTP=%{http_code}\n" || true
-
-          echo "=== MYMEMORY BAL ==="
-          curl -sS --max-time 25 \
-            --get "https://api.mymemory.translated.net/get" \
-            --data-urlencode "q=$Q" \
-            --data-urlencode "langpair=en|bal" \
-            -w "\nHTTP=%{http_code}\n" || true
+          for BASE in \
+            "https://lingva.ml" \
+            "https://translate.jae.fi" \
+            "https://translate.dr460nf1r3.org"
+          do
+            echo "=== $BASE languages ==="
+            curl -sS --max-time 20 "$BASE/api/v1/languages/target" | grep -oiE '.{0,80}(balochi|baluchi|"bal").{0,80}' || true
+            echo
+            echo "=== $BASE translate ==="
+            curl -sS --max-time 25 \
+              -X POST "$BASE/api/v1/en/bal" \
+              -H "Content-Type: application/json" \
+              --data "$(python3 -c 'import json; print(json.dumps({"query": """'"$Q"'"""}))')" \
+              -w "\nHTTP=%{http_code}\n" || true
+            echo
+          done
