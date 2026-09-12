@@ -2,14 +2,12 @@
 
 import { FormEvent, useState } from "react";
 import { useExperience } from "@/components/experience-provider";
-import { puterChat } from "@/lib/puter-ai";
 
 type ApiResult = {
   configured?: boolean;
   output?: string;
   message?: string;
   error?: string;
-  provider?: string;
 };
 
 const languages = [
@@ -27,32 +25,6 @@ export function TranslationWorkbench() {
   const [output, setOutput] = useState("");
   const [notice, setNotice] = useState("");
   const [loading, setLoading] = useState(false);
-
-  async function runFreeAiTranslation() {
-    setNotice(
-      t(
-        "translate.freeAi",
-        "Using free conversational AI for this translation…",
-      ),
-    );
-
-    const text = await puterChat([
-      {
-        role: "system",
-        content: [
-          "You are Zubán Translate, a careful Balochi translation assistant.",
-          "Translate from " + source + " to " + target + ".",
-          "Return only the translation unless a very short dialect note is necessary.",
-          "Preserve names, numbers, and meaning.",
-          "Balochi varies by dialect and orthography. Do not invent forms when uncertain.",
-        ].join("\n"),
-      },
-      { role: "user", content: input.trim() },
-    ]);
-
-    setOutput(text);
-    setNotice("");
-  }
 
   async function translate(event?: FormEvent<HTMLFormElement>) {
     event?.preventDefault();
@@ -76,55 +48,23 @@ export function TranslationWorkbench() {
 
       const data = (await response.json()) as ApiResult;
 
-      const isSingleWord = input.trim().split(/\s+/).length === 1;
-      const exactLexiconPair =
-        (source === "English" && target === "Balochi") ||
-        (source === "Balochi" && target === "English");
-
-      if (data.output && data.provider !== "dictionary") {
+      if (data.output) {
         setOutput(data.output);
         return;
       }
 
-      if (data.output && data.provider === "dictionary" && isSingleWord && exactLexiconPair) {
-        setOutput(data.output);
-        return;
-      }
-
-      try {
-        await runFreeAiTranslation();
-      } catch {
-        if (data.output) {
-          setOutput(data.output);
-          setNotice(
-            t(
-              "translate.lexiconFallback",
-              "Free AI sign-in was unavailable, so Zubán used its sourced lexicon instead.",
-            ),
-          );
-          return;
-        }
-
-        setNotice(
-          data.message ??
-            data.error ??
-            t(
-              "translate.puterSignIn",
-              "Free AI could not start. Allow the Puter sign-in popup and try again.",
-            ),
-        );
-      }
+      setNotice(
+        data.message ??
+          data.error ??
+          "No sourced translation is available for this text in free lexicon mode.",
+      );
     } catch {
-      try {
-        await runFreeAiTranslation();
-      } catch {
-        setNotice(
-          t(
-            "translate.unreachable",
-            "Free translation could not start. Allow the Puter sign-in popup and try again.",
-          ),
-        );
-      }
+      setNotice(
+        t(
+          "translate.unreachable",
+          "The free translation service could not be reached. Please try again.",
+        ),
+      );
     } finally {
       setLoading(false);
     }
