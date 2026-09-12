@@ -4,7 +4,8 @@
     "deploymentEnabled": {
       "working": false,
       "zuban-docs": false,
-      "zuban-docs-polish": false
+      "zuban-docs-polish": false,
+      "infra-diagnose": false
     }
   }
 }
