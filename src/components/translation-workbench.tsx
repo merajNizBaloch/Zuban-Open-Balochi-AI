@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, useState } from "react";
-import { browserAiComplete, isMissingServerModelMessage, stopBrowserAiGeneration } from "@/lib/browser-ai";
+import { browserAiComplete, stopBrowserAiGeneration } from "@/lib/browser-ai";
 import { useExperience } from "@/components/experience-provider";
 
 type ApiResult = {
@@ -27,6 +27,45 @@ export function TranslationWorkbench() {
   const [notice, setNotice] = useState("");
   const [loading, setLoading] = useState(false);
 
+  async function runFreeLocalTranslation(reason?: string) {
+    if (reason) {
+      setNotice(
+        t("translate.preparing", "Server AI unavailable · using free on-device translation…"),
+      );
+    }
+
+    const result = await browserAiComplete(
+      [
+        {
+          role: "system",
+          content: [
+            "You are Zubán Translate, a Balochi language translation assistant.",
+            "Translate from " + source + " to " + target + ".",
+            "Return only the translation unless a short dialect note is genuinely necessary.",
+            "Preserve names, numbers and meaning.",
+            "Balochi has dialect and orthographic variation. Do not invent forms when uncertain.",
+          ].join("\n"),
+        },
+        { role: "user", content: input.trim() },
+      ],
+      {
+        temperature: 0.1,
+        maxTokens: 260,
+        onProgress: ({ progress, text }) => {
+          const percent = Math.round(progress * 100);
+          setNotice(
+            t("translate.preparing", "Preparing free on-device AI…") + " " +
+              (percent > 0 ? percent + "% · " : "") +
+              text,
+          );
+        },
+      },
+    );
+
+    setOutput(result.text);
+    setNotice("");
+  }
+
   async function translate(event?: FormEvent<HTMLFormElement>) {
     event?.preventDefault();
     if (!input.trim() || loading) return;
@@ -50,63 +89,46 @@ export function TranslationWorkbench() {
       const data = (await response.json()) as ApiResult;
       if (data.output) {
         setOutput(data.output);
-      } else {
-        const serverMessage =
-          data.message ?? data.error ?? "Translation is unavailable.";
+        return;
+      }
 
-        if (isMissingServerModelMessage(serverMessage)) {
-          try {
-            const result = await browserAiComplete(
-              [
-                {
-                  role: "system",
-                  content: [
-                    "You are Zubán Translate, a Balochi language translation assistant.",
-                    "Translate from " + source + " to " + target + ".",
-                    "Return only the translation unless a short dialect note is genuinely necessary.",
-                    "Preserve names, numbers and meaning.",
-                    "Balochi has dialect and orthographic variation. Do not invent forms when uncertain.",
-                  ].join("\n"),
-                },
-                { role: "user", content: input.trim() },
-              ],
-              {
-                temperature: 0.1,
-                maxTokens: 220,
-                onProgress: ({ progress, text }) => {
-                  const percent = Math.round(progress * 100);
-                  setNotice(
-                    t("translate.preparing", "Preparing private on-device AI…") + " " +
-                    (percent > 0 ? percent + "% · " : "") +
-                    text,
-                  );
-                },
-              },
-            );
+      const serverMessage =
+        data.message ?? data.error ?? "Server translation is unavailable.";
 
-            setOutput(result.text);
-            setNotice("");
-          } catch (browserError) {
-            if (browserError instanceof DOMException && browserError.name === "AbortError") {
-              setNotice(t("translate.cancelled", "Translation stopped."));
-              return;
-            }
-
-            const detail =
-              browserError instanceof Error
-                ? browserError.message
-                : "Browser AI is unavailable.";
-            setNotice(
-              t("translate.localError", "Zubán could not start local AI. No login or GPU is required; Zubán can fall back to CPU/WASM in the browser.") +
-                (detail ? " " + detail : ""),
-            );
-          }
-        } else {
-          setNotice(serverMessage);
+      try {
+        await runFreeLocalTranslation(serverMessage);
+      } catch (browserError) {
+        if (browserError instanceof DOMException && browserError.name === "AbortError") {
+          setNotice(t("translate.cancelled", "Translation stopped."));
+          return;
         }
+
+        const detail =
+          browserError instanceof Error
+            ? browserError.message
+            : "On-device AI is unavailable.";
+        setNotice(
+          t(
+            "translate.localError",
+            "Free on-device translation could not start on this browser.",
+          ) + (detail ? " " + detail : ""),
+        );
       }
     } catch {
-      setNotice(t("translate.unreachable", "The translation service could not be reached."));
+      try {
+        await runFreeLocalTranslation("The server translation service could not be reached.");
+      } catch (browserError) {
+        const detail =
+          browserError instanceof Error
+            ? browserError.message
+            : "On-device AI is unavailable.";
+        setNotice(
+          t(
+            "translate.localError",
+            "Free on-device translation could not start on this browser.",
+          ) + (detail ? " " + detail : ""),
+        );
+      }
     } finally {
       setLoading(false);
     }
