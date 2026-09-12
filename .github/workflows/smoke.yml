@@ -1,4 +1,4 @@
-name: Google Balochi probe
+name: Free Balochi provider probe
 
 on:
   pull_request:
@@ -6,20 +6,32 @@ on:
 jobs:
   probe:
     runs-on: ubuntu-latest
-    timeout-minutes: 3
+    timeout-minutes: 4
     steps:
-      - name: Probe Google Balochi translation endpoint
+      - name: Probe no-key translation providers
         shell: bash
         run: |
           set -euo pipefail
-          for CODE in bal bal-Arab bal-Latn; do
-            echo "=== $CODE ==="
-            curl -sS --max-time 20 --get \
-              "https://translate.googleapis.com/translate_a/single" \
-              --data-urlencode "client=gtx" \
-              --data-urlencode "sl=en" \
-              --data-urlencode "tl=$CODE" \
-              --data-urlencode "dt=t" \
-              --data-urlencode "q=Hello, how are you? I am going home to drink water." \
-              -w "\nHTTP=%{http_code}\n" || true
-          done
+          Q="Hello, how are you? I am going home to drink water."
+
+          echo "=== LINGVA OFFICIAL ==="
+          curl -sS --max-time 25 \
+            --get "https://lingva.ml/api/v1/en/bal/$Q" \
+            -w "\nHTTP=%{http_code}\n" || true
+
+          echo "=== LINGVA JAE ==="
+          curl -sS --max-time 25 \
+            --get "https://translate.jae.fi/api/v1/en/bal/$Q" \
+            -w "\nHTTP=%{http_code}\n" || true
+
+          echo "=== LINGVA DR460 ==="
+          curl -sS --max-time 25 \
+            --get "https://translate.dr460nf1r3.org/api/v1/en/bal/$Q" \
+            -w "\nHTTP=%{http_code}\n" || true
+
+          echo "=== MYMEMORY BAL ==="
+          curl -sS --max-time 25 \
+            --get "https://api.mymemory.translated.net/get" \
+            --data-urlencode "q=$Q" \
+            --data-urlencode "langpair=en|bal" \
+            -w "\nHTTP=%{http_code}\n" || true
