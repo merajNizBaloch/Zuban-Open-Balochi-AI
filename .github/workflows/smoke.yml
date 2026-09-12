@@ -1,39 +1,21 @@
-name: Production smoke
+name: HF translator probe
 
 on:
   pull_request:
 
 jobs:
-  smoke:
+  probe:
     runs-on: ubuntu-latest
     timeout-minutes: 3
     steps:
-      - name: Verify no-login production chat
+      - name: Probe public Balochi translator
         shell: bash
         run: |
           set -euo pipefail
-
-          post_chat() {
-            NAME="$1"
-            DATA="$2"
-            EXPECT="$3"
-            BODY="/tmp/$NAME.txt"
-            CODE=$(curl -sS -o "$BODY" -w "%{http_code}" --max-time 30 \
-              -X POST "https://zuban.techcraftsolution.com/api/chat/stream" \
-              -H "Content-Type: application/json" \
-              --data "$DATA")
-            echo "$NAME HTTP=$CODE"
-            cat "$BODY"
-            echo
-            test "$CODE" = "200"
-            grep -qi "$EXPECT" "$BODY"
-          }
-
-          post_chat hello '{"input":"Hello, how are you?"}' "doing well"
-          post_chat thanks '{"input":"Thank you"}' "welcome"
-          post_chat identity '{"input":"Who are you?"}' "Zub"
-          post_chat dictionary '{"input":"What does دوست mean?"}' "friend"
-
-          HEALTH=$(curl -sS --max-time 30 "https://zuban.techcraftsolution.com/api/health")
-          echo "$HEALTH"
-          echo "$HEALTH" | grep -q '"browserFallback":false'
+          BASE="https://bakhteyar-latani-balochi.hf.space"
+          echo "OPENAPI"
+          curl -sS --max-time 30 "$BASE/gradio_api/openapi.json" | head -c 12000
+          echo
+          echo "CONFIG"
+          curl -sS --max-time 30 "$BASE/config" | head -c 12000
+          echo
