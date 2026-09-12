@@ -1,5 +1,6 @@
 import { generateText } from "ai";
 import { dictionaryEntries } from "@/lib/dictionary";
+import { balochiParallelPairs } from "@/lib/balochi-parallel.generated";
 import {
   detectBalochiScript,
   normalizeBalochi,
@@ -299,6 +300,147 @@ function translateTokens(
   };
 }
 
+type ParallelTranslation = {
+  output: string;
+  confidence: number;
+  exact: boolean;
+};
+
+function normalizeParallelText(value: string) {
+  return normalizeBalochi(value)
+    .normalize("NFKC")
+    .toLocaleLowerCase()
+    .replace(/\bi['’]?m\b/g, "i am")
+    .replace(/\bhow['’]?re\b/g, "how are")
+    .replace(/\bwhat['’]?s\b/g, "what is")
+    .replace(/\bwhere['’]?s\b/g, "where is")
+    .replace(/\bu\b/g, "you")
+    .replace(/\br\b/g, "are")
+    .replace(/[“”"'.,!?؟،؛:;()[\]{}\-_]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function parallelTokens(value: string) {
+  return normalizeParallelText(value).split(" ").filter(Boolean);
+}
+
+const parallelRows = balochiParallelPairs.map(([english, balochi]) => ({
+  english,
+  balochi,
+  englishNorm: normalizeParallelText(english),
+  balochiNorm: normalizeParallelText(balochi),
+  englishTokens: parallelTokens(english),
+  balochiTokens: parallelTokens(balochi),
+}));
+
+const parallelEnglishExact = new Map<string, string>();
+const parallelBalochiExact = new Map<string, string>();
+
+for (const row of parallelRows) {
+  if (row.englishNorm && !parallelEnglishExact.has(row.englishNorm)) {
+    parallelEnglishExact.set(row.englishNorm, row.balochi);
+  }
+  if (row.balochiNorm && !parallelBalochiExact.has(row.balochiNorm)) {
+    parallelBalochiExact.set(row.balochiNorm, row.english);
+  }
+}
+
+function tokenSimilarity(query: string[], candidate: string[]) {
+  if (!query.length || !candidate.length) return 0;
+
+  const querySet = new Set(query);
+  const candidateSet = new Set(candidate);
+  let intersection = 0;
+
+  for (const token of querySet) {
+    if (candidateSet.has(token)) intersection += 1;
+  }
+
+  if (!intersection) return 0;
+
+  const dice =
+    (2 * intersection) / (querySet.size + candidateSet.size);
+  const queryCoverage = intersection / querySet.size;
+  const candidateCoverage = intersection / candidateSet.size;
+  const sizePenalty =
+    Math.min(querySet.size, candidateSet.size) /
+    Math.max(querySet.size, candidateSet.size);
+
+  return (
+    dice * 0.5 +
+    queryCoverage * 0.25 +
+    candidateCoverage * 0.15 +
+    sizePenalty * 0.1
+  );
+}
+
+function parallelCorpusTranslation(
+  input: string,
+  source?: string,
+  target?: string,
+): ParallelTranslation | null {
+  const from = source?.toLocaleLowerCase();
+  const to = target?.toLocaleLowerCase();
+
+  if (
+    !(
+      (from === "english" && to === "balochi") ||
+      (from === "balochi" && to === "english")
+    )
+  ) {
+    return null;
+  }
+
+  const normalized = normalizeParallelText(input);
+  if (!normalized) return null;
+
+  const exact =
+    from === "english"
+      ? parallelEnglishExact.get(normalized)
+      : parallelBalochiExact.get(normalized);
+
+  if (exact) {
+    return { output: exact, confidence: 1, exact: true };
+  }
+
+  const queryTokens = parallelTokens(input);
+  if (queryTokens.length < 2) return null;
+
+  let bestOutput = "";
+  let bestScore = 0;
+
+  for (const row of parallelRows) {
+    const candidateTokens =
+      from === "english" ? row.englishTokens : row.balochiTokens;
+
+    if (
+      Math.abs(candidateTokens.length - queryTokens.length) >
+      Math.max(2, Math.ceil(queryTokens.length * 0.5))
+    ) {
+      continue;
+    }
+
+    const score = tokenSimilarity(queryTokens, candidateTokens);
+
+    if (score > bestScore) {
+      bestScore = score;
+      bestOutput = from === "english" ? row.balochi : row.english;
+    }
+  }
+
+  const minimum =
+    queryTokens.length <= 3 ? 0.86 : queryTokens.length <= 7 ? 0.8 : 0.84;
+
+  if (!bestOutput || bestScore < minimum) return null;
+
+  return {
+    output: bestOutput,
+    confidence: bestScore,
+    exact: false,
+  };
+}
+
 type LocalTranslation = {
   output: string;
   coverage: number;
@@ -496,6 +638,26 @@ export async function runTextModel(request: TextRequest) {
 
   if (!provider) {
     if (request.mode === "translate") {
+      const parallel = parallelCorpusTranslation(
+        request.input,
+        request.source,
+        request.target,
+      );
+
+      if (parallel) {
+        return {
+          configured: true,
+          output: parallel.output,
+          message: parallel.exact
+            ? ""
+            : "Matched a close sentence from Zubán’s sourced English–Balochi parallel corpus.",
+          provider: "parallel-corpus",
+          model: "Zubán Parallel Corpus",
+          coverage: parallel.confidence,
+          partial: !parallel.exact,
+        };
+      }
+
       const local = localDictionaryTranslation(
         request.input,
         request.source,
@@ -507,7 +669,7 @@ export async function runTextModel(request: TextRequest) {
           configured: true,
           output: local.output,
           message: local.partial
-            ? "Draft translation: words not yet covered by the sourced Zubán lexicon were preserved unchanged."
+            ? "No close sentence match was found. Zubán translated the words it could verify and preserved the rest."
             : "",
           provider: "dictionary",
           model: "Zubán Lexicon",
