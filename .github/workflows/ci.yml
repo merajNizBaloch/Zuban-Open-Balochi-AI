@@ -32,3 +32,21 @@ jobs:
 
       - name: Validate Balochi model server Python
         run: python -m py_compile services/balochi-model-server/app.py
+
+      - name: Verify production domain
+        shell: bash
+        run: |
+          MARKER_CODE=$(curl -L -sS -o /tmp/marker.txt -w "%{http_code}" --max-time 20 "https://zuban.techcraftsolution.com/zuban-deploy-marker.txt" || true)
+          echo "MARKER_CODE=$MARKER_CODE"
+          echo "MARKER_BODY:"
+          cat /tmp/marker.txt 2>/dev/null || true
+          echo
+
+          CHAT_CODE=$(curl -L -sS -o /tmp/chat.txt -w "%{http_code}" --max-time 45 -X POST "https://zuban.techcraftsolution.com/api/chat/stream" -H "Content-Type: application/json" --data '{"input":"Hello Zuban. Reply in one short sentence."}' || true)
+          echo "CHAT_CODE=$CHAT_CODE"
+          echo "CHAT_BODY:"
+          cat /tmp/chat.txt 2>/dev/null || true
+          echo
+
+          test "$MARKER_CODE" = "200"
+          grep -q "ZUBAN_DEPLOY_MARKER_2026_09_12_1224" /tmp/marker.txt
