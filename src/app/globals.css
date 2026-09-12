@@ -7345,3 +7345,54 @@ html[data-theme="makran"] .docs-save-state.saved {
 html[data-theme="makran"] .docs-save-state {
   color: #e6cda7;
 }
+
+
+/* Standalone Zuban Docs editor */
+.standalone-docs-main {
+  min-height: 100dvh;
+  height: 100dvh;
+  overflow: hidden;
+}
+
+.standalone-docs-main .docs-app {
+  min-height: 100dvh;
+  height: 100dvh;
+}
+
+.standalone-docs-main .docs-sidebar {
+  top: 0;
+  height: 100dvh;
+}
+
+.standalone-docs-main .docs-topbar {
+  top: 0;
+}
+
+.standalone-docs-main .docs-toolbar {
+  top: 72px;
+}
+
+.standalone-docs-main .docs-version-panel,
+.standalone-docs-main .docs-inspector {
+  top: 14px;
+  max-height: calc(100dvh - 28px);
+}
+
+@media (max-width: 860px) {
+  .standalone-docs-main {
+    height: auto;
+    min-height: 100dvh;
+    overflow: visible;
+  }
+
+  .standalone-docs-main .docs-app {
+    height: auto;
+    min-height: 100dvh;
+  }
+
+  .standalone-docs-main .docs-sidebar,
+  .standalone-docs-main .docs-topbar,
+  .standalone-docs-main .docs-toolbar {
+    top: auto;
+  }
+}
