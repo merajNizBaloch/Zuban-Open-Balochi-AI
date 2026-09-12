@@ -3,7 +3,8 @@
   "git": {
     "deploymentEnabled": {
       "working": false,
-      "zuban-docs": false
+      "zuban-docs": false,
+      "zuban-docs-polish": false
     }
   }
 }
