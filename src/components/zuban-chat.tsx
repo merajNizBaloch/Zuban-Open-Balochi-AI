@@ -9,7 +9,6 @@ import {
 } from "react";
 import { ZubanLogo } from "@/components/zuban-logo";
 import { useExperience } from "@/components/experience-provider";
-import { browserAiStream, stopBrowserAiGeneration } from "@/lib/browser-ai";
 
 type ChatMessage = {
   id: string;
@@ -131,64 +130,6 @@ export function ZubanChat() {
     textarea.style.height = Math.min(textarea.scrollHeight, 180) + "px";
   }, [input]);
 
-  async function runFreeLocalChat(nextMessages: ChatMessage[]) {
-    const assistantId = messageId();
-    streamTextRef.current = "";
-    setStreamingId(assistantId);
-    setMessages((current) => [
-      ...current,
-      { id: assistantId, role: "assistant", content: "" },
-    ]);
-
-    const system = [
-      "You are Zubán, a concise Balochi language assistant.",
-      "Help with Balochi language, writing, translation, learning, and everyday questions.",
-      "Respect dialect and orthographic variation. Do not invent Balochi forms when uncertain.",
-      dialect === "auto"
-        ? "Dialect preference: auto."
-        : "Preferred Balochi dialect: " + dialect + ".",
-      scriptPreference === "auto"
-        ? "Follow the user's script when practical."
-        : "Preferred Balochi script: " + scriptPreference + ".",
-    ].join("\n");
-
-    const result = await browserAiStream(
-      [
-        { role: "system", content: system },
-        ...nextMessages.slice(-12).map(({ role, content }) => ({ role, content })),
-      ],
-      (text) => {
-        streamTextRef.current = text;
-        setMessages((current) =>
-          current.map((message) =>
-            message.id === assistantId
-              ? { ...message, content: text }
-              : message,
-          ),
-        );
-      },
-      {
-        temperature: 0.25,
-        maxTokens: 320,
-      },
-    );
-
-    if (!streamTextRef.current.trim() && result.text.trim()) {
-      streamTextRef.current = result.text;
-      setMessages((current) =>
-        current.map((message) =>
-          message.id === assistantId
-            ? { ...message, content: result.text }
-            : message,
-        ),
-      );
-    }
-
-    if (!streamTextRef.current.trim()) {
-      throw new Error("The free on-device model returned an empty response.");
-    }
-  }
-
   async function sendPrompt(prompt: string) {
     const trimmed = prompt.trim();
     if (!trimmed || loading) return;
@@ -207,7 +148,6 @@ export function ZubanChat() {
 
     const controller = new AbortController();
     abortRef.current = controller;
-    let triedLocal = false;
 
     try {
       const response = await fetch("/api/chat/stream", {
@@ -225,15 +165,24 @@ export function ZubanChat() {
       const contentType = response.headers.get("content-type") ?? "";
 
       if (!response.ok || contentType.includes("application/json")) {
-        triedLocal = true;
-        await runFreeLocalChat(nextMessages);
+        const data = (await response.json()) as ApiError;
+        setMessages((current) => [
+          ...current,
+          {
+            id: messageId(),
+            role: "assistant",
+            content:
+              data.message ||
+              data.error ||
+              "Zubán could not answer that message.",
+            error: true,
+          },
+        ]);
         return;
       }
 
       if (!response.body) {
-        triedLocal = true;
-        await runFreeLocalChat(nextMessages);
-        return;
+        throw new Error("The response stream is unavailable.");
       }
 
       const assistantId = messageId();
@@ -296,16 +245,6 @@ export function ZubanChat() {
         return;
       }
 
-      if (!triedLocal) {
-        try {
-          triedLocal = true;
-          await runFreeLocalChat(nextMessages);
-          return;
-        } catch {
-          // Fall through to a clear local-mode error below.
-        }
-      }
-
       setMessages((current) => [
         ...current,
         {
@@ -313,7 +252,7 @@ export function ZubanChat() {
           role: "assistant",
           content: t(
             "tool.chat.unreachable",
-            "Free on-device AI could not start in this browser. Please try again.",
+            "The Zubán service could not be reached. Please try again.",
           ),
           error: true,
         },
@@ -327,7 +266,6 @@ export function ZubanChat() {
 
   function stopGeneration() {
     abortRef.current?.abort();
-    stopBrowserAiGeneration();
     setStreamingId("");
     setLoading(false);
   }
