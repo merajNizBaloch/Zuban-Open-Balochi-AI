@@ -615,6 +615,45 @@ export function ZubanDocsEditor() {
     return () => window.clearTimeout(timer);
   }, [notice]);
 
+
+  useEffect(() => {
+    function onWindowKeyDown(event: globalThis.KeyboardEvent) {
+      const modifier = event.ctrlKey || event.metaKey;
+      const key = event.key.toLocaleLowerCase();
+
+      if (modifier && key === "k") {
+        event.preventDefault();
+        setCommandQuery("");
+        setShowCommandPalette((value) => !value);
+        return;
+      }
+
+      if (modifier && key === "f") {
+        event.preventDefault();
+        setShowFind(true);
+        return;
+      }
+
+      if (modifier && event.shiftKey && key === "o") {
+        event.preventDefault();
+        setShowOutline((value) => !value);
+        return;
+      }
+
+      if (event.key === "Escape") {
+        setShowCommandPalette(false);
+        setShowFind(false);
+        setShowPageSetup(false);
+        setShowLanguageTools(false);
+        setShowOutline(false);
+        setSelectedImage(null);
+      }
+    }
+
+    window.addEventListener("keydown", onWindowKeyDown);
+    return () => window.removeEventListener("keydown", onWindowKeyDown);
+  }, []);
+
   const filteredDocuments = useMemo(() => {
     const query = search.trim().toLocaleLowerCase();
 
@@ -1856,6 +1895,26 @@ export function ZubanDocsEditor() {
     setNotice("Document imported.");
   }
 
+  function runCommand(id: CommandId) {
+    setShowCommandPalette(false);
+    setCommandQuery("");
+
+    if (id === "new") openCreateDialog();
+    if (id === "find") setShowFind(true);
+    if (id === "outline") setShowOutline(true);
+    if (id === "page") setShowPageSetup(true);
+    if (id === "balochi") setShowLanguageTools(true);
+    if (id === "image") chooseImage();
+    if (id === "table") insertTable(3, 3);
+    if (id === "link") insertLink();
+    if (id === "page-break") insertPageBreak();
+    if (id === "checkpoint") createSnapshot();
+    if (id === "focus") setFocusMode((value) => !value);
+    if (id === "keyboard") setShowKeyboard(true);
+    if (id === "docx") void exportDocx();
+    if (id === "print") window.print();
+  }
+
   function handleEditorKeyDown(event: KeyboardEvent<HTMLDivElement>) {
     if (
       activeDocument.script === "arabic" &&
@@ -1886,6 +1945,31 @@ export function ZubanDocsEditor() {
     if (!(event.ctrlKey || event.metaKey)) return;
 
     const key = event.key.toLowerCase();
+
+    if (key === "enter") {
+      event.preventDefault();
+      insertPageBreak();
+      return;
+    }
+
+    if (key === "k") {
+      event.preventDefault();
+      setCommandQuery("");
+      setShowCommandPalette(true);
+      return;
+    }
+
+    if (key === "f") {
+      event.preventDefault();
+      setShowFind(true);
+      return;
+    }
+
+    if (key === "o" && event.shiftKey) {
+      event.preventDefault();
+      setShowOutline((value) => !value);
+      return;
+    }
 
     if (key === "s" && event.shiftKey) {
       event.preventDefault();
