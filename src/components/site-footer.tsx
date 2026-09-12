@@ -17,6 +17,7 @@ export function SiteFooter() {
         </div>
 
         <div className="footer-links">
+          <Link href="/docs">Zuban Docs</Link>
           <Link href="/language"><UiText id="footer.language" fallback="Language Lab" /></Link>
           <Link href="/community"><UiText id="footer.community" fallback="Community" /></Link>
           <Link href="/datasets"><UiText id="footer.datasets" fallback="Datasets" /></Link>
