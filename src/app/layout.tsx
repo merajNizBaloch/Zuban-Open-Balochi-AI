@@ -1,9 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { SiteFooter } from "@/components/site-footer";
-import { SiteHeader } from "@/components/site-header";
+import { AppShell } from "@/components/app-shell";
 import { ExperienceProvider } from "@/components/experience-provider";
-import { DisclaimerBanner } from "@/components/disclaimer-banner";
 
 export const metadata: Metadata = {
   title: {
@@ -50,11 +48,7 @@ export default function RootLayout({
       </head>
       <body>
         <ExperienceProvider>
-          <a className="skip-link" href="#main-content">Skip to content</a>
-          <DisclaimerBanner />
-          <SiteHeader />
-          <main id="main-content">{children}</main>
-          <SiteFooter />
+          <AppShell>{children}</AppShell>
         </ExperienceProvider>
       </body>
     </html>
