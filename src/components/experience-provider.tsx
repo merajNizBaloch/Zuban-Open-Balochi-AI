@@ -17,7 +17,7 @@ const balochiCopy: Record<string, string> = {
   "nav.translate": "ترجمه",
   "nav.dictionary": "لبزنامگ",
   "nav.language": "زبان",
-  "nav.docs": "ڈاکس",
+  "nav.docs": "DocX",
   "nav.community": "کمیونٹی",
   "nav.research": "تحقیق",
   "nav.github": "GitHub",
@@ -57,7 +57,7 @@ const balochiCopy: Record<string, string> = {
   "home.tool.05.desc": "آوازءَ متن کن و متنءَ آواز.",
   "home.tool.06.title": "عکس چہ متن",
   "home.tool.06.desc": "صاف عکس یا صفحہ چہ بلوچی متن بخوان.",
-  "home.tool.07.title": "زُبان ڈاکس",
+  "home.tool.07.title": "زُبان DocX",
   "home.tool.07.desc": "بلوچی دستاویز بنویس، سنبھال و برآمد کن.",
   "home.tool.open": "پچ کن",
 
