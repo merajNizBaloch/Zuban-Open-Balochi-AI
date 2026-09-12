@@ -182,7 +182,7 @@ export function ZubanChat() {
       }
 
       if (!response.body) {
-        throw new Error("The response stream is unavailable.");
+        throw new Error("No reply was received.");
       }
 
       const assistantId = messageId();
@@ -233,7 +233,7 @@ export function ZubanChat() {
             message.id === assistantId
               ? {
                   ...message,
-                  content: t("tool.chat.empty", "The model returned an empty response."),
+                  content: t("tool.chat.empty", "I couldn’t make a reply. Please try again."),
                   error: true,
                 }
               : message,
@@ -252,7 +252,7 @@ export function ZubanChat() {
           role: "assistant",
           content: t(
             "tool.chat.unreachable",
-            "The Zubán service could not be reached. Please try again.",
+            "Something went wrong. Please try again.",
           ),
           error: true,
         },
@@ -456,7 +456,7 @@ export function ZubanChat() {
                 className="chat-send-button stop"
                 type="button"
                 onClick={stopGeneration}
-                aria-label="Stop generation"
+                aria-label="Stop reply"
               >
                 <span className="stop-generation-icon" />
               </button>
