@@ -1,4 +1,4 @@
-name: HF corpus search probe
+name: Arabic Balochi corpus probe
 
 on:
   pull_request:
@@ -8,25 +8,23 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 3
     steps:
-      - name: Probe parallel corpus search
+      - name: Inspect Arabic-script corpus
         shell: bash
         run: |
           set -euo pipefail
-          for Q in \
-            "How are you?" \
-            "I am going home." \
-            "I want to drink water." \
-            "Where are you going?" \
-            "Thank you very much."
-          do
-            echo "=== $Q ==="
-            curl -sS --max-time 20 --get \
-              "https://datasets-server.huggingface.co/search" \
-              --data-urlencode "dataset=Aynkader/Balochi-dataset" \
-              --data-urlencode "config=default" \
-              --data-urlencode "split=train" \
-              --data-urlencode "query=$Q" \
-              --data-urlencode "offset=0" \
-              --data-urlencode "length=10" \
-              -w "\nHTTP=%{http_code}\n"
-          done
+          URL="https://huggingface.co/datasets/shayak111/Balochi-Multilingual-dataset/resolve/main/Extras/Balochi_english-translation_corpus.json"
+          curl -L -sS --max-time 30 "$URL" -o /tmp/corpus.json
+          wc -c /tmp/corpus.json
+          python3 - <<'PY'
+          import json
+          p="/tmp/corpus.json"
+          data=json.load(open(p,encoding="utf-8"))
+          print(type(data).__name__, len(data) if hasattr(data,"__len__") else "")
+          if isinstance(data, list):
+              for row in data[:8]:
+                  print(repr(row))
+          elif isinstance(data, dict):
+              print(list(data.keys())[:20])
+              for k,v in list(data.items())[:3]:
+                  print(k, repr(v)[:1000])
+          PY
