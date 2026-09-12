@@ -12,10 +12,10 @@ export default function Home() {
         <div className="shell home-center-wrap">
           <p className="home-brand-name hero-brand-word"><UiText id="home.brand" fallback="Zubán" /></p>
 
-          <h1><UiText id="home.title" fallback="Open Balochi language technology." /></h1>
+          <h1><UiText id="home.title" fallback="Balochi tools for everyday use." /></h1>
 
           <p className="home-intro home-intro-centered">
-            <UiText id="home.intro" fallback="Chat, translate, read, listen, speak and build better tools for Balochi." />
+            <UiText id="home.intro" fallback="Chat, translate, write, read and work with Balochi in one place." />
           </p>
 
           <div className="hero-actions hero-actions-centered">
@@ -51,13 +51,13 @@ export default function Home() {
         <div className="shell home-about-center">
           <h2><UiText id="home.about.title" fallback="Built for Balochi. Open to everyone." /></h2>
           <p>
-            <UiText id="home.about.body" fallback="Zubán brings language tools, dictionaries, speech, OCR, datasets and research into one open project that speakers, students, researchers and developers can improve together." />
+            <UiText id="home.about.body" fallback="Zubán brings useful Balochi tools into one place for speakers, students, teachers and anyone who wants to use the language more easily." />
           </p>
 
           <div className="home-about-links home-about-links-centered">
             <Link href="/research"><UiText id="home.research" fallback="Research" /> →</Link>
-            <Link href="/datasets"><UiText id="home.datasets" fallback="Datasets" /> →</Link>
-            <Link href="/technology"><UiText id="home.technology" fallback="Technology" /> →</Link>
+            <Link href="/datasets"><UiText id="home.datasets" fallback="Language data" /> →</Link>
+            <Link href="/technology"><UiText id="home.technology" fallback="How it works" /> →</Link>
           </div>
         </div>
       </section>
