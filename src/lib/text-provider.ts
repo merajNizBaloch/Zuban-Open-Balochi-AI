@@ -1,3 +1,4 @@
+import { generateText } from "ai";
 import { dictionaryEntries } from "@/lib/dictionary";
 import {
   detectBalochiScript,
@@ -65,11 +66,15 @@ function resolveProvider(): ProviderConfig | null {
 
   const gatewayToken =
     process.env.AI_GATEWAY_API_KEY || process.env.VERCEL_OIDC_TOKEN;
+  const isVercelRuntime =
+    process.env.VERCEL === "1" || Boolean(process.env.VERCEL_ENV);
 
-  if (gatewayToken) {
+  if (gatewayToken || isVercelRuntime) {
     return {
       endpoint: "https://ai-gateway.vercel.sh/v1/chat/completions",
-      model: process.env.ZUBAN_VERCEL_TEXT_MODEL || "meta/llama-3.3-70b",
+      model:
+        process.env.ZUBAN_VERCEL_TEXT_MODEL ||
+        "google/gemini-2.5-flash-lite",
       apiKey: gatewayToken,
       provider: "vercel",
     };
@@ -281,43 +286,17 @@ export function textProviderStatus() {
 }
 
 export async function streamChatModel(request: TextRequest) {
-  const resolved = providerPayload({ ...request, mode: "chat" }, false);
-  if (!resolved) return null;
+  const result = await runTextModel({ ...request, mode: "chat" });
 
-  const response = await fetch(resolved.provider.endpoint, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      ...(resolved.provider.apiKey
-        ? { Authorization: "Bearer " + resolved.provider.apiKey }
-        : {}),
-    },
-    body: JSON.stringify(resolved.body),
-    cache: "no-store",
-    signal: AbortSignal.timeout(40_000),
-  });
+  if (!result.configured || !result.output) return null;
 
-  if (!response.ok) {
-    const detail = await response.text().catch(() => "");
-    throw new Error(
-      "Text provider returned " +
-        response.status +
-        (detail ? ": " + detail.slice(0, 220) : ""),
-    );
-  }
-
-  const data = (await response.json()) as CompletionPayload;
-  const output = data.choices?.[0]?.message?.content?.trim();
-
-  if (!output) throw new Error("Text provider returned no text.");
-
-  return new Response(output, {
+  return new Response(result.output, {
     status: 200,
     headers: {
       "Content-Type": "text/plain; charset=utf-8",
       "Cache-Control": "no-store",
-      "X-Zuban-Provider": resolved.provider.provider,
-      "X-Zuban-Model": resolved.provider.model,
+      "X-Zuban-Provider": result.provider ?? "unknown",
+      "X-Zuban-Model": result.model ?? "unknown",
       "X-Zuban-Stream-Format": "plain",
     },
   });
@@ -349,6 +328,29 @@ export async function runTextModel(request: TextRequest) {
         request.mode === "translate"
           ? "No AI model is connected. Exact English ↔ Balochi dictionary words work offline, but sentence translation needs HF_TOKEN, a custom endpoint, or Ollama."
           : "No AI model is connected. You can still ask for meanings of words in the Zubán dictionary. Full chat needs HF_TOKEN, a custom endpoint, or Ollama.",
+    };
+  }
+
+  if (provider.provider === "vercel") {
+    const { text } = await generateText({
+      model: provider.model,
+      system: systemPrompt(request),
+      messages: conversationFor(request),
+      temperature: request.mode === "translate" ? 0.1 : 0.25,
+      maxOutputTokens: request.mode === "translate" ? 700 : 900,
+      maxRetries: 2,
+      timeout: 30_000,
+    });
+
+    const output = text.trim();
+    if (!output) throw new Error("AI Gateway returned no text.");
+
+    return {
+      configured: true,
+      output,
+      message: "",
+      provider: "vercel",
+      model: provider.model,
     };
   }
 
