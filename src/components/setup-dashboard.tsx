@@ -42,64 +42,39 @@ export function SetupDashboard() {
     ? [
         {
           title: t("status.chat", "Chat + Translate"),
-          state: status.text ? "ready" : status.browserTextFallback ? "limited" : status.dictionaryFallback ? "limited" : "missing",
-          detail: status.text
-            ? `Connected through ${status.textProvider ?? "custom provider"} · ${status.textModel ?? "configured model"}`
-            : status.browserTextFallback
-              ? "Chat and Translate can run locally in the browser with no user account. Zubán uses WebGPU when available and automatically falls back to CPU/WASM when it is not."
-              : status.dictionaryFallback
-                ? "Dictionary lookup and exact English ↔ Balochi words work without a model."
-                : "No text provider is configured.",
-          env: status.text ? undefined : "Optional: HF_TOKEN or ZUBAN_TEXT_API_URL or OLLAMA_BASE_URL",
-        },
-        {
-          title: language === "bal" ? "بلوچی ماڈل سرور" : "Balochi model server",
-          state: status.modelServerReachable
-            ? "ready"
-            : status.modelServerConfigured
-              ? "limited"
-              : "missing",
-          detail: status.modelServerReachable
-            ? "Server reachable" +
-              (status.modelServerDevice ? " · " + status.modelServerDevice.toUpperCase() : "") +
-              " · STT " + (status.sttModelLoaded ? "warm" : "cold") +
-              " · TTS " + (status.ttsModelLoaded ? "warm" : "cold")
-            : status.modelServerConfigured
-              ? "A model-server URL is configured but /health is not reachable."
-              : "No shared Balochi model server is configured.",
-          env: status.modelServerReachable ? undefined : "ZUBAN_MODEL_SERVER_URL",
+          state: status.text || status.dictionaryFallback ? "ready" : "limited",
+          detail:
+            status.text || status.dictionaryFallback
+              ? "Ready to use."
+              : "Basic language help is available, but some replies may be limited.",
         },
         {
           title: t("status.stt", "Speech to text"),
-          state: status.speechToText ? "ready" : "missing",
+          state: status.speechToText ? "ready" : "limited",
           detail: status.speechToText
-            ? "Balochi Whisper transcription is connected" +
-              (status.sttModelLoaded ? " and loaded." : ", but the first request may need to load the model.")
-            : "The UI works, but Balochi Whisper needs the model server.",
-          env: status.speechToText ? undefined : "ZUBAN_MODEL_SERVER_URL",
+            ? "Ready to turn Balochi speech into text."
+            : "Not available yet.",
         },
         {
           title: t("status.tts", "Text to speech"),
-          state: status.textToSpeech ? "ready" : "missing",
+          state: status.textToSpeech ? "ready" : "limited",
           detail: status.textToSpeech
-            ? "Balochi SpeechT5 voice generation is connected" +
-              (status.ttsModelLoaded ? " and loaded." : ", but the first request may need to load the model.")
-            : "The three-voice UI is ready, but SpeechT5 needs the model server.",
-          env: status.textToSpeech ? undefined : "ZUBAN_MODEL_SERVER_URL",
+            ? "Ready to read Balochi text aloud."
+            : "Not available yet.",
         },
         {
-          title: t("status.ocr", "OCR"),
-          state: status.ocrProvider === "model endpoint" ? "ready" : "limited",
-          detail: status.ocrProvider === "model endpoint"
-            ? "Server OCR is connected."
-            : "Browser OCR is available using Urdu + Persian + Arabic script models as a fallback.",
+          title: t("status.ocr", "Read text from images"),
+          state: status.ocr ? "ready" : "limited",
+          detail: status.ocr
+            ? "Ready to read printed text from clear images."
+            : "Not available yet.",
         },
       ]
     : [
         {
           title: language === "bal" ? "سروس" : "Services",
           state: "checking",
-          detail: language === "bal" ? "اے ڈیپلائمنٹ بررسی بوتگ…" : "Checking this deployment…",
+          detail: language === "bal" ? "بررسی بوتگ…" : "Checking what is available…",
         },
       ];
 
@@ -121,29 +96,20 @@ export function SetupDashboard() {
               </span>
             </div>
             <p>{item.detail}</p>
-            {item.env && (
-              <div className="setup-env">
-                <span>{t("setup.environment", "Environment")}</span>
-                <code>{item.env}</code>
-              </div>
-            )}
+
           </article>
         ))}
       </div>
 
       <div className="setup-code">
         <div>
-          <h2>{t("setup.recommended", "Recommended production configuration")}</h2>
+          <h2>{t("setup.recommended", "What this means")}</h2>
           <p>
             {language === "bal"
-              ? "Chat و Translate بی لاگن براوزرءَ مقامی AI کارمرز کنگ بہ کنت. WebGPU دستیاب نہ بیت CPU/WASM خودکار fallback بیت."
-              : "Chat and Translate can run locally without a login using WebGPU or CPU/WASM. For a controlled production deployment, a server-side model is still recommended."}
+              ? "تیار نشان بدنت کہ فیچر کار کنت. اگر محدود بیت، زُبان هنوز بنیادی کار کنگ بہ کنت."
+              : "Ready means the feature works now. Limited means it can still help, but some requests may not work yet."}
           </p>
         </div>
-        <pre>{`HF_TOKEN=hf_...
-ZUBAN_HF_TEXT_MODEL=Qwen/Qwen3-8B:cheapest
-
-ZUBAN_MODEL_SERVER_URL=https://your-zuban-model-server.hf.space`}</pre>
       </div>
     </div>
   );
