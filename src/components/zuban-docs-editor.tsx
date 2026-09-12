@@ -541,6 +541,13 @@ export function ZubanDocsEditor() {
   const [toolTitle, setToolTitle] = useState("Balochi tools");
   const [toolBody, setToolBody] = useState("Select some text, then choose a tool.");
   const [toolReplacement, setToolReplacement] = useState("");
+  const [documentConversion, setDocumentConversion] = useState<{
+    html: string;
+    target: ScriptMode;
+    warning: string;
+  } | null>(null);
+  const [liveSpellcheck, setLiveSpellcheck] = useState(true);
+  const [liveSpellCount, setLiveSpellCount] = useState(0);
   const [spellIssues, setSpellIssues] = useState<
     Array<{ word: string; suggestions: string[] }>
   >([]);
@@ -1173,6 +1180,135 @@ export function ZubanDocsEditor() {
     } finally {
       setToolBusy(false);
     }
+  }
+
+  async function convertWholeDocument(target: ScriptMode) {
+    if (!activeDocument) return;
+
+    setShowLanguageTools(true);
+    setToolBusy(true);
+    setToolTitle(
+      target === "arabic"
+        ? "Convert whole document to Arabic script"
+        : "Convert whole document to Roman Balochi",
+    );
+    setToolBody("Preparing a formatting-safe preview…");
+    setToolReplacement("");
+    setDocumentConversion(null);
+
+    try {
+      const response = await fetch("/api/language", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "transliterate-html",
+          input: editorRef.current?.innerHTML ?? activeDocument.html,
+          target,
+        }),
+      });
+      const data = (await response.json()) as {
+        output?: string;
+        warning?: string;
+        error?: string;
+      };
+
+      if (!data.output) {
+        setToolBody(data.error || "I couldn’t convert this document.");
+        return;
+      }
+
+      setDocumentConversion({
+        html: data.output,
+        target,
+        warning: data.warning ?? "",
+      });
+      const preview = stripHtml(data.output).slice(0, 650);
+      setToolBody(
+        (preview || "Converted document") +
+          (stripHtml(data.output).length > 650 ? "…" : "") +
+          (data.warning ? "\n\n" + data.warning : ""),
+      );
+    } catch {
+      setToolBody("I couldn’t convert this document. Please try again.");
+    } finally {
+      setToolBusy(false);
+    }
+  }
+
+  function applyWholeDocumentConversion() {
+    if (!documentConversion) return;
+    updateActive({
+      html: documentConversion.html,
+      script: documentConversion.target,
+    });
+    if (editorRef.current) {
+      editorRef.current.innerHTML = documentConversion.html;
+    }
+    setDocumentConversion(null);
+    setToolBody("The whole document has been converted and formatting was kept.");
+    setNotice("Document script converted.");
+  }
+
+  function clearLiveSpellHighlights() {
+    const registry = (
+      CSS as typeof CSS & {
+        highlights?: {
+          delete: (name: string) => boolean;
+        };
+      }
+    ).highlights;
+    registry?.delete("zuban-spelling");
+    setLiveSpellCount(0);
+  }
+
+  function highlightUnknownWords(words: string[]) {
+    clearLiveSpellHighlights();
+    const editor = editorRef.current;
+    if (!editor || !words.length) return;
+
+    const registry = (
+      CSS as typeof CSS & {
+        highlights?: {
+          set: (name: string, value: unknown) => void;
+        };
+      }
+    ).highlights;
+    const HighlightCtor = (
+      window as typeof window & {
+        Highlight?: new (...ranges: Range[]) => unknown;
+      }
+    ).Highlight;
+
+    if (!registry || !HighlightCtor) return;
+
+    const unknown = new Set(words.map((word) => word.toLocaleLowerCase()));
+    const ranges: Range[] = [];
+    const walker = window.document.createTreeWalker(
+      editor,
+      NodeFilter.SHOW_TEXT,
+    );
+    let node = walker.nextNode() as Text | null;
+
+    while (node) {
+      const value = node.textContent ?? "";
+      const matches = value.matchAll(/[\p{L}\p{M}’'-]+/gu);
+      for (const match of matches) {
+        const word = match[0];
+        if (!unknown.has(word.toLocaleLowerCase()) || match.index === undefined) {
+          continue;
+        }
+        const range = window.document.createRange();
+        range.setStart(node, match.index);
+        range.setEnd(node, match.index + word.length);
+        ranges.push(range);
+      }
+      node = walker.nextNode() as Text | null;
+    }
+
+    if (ranges.length) {
+      registry.set("zuban-spelling", new HighlightCtor(...ranges));
+    }
+    setLiveSpellCount(ranges.length);
   }
 
   async function checkDocumentSpelling() {
