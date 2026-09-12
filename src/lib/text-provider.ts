@@ -113,11 +113,32 @@ function exactBalochiEntry(value: string) {
   });
 }
 
+function meaningForms(value: string) {
+  const normalized = normalize(value);
+  const forms = new Set<string>([normalized]);
+
+  for (const part of normalized.split(/[,;/]/g)) {
+    const clean = part
+      .replace(/^to\s+/, "")
+      .replace(/^(a|an|the)\s+/, "")
+      .replace(/\s*\([^)]*\)\s*/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+
+    if (clean) forms.add(clean);
+  }
+
+  const withoutTo = normalized.replace(/^to\s+/, "").trim();
+  if (withoutTo) forms.add(withoutTo);
+
+  return forms;
+}
+
 function englishEntries(value: string) {
   const q = normalize(value);
 
   return dictionaryEntries.filter((entry) =>
-    entry.meanings.some((meaning) => normalize(meaning) === q),
+    entry.meanings.some((meaning) => meaningForms(meaning).has(q)),
   );
 }
 
@@ -254,10 +275,12 @@ function translateTokens(
   translateToken: (token: string) => string,
 ) {
   let translated = 0;
+  let total = 0;
 
   const output = input.replace(
     /[\p{L}\p{M}]+/gu,
     (token) => {
+      total += 1;
       const replacement = translateToken(token);
       if (!replacement) return token;
       translated += 1;
@@ -265,41 +288,88 @@ function translateTokens(
     },
   );
 
-  return translated ? output : "";
+  return {
+    output,
+    translated,
+    total,
+    coverage: total ? translated / total : 0,
+  };
 }
+
+type LocalTranslation = {
+  output: string;
+  coverage: number;
+  partial: boolean;
+};
+
+const commonEnglishToBalochi: Record<string, string> = {
+  "hello": "سلامت باتے",
+  "hi": "سلامت باتے",
+  "good morning": "سلامت باتے",
+  "thank you": "منّت واراں",
+  "thanks": "منّت واراں",
+  "friend": "دوست",
+  "water": "آپ",
+  "fire": "آس",
+};
 
 function localDictionaryTranslation(
   input: string,
   source?: string,
   target?: string,
-) {
+): LocalTranslation | null {
   const from = source?.toLocaleLowerCase();
   const to = target?.toLocaleLowerCase();
+  const normalizedInput = normalize(input);
 
-  if (from === to) return input;
+  if (from === to) {
+    return { output: input, coverage: 1, partial: false };
+  }
 
   if (from === "balochi" && to === "english") {
     const exact = exactBalochiEntry(input)?.meanings.join(", ");
-    if (exact) return exact;
-    return translateTokens(input, balochiTokenToEnglish);
+    if (exact) {
+      return { output: exact, coverage: 1, partial: false };
+    }
+
+    const draft = translateTokens(input, balochiTokenToEnglish);
+    return {
+      output: draft.output,
+      coverage: draft.coverage,
+      partial: draft.coverage < 1,
+    };
   }
 
   if (from === "english" && to === "balochi") {
-    const matches = englishEntries(input);
-    if (matches.length) {
-      return matches
-        .slice(0, 8)
-        .map((entry) => {
-          const latin = entry.latin?.[0] ? " (" + entry.latin[0] + ")" : "";
-          return entry.word + latin;
-        })
-        .join(" / ");
+    const phrase = commonEnglishToBalochi[normalizedInput.toLocaleLowerCase()];
+    if (phrase) {
+      return { output: phrase, coverage: 1, partial: false };
     }
 
-    return translateTokens(input, englishTokenToBalochi);
+    const matches = englishEntries(input);
+    if (matches.length) {
+      return {
+        output: matches
+          .slice(0, 8)
+          .map((entry) => {
+            const latin = entry.latin?.[0] ? " (" + entry.latin[0] + ")" : "";
+            return entry.word + latin;
+          })
+          .join(" / "),
+        coverage: 1,
+        partial: false,
+      };
+    }
+
+    const draft = translateTokens(input, englishTokenToBalochi);
+    return {
+      output: draft.output,
+      coverage: draft.coverage,
+      partial: draft.coverage < 1,
+    };
   }
 
-  return "";
+  return null;
 }
 
 function glossaryContext(input: string) {
@@ -422,28 +492,45 @@ export async function runTextModel(request: TextRequest) {
   const provider = resolveProvider();
 
   if (!provider) {
-    const localOutput =
-      request.mode === "translate"
-        ? localDictionaryTranslation(request.input, request.source, request.target)
-        : localDictionaryChat(request.input);
+    if (request.mode === "translate") {
+      const local = localDictionaryTranslation(
+        request.input,
+        request.source,
+        request.target,
+      );
 
-    if (localOutput) {
+      if (local) {
+        return {
+          configured: true,
+          output: local.output,
+          message: local.partial
+            ? "Draft translation: words not yet covered by the sourced Zubán lexicon were preserved unchanged."
+            : "",
+          provider: "dictionary",
+          model: "Zubán Lexicon",
+          coverage: local.coverage,
+          partial: local.partial,
+        };
+      }
+
       return {
         configured: true,
-        output: localOutput,
-        message: "",
+        output: request.input,
+        message:
+          "This language pair is not yet covered by Zubán’s sourced translator, so the original text was preserved.",
         provider: "dictionary",
         model: "Zubán Lexicon",
+        coverage: 0,
+        partial: true,
       };
     }
 
+    const localOutput = localDictionaryChat(request.input);
+
     return {
       configured: true,
-      output: "",
-      message:
-        request.mode === "translate"
-          ? "Free lexicon mode currently supports sourced English ↔ Balochi translation. This request needs a broader model; no payment is required if you later connect a Gemini Free Tier API key."
-          : "Free lexicon mode is active. Ask for Balochi word meanings or English ↔ Balochi dictionary translation.",
+      output: localOutput,
+      message: "",
       provider: "dictionary",
       model: "Zubán Lexicon",
     };
