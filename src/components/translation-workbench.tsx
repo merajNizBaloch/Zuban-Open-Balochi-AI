@@ -8,6 +8,9 @@ type ApiResult = {
   output?: string;
   message?: string;
   error?: string;
+  provider?: string;
+  coverage?: number;
+  partial?: boolean;
 };
 
 const languages = [
@@ -50,6 +53,7 @@ export function TranslationWorkbench() {
 
       if (data.output) {
         setOutput(data.output);
+        setNotice(data.message ?? "");
         return;
       }
 
@@ -156,6 +160,7 @@ export function TranslationWorkbench() {
           ) : output ? (
             <>
               <p className="translate-output" dir="auto" lang="bal">{output}</p>
+              {notice && <div className="translate-notice">{notice}</div>}
               <a
                 className="translate-correction-link"
                 href={
