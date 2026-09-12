@@ -14,7 +14,20 @@ import {
 } from "react";
 
 type ScriptMode = "arabic" | "latin";
-type TemplateId = "blank" | "essay" | "letter" | "story" | "notes" | "poem";
+type TemplateId =
+  | "blank"
+  | "essay"
+  | "letter"
+  | "story"
+  | "notes"
+  | "poem"
+  | "cv"
+  | "application"
+  | "official-letter"
+  | "research"
+  | "assignment";
+type LibraryView = "all" | "recent" | "favorites";
+type KeyboardLayout = "phonetic" | "traditional";
 
 type Snapshot = {
   id: string;
@@ -32,6 +45,15 @@ type ZubanDocument = {
   snapshots: Snapshot[];
   template?: TemplateId;
   fontFamily?: string;
+  favorite?: boolean;
+  pageSize?: "a4" | "letter";
+  orientation?: "portrait" | "landscape";
+  marginMm?: number;
+  headerText?: string;
+  footerText?: string;
+  showPageNumbers?: boolean;
+  showDate?: boolean;
+  paragraphSpacing?: number;
 };
 
 type Template = {
@@ -87,6 +109,17 @@ const arabicPhysicalMap: Record<string, string> = {
 
 const arabicShiftMap: Record<string, string> = {
   a: "آ", d: "ڈ", h: "ھ", n: "ں", r: "ڑ", s: "ش", t: "ٹ", z: "ژ",
+};
+
+
+const traditionalArabicMap: Record<string, string> = {
+  q: "ق", w: "و", e: "ع", r: "ر", t: "ت", y: "ے", u: "ء", i: "ی", o: "ہ", p: "پ",
+  a: "ا", s: "س", d: "د", f: "ف", g: "گ", h: "ھ", j: "ج", k: "ک", l: "ل",
+  z: "ز", x: "ش", c: "چ", v: "ط", b: "ب", n: "ن", m: "م",
+};
+
+const traditionalArabicShiftMap: Record<string, string> = {
+  a: "آ", d: "ڈ", r: "ڑ", s: "ص", t: "ٹ", x: "ژ", y: "ۏ", n: "ں",
 };
 
 const arabicFonts = [
@@ -178,6 +211,61 @@ const templates: Template[] = [
     latinHtml:
       "<h1>Šihrē nām</h1><p>Awwalī misra<br>Dōmī misra</p><p>Sōmī misra<br>Čāromī misra</p>",
   },
+  {
+    id: "cv",
+    label: "CV / Resume",
+    description: "Name, profile, education, experience and skills.",
+    arabicTitle: "سوانحی دستاویز",
+    latinTitle: "CV / Resume",
+    arabicHtml:
+      "<h1>نام</h1><p><strong>رابطہ:</strong> فون · ایمیل · شہر</p><h2>مختصر پروفائل</h2><p>وتی باروا مختصر تعارف بنویس.</p><h2>تعلیم</h2><ul><li>ڈگری · ادارہ · سال</li></ul><h2>تجربہ</h2><ul><li>عہدہ · ادارہ · مدت</li></ul><h2>مہارت</h2><p>مہارت 1 · مہارت 2 · مہارت 3</p>",
+    latinHtml:
+      "<h1>Name</h1><p><strong>Contact:</strong> phone · email · city</p><h2>Profile</h2><p>Write a short profile.</p><h2>Education</h2><ul><li>Degree · institution · year</li></ul><h2>Experience</h2><ul><li>Role · organization · period</li></ul><h2>Skills</h2><p>Skill 1 · Skill 2 · Skill 3</p>",
+  },
+  {
+    id: "application",
+    label: "Application",
+    description: "A clean application format for school, office or department.",
+    arabicTitle: "درخواست",
+    latinTitle: "Darkhwāst",
+    arabicHtml:
+      "<p>تاریخ: __________</p><p>بنام: __________</p><p><strong>موضوع:</strong> __________</p><p>محترم/محترمہ،</p><p>اِدا وتی درخواست ءِ متن بنویس.</p><p>منّت واراں،</p><p>نام: __________</p><p>رابطہ: __________</p>",
+    latinHtml:
+      "<p>Date: __________</p><p>To: __________</p><p><strong>Subject:</strong> __________</p><p>Dear Sir/Madam,</p><p>Write your application here.</p><p>Regards,</p><p>Name: __________</p><p>Contact: __________</p>",
+  },
+  {
+    id: "official-letter",
+    label: "Official letter",
+    description: "Formal office correspondence with reference and subject.",
+    arabicTitle: "سرکاری خط",
+    latinTitle: "Official Letter",
+    arabicHtml:
+      "<p>نمبر: __________</p><p>تاریخ: __________</p><p>بنام: __________</p><h2>موضوع: __________</h2><p>اِدا رسمی خط ءِ متن بنویس.</p><p>مخلص،</p><p>نام · عہدہ · ادارہ</p>",
+    latinHtml:
+      "<p>Ref: __________</p><p>Date: __________</p><p>To: __________</p><h2>Subject: __________</h2><p>Write the official letter here.</p><p>Sincerely,</p><p>Name · designation · organization</p>",
+  },
+  {
+    id: "research",
+    label: "Research notes",
+    description: "Question, sources, findings and references in one place.",
+    arabicTitle: "تحقیقی نوٹ",
+    latinTitle: "Research Notes",
+    arabicHtml:
+      "<h1>تحقیق ءِ عنوان</h1><h2>سوال</h2><p>بنیادی تحقیقی سوال بنویس.</p><h2>سرچشمگ</h2><ul><li>سرچشمگ 1</li></ul><h2>یافتگ</h2><p>اہم یافتگ اِدا بنویس.</p><h2>حوالہ</h2><p>حوالہ جات اِدا بنویس.</p>",
+    latinHtml:
+      "<h1>Research title</h1><h2>Question</h2><p>Write the main research question.</p><h2>Sources</h2><ul><li>Source 1</li></ul><h2>Findings</h2><p>Write key findings here.</p><h2>References</h2><p>Add references here.</p>",
+  },
+  {
+    id: "assignment",
+    label: "School assignment",
+    description: "Student name, class, subject and structured answer.",
+    arabicTitle: "اسائنمنٹ",
+    latinTitle: "School Assignment",
+    arabicHtml:
+      "<h1>اسائنمنٹ ءِ عنوان</h1><p><strong>طالب علم:</strong> __________</p><p><strong>کلاس:</strong> __________ · <strong>مضمون:</strong> __________</p><h2>تعارف</h2><p>اِدا بنویس.</p><h2>بنیادی جواب</h2><p>اِدا تفصیلی جواب بنویس.</p><h2>نتیجہ</h2><p>نتیجہ اِدا بنویس.</p>",
+    latinHtml:
+      "<h1>Assignment title</h1><p><strong>Student:</strong> __________</p><p><strong>Class:</strong> __________ · <strong>Subject:</strong> __________</p><h2>Introduction</h2><p>Write here.</p><h2>Main answer</h2><p>Write the detailed answer here.</p><h2>Conclusion</h2><p>Write the conclusion here.</p>",
+  },
 ];
 
 function makeId() {
@@ -204,6 +292,15 @@ function makeDocument(
     updatedAt: now,
     snapshots: [],
     template: templateId,
+    favorite: false,
+    pageSize: "a4",
+    orientation: "portrait",
+    marginMm: 20,
+    headerText: "",
+    footerText: "",
+    showPageNumbers: false,
+    showDate: false,
+    paragraphSpacing: 18,
   };
 }
 
