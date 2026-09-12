@@ -337,6 +337,16 @@ const parallelRows = balochiParallelPairs.map(([english, balochi]) => ({
 const parallelEnglishExact = new Map<string, string>();
 const parallelBalochiExact = new Map<string, string>();
 
+const canonicalBalochiToEnglish: Record<string, string> = {
+  [normalizeParallelText("تو چون ئے")]: "how are you",
+  [normalizeParallelText("من وشاں")]: "I am fine",
+  [normalizeParallelText("تئی نام کئے اِنت")]: "what is your name",
+  [normalizeParallelText("سُہب وش بات")]: "good morning",
+  [normalizeParallelText("تئی منّت وار")]: "thank you",
+  [normalizeParallelText("تئی باز منّت وار")]: "thank you so much",
+  [normalizeParallelText("تئی باز باز منّت وار")]: "thank you very much",
+};
+
 for (const row of parallelRows) {
   if (row.englishNorm && !parallelEnglishExact.has(row.englishNorm)) {
     parallelEnglishExact.set(row.englishNorm, row.balochi);
@@ -344,6 +354,10 @@ for (const row of parallelRows) {
   if (row.balochiNorm && !parallelBalochiExact.has(row.balochiNorm)) {
     parallelBalochiExact.set(row.balochiNorm, row.english);
   }
+}
+
+for (const [balochi, english] of Object.entries(canonicalBalochiToEnglish)) {
+  parallelBalochiExact.set(balochi, english);
 }
 
 function tokenSimilarity(query: string[], candidate: string[]) {
