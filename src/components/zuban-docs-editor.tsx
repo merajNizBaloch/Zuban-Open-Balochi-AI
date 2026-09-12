@@ -406,6 +406,20 @@ export function ZubanDocsEditor() {
   const [showInspector, setShowInspector] = useState(false);
   const [showCreate, setShowCreate] = useState(false);
   const [showShortcuts, setShowShortcuts] = useState(false);
+  const [showFind, setShowFind] = useState(false);
+  const [findText, setFindText] = useState("");
+  const [replaceText, setReplaceText] = useState("");
+  const [findCursor, setFindCursor] = useState(-1);
+  const [showPageSetup, setShowPageSetup] = useState(false);
+  const [showLanguageTools, setShowLanguageTools] = useState(false);
+  const [toolBusy, setToolBusy] = useState(false);
+  const [toolTitle, setToolTitle] = useState("Balochi tools");
+  const [toolBody, setToolBody] = useState("Select some text, then choose a tool.");
+  const [toolReplacement, setToolReplacement] = useState("");
+  const [spellIssues, setSpellIssues] = useState<
+    Array<{ word: string; suggestions: string[] }>
+  >([]);
+  const [selectedImage, setSelectedImage] = useState<HTMLImageElement | null>(null);
   const [showKeyboard, setShowKeyboard] = useState(false);
   const [phoneticTyping, setPhoneticTyping] = useState(true);
   const [keyboardShift, setKeyboardShift] = useState(false);
@@ -693,6 +707,292 @@ export function ZubanDocsEditor() {
     captureSelection();
     if (editorRef.current) updateActive({ html: editorRef.current.innerHTML });
   }
+  function getSelectedText() {
+    restoreSelection();
+    const selection = window.getSelection();
+    const text = selection?.toString().trim() ?? "";
+    if (!text) {
+      setNotice("Select some text first.");
+      return "";
+    }
+    return text;
+  }
+
+  function replaceSelectedText(value: string) {
+    restoreSelection();
+    const selection = window.getSelection();
+    if (!selection?.rangeCount) return;
+    const range = selection.getRangeAt(0);
+    range.deleteContents();
+    const node = window.document.createTextNode(value);
+    range.insertNode(node);
+    range.setStartAfter(node);
+    range.collapse(true);
+    selection.removeAllRanges();
+    selection.addRange(range);
+    selectionRef.current = range.cloneRange();
+    if (editorRef.current) updateActive({ html: editorRef.current.innerHTML });
+  }
+
+  async function transliterateSelection(target: ScriptMode) {
+    const input = getSelectedText();
+    if (!input) return;
+    setShowLanguageTools(true);
+    setToolBusy(true);
+    setToolTitle(target === "arabic" ? "Arabic-script Balochi" : "Roman Balochi");
+    setToolBody("Converting…");
+    setToolReplacement("");
+
+    try {
+      const response = await fetch("/api/language", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "transliterate", input, target }),
+      });
+      const data = (await response.json()) as { output?: string; error?: string };
+      const output = data.output?.trim() ?? "";
+      setToolBody(output || data.error || "I couldn’t convert that text.");
+      setToolReplacement(output);
+    } catch {
+      setToolBody("I couldn’t convert that text. Please try again.");
+    } finally {
+      setToolBusy(false);
+    }
+  }
+
+  async function lookupSelection() {
+    const input = getSelectedText();
+    if (!input) return;
+    setShowLanguageTools(true);
+    setToolBusy(true);
+    setToolTitle("Word meaning");
+    setToolBody("Looking it up…");
+    setToolReplacement("");
+
+    try {
+      const response = await fetch(
+        "/api/dictionary?q=" + encodeURIComponent(input) + "&limit=5",
+      );
+      const data = (await response.json()) as {
+        entries?: Array<{
+          word: string;
+          latin?: string[];
+          part?: string;
+          meanings: string[];
+        }>;
+      };
+      const entries = data.entries ?? [];
+      setToolBody(
+        entries.length
+          ? entries
+              .map(
+                (entry) =>
+                  entry.word +
+                  (entry.latin?.[0] ? " (" + entry.latin[0] + ")" : "") +
+                  " — " +
+                  entry.meanings.join(", "),
+              )
+              .join("\n")
+          : "I couldn’t find that word in the Zubán dictionary.",
+      );
+    } catch {
+      setToolBody("I couldn’t look that word up. Please try again.");
+    } finally {
+      setToolBusy(false);
+    }
+  }
+
+  async function translateSelection(target: "English" | "Balochi") {
+    const input = getSelectedText();
+    if (!input) return;
+    setShowLanguageTools(true);
+    setToolBusy(true);
+    setToolTitle(target === "English" ? "English translation" : "Balochi translation");
+    setToolBody("Translating…");
+    setToolReplacement("");
+
+    try {
+      const response = await fetch("/api/text", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          mode: "translate",
+          input,
+          source: target === "English" ? "Balochi" : "English",
+          target,
+        }),
+      });
+      const data = (await response.json()) as {
+        output?: string;
+        message?: string;
+        error?: string;
+      };
+      const output = data.output?.trim() ?? "";
+      setToolBody(output || data.message || data.error || "I couldn’t translate that.");
+      setToolReplacement(output);
+    } catch {
+      setToolBody("I couldn’t translate that. Please try again.");
+    } finally {
+      setToolBusy(false);
+    }
+  }
+
+  async function checkDocumentSpelling() {
+    const text = editorRef.current?.innerText ?? metrics.text;
+    const words = Array.from(
+      new Set(
+        (text.match(/[\p{L}\p{M}’'-]+/gu) ?? [])
+          .map((word) => word.replace(/^[’'-]+|[’'-]+$/g, ""))
+          .filter((word) => word.length > 1),
+      ),
+    ).slice(0, 80);
+
+    if (!words.length) {
+      setNotice("There aren’t enough words to check yet.");
+      return;
+    }
+
+    setShowLanguageTools(true);
+    setToolBusy(true);
+    setToolTitle("Spelling");
+    setToolBody("Checking the document…");
+    setToolReplacement("");
+    setSpellIssues([]);
+
+    try {
+      const response = await fetch(
+        "/api/dictionary?check=" + encodeURIComponent(words.join("|")),
+      );
+      const data = (await response.json()) as {
+        unknown?: Array<{ word: string; suggestions: string[] }>;
+      };
+      const unknown = data.unknown ?? [];
+      setSpellIssues(unknown);
+      setToolBody(
+        unknown.length
+          ? unknown.length +
+              " word" +
+              (unknown.length === 1 ? "" : "s") +
+              " weren’t found in the current Zubán dictionary."
+          : "No spelling issues were found in the checked words.",
+      );
+    } catch {
+      setToolBody("I couldn’t check spelling right now.");
+    } finally {
+      setToolBusy(false);
+    }
+  }
+
+  function escapeRegex(value: string) {
+    return value.replace(/[|\\{}()[\]^$+*?.-]/g, "\\  function insertCharacter(character: string) {
+    restoreSelection();
+    editorRef.current?.focus();
+    document.execCommand("insertText", false, character);
+    captureSelection();
+    if (editorRef.current) updateActive({ html: editorRef.current.innerHTML });
+  }
+");
+  }
+
+  function replaceWordEverywhere(from: string, to: string) {
+    const editor = editorRef.current;
+    if (!editor || !from) return;
+    const walker = window.document.createTreeWalker(editor, NodeFilter.SHOW_TEXT);
+    const pattern = new RegExp(escapeRegex(from), "gu");
+    let node = walker.nextNode() as Text | null;
+    while (node) {
+      node.textContent = (node.textContent ?? "").replace(pattern, to);
+      node = walker.nextNode() as Text | null;
+    }
+    updateActive({ html: editor.innerHTML });
+    setSpellIssues((current) => current.filter((issue) => issue.word !== from));
+    setNotice("Spelling updated.");
+  }
+
+  function findRanges(query: string) {
+    const editor = editorRef.current;
+    if (!editor || !query) return [] as Range[];
+
+    const ranges: Range[] = [];
+    const needle = query.toLocaleLowerCase();
+    const walker = window.document.createTreeWalker(editor, NodeFilter.SHOW_TEXT);
+    let node = walker.nextNode() as Text | null;
+
+    while (node) {
+      const value = node.textContent ?? "";
+      const lower = value.toLocaleLowerCase();
+      let start = 0;
+      while (start <= lower.length - needle.length) {
+        const index = lower.indexOf(needle, start);
+        if (index < 0) break;
+        const range = window.document.createRange();
+        range.setStart(node, index);
+        range.setEnd(node, index + query.length);
+        ranges.push(range);
+        start = index + Math.max(1, query.length);
+      }
+      node = walker.nextNode() as Text | null;
+    }
+
+    return ranges;
+  }
+
+  function findNextOccurrence() {
+    const ranges = findRanges(findText);
+    if (!ranges.length) {
+      setNotice("No matches found.");
+      setFindCursor(-1);
+      return;
+    }
+
+    const next = (findCursor + 1) % ranges.length;
+    const range = ranges[next];
+    const selection = window.getSelection();
+    selection?.removeAllRanges();
+    selection?.addRange(range);
+    selectionRef.current = range.cloneRange();
+    range.startContainer.parentElement?.scrollIntoView({
+      block: "center",
+      behavior: "smooth",
+    });
+    setFindCursor(next);
+    setNotice("Match " + (next + 1) + " of " + ranges.length);
+  }
+
+  function replaceCurrentMatch() {
+    const selection = window.getSelection();
+    if (!selection?.toString()) {
+      findNextOccurrence();
+      return;
+    }
+    replaceSelectedText(replaceText);
+    setNotice("Match replaced.");
+  }
+
+  function replaceAllMatches() {
+    const editor = editorRef.current;
+    if (!editor || !findText) return;
+    const walker = window.document.createTreeWalker(editor, NodeFilter.SHOW_TEXT);
+    const pattern = new RegExp(escapeRegex(findText), "giu");
+    let count = 0;
+    let node = walker.nextNode() as Text | null;
+    while (node) {
+      const before = node.textContent ?? "";
+      node.textContent = before.replace(pattern, () => {
+        count += 1;
+        return replaceText;
+      });
+      node = walker.nextNode() as Text | null;
+    }
+    updateActive({ html: editor.innerHTML });
+    setNotice(
+      count
+        ? count + " match" + (count === 1 ? "" : "es") + " replaced."
+        : "No matches found.",
+    );
+    setFindCursor(-1);
+  }
+
 
   function pressVirtualKey(key: string) {
     if (key === "BACKSPACE") {
