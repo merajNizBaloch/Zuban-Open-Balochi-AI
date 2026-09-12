@@ -36,6 +36,17 @@ jobs:
       - name: Verify production domain
         shell: bash
         run: |
+          echo "=== DNS ==="
+          getent ahosts zuban.techcraftsolution.com || true
+          echo "CNAME:"
+          dig +short CNAME zuban.techcraftsolution.com || true
+          echo "A:"
+          dig +short A zuban.techcraftsolution.com || true
+          echo "AAAA:"
+          dig +short AAAA zuban.techcraftsolution.com || true
+          echo "=== HEADERS ==="
+          curl -sSIL --max-time 20 https://zuban.techcraftsolution.com/ || true
+          echo "=== TESTS ==="
           MARKER_CODE=$(curl -L -sS -o /tmp/marker.txt -w "%{http_code}" --max-time 20 "https://zuban.techcraftsolution.com/zuban-deploy-marker.txt" || true)
           echo "MARKER_CODE=$MARKER_CODE"
           echo "MARKER_BODY:"
