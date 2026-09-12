@@ -4,6 +4,7 @@ const DB_NAME = "zuban-docx";
 const DB_VERSION = 1;
 const STORE = "state";
 const LIBRARY_KEY = "library";
+const PERSONAL_WORDS_KEY = "personal-words";
 
 type StoredLibrary<T> = {
   version: 1;
@@ -106,6 +107,36 @@ export async function migrateDocxFromLocalStorage<T>(
     activeId,
     savedAt: Date.now(),
   };
+}
+
+export async function loadPersonalDictionary() {
+  const database = await openDatabase();
+
+  try {
+    const transaction = database.transaction(STORE, "readonly");
+    const store = transaction.objectStore(STORE);
+    const result = await requestValue(
+      store.get(PERSONAL_WORDS_KEY) as IDBRequest<string[] | undefined>,
+    );
+    return Array.isArray(result) ? result : [];
+  } finally {
+    database.close();
+  }
+}
+
+export async function savePersonalDictionary(words: string[]) {
+  const database = await openDatabase();
+
+  try {
+    const transaction = database.transaction(STORE, "readwrite");
+    const store = transaction.objectStore(STORE);
+    const clean = Array.from(
+      new Set(words.map((word) => word.trim()).filter(Boolean)),
+    ).slice(0, 1000);
+    await requestValue(store.put(clean, PERSONAL_WORDS_KEY));
+  } finally {
+    database.close();
+  }
 }
 
 export async function getDocxStorageEstimate() {
