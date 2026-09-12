@@ -36,11 +36,11 @@ export async function GET() {
         provider: text.provider,
         model: text.model,
         dictionaryFallback: text.dictionaryFallback,
-        browserFallback: true,
+        browserFallback: false,
       },
       modelServer: media,
       ocr: {
-        browserFallback: true,
+        browserFallback: false,
       },
     },
     {
