@@ -1,5 +1,5 @@
 const CACHE = "zuban-docx-v1";
-const CORE = ["/docs/editor", "/docs", "/manifest.webmanifest", "/docx-icon.svg"];
+const CORE = ["/docs/editor", "/docs", "/docx.webmanifest", "/docx-icon.svg"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
