@@ -421,13 +421,13 @@ export function ZubanDocsEditor() {
     if (currentText && !scriptAllowed(currentText, script)) {
       setGuardMessage(
         script === "arabic"
-          ? "This document contains Latin text. Remove or convert it before switching to Arabic script."
-          : "This document contains Arabic-script text. Remove or convert it before switching to Latin script.",
+          ? "Arabic-script mode selected. Existing Latin text is kept; the script guide will only warn, not block typing."
+          : "Latin-script mode selected. Existing Arabic text is kept; the script guide will only warn, not block typing.",
       );
-      return;
+    } else {
+      setGuardMessage("");
     }
 
-    setGuardMessage("");
     updateActive({ script });
   }
 
@@ -442,27 +442,23 @@ export function ZubanDocsEditor() {
     if (!inputEvent.data) return;
 
     if (!scriptAllowed(inputEvent.data, activeDocument.script)) {
-      event.preventDefault();
       setGuardMessage(
         activeDocument.script === "arabic"
-          ? "Arabic-script Balochi mode is active. Latin letters were blocked."
-          : "Latin-script Balochi mode is active. Arabic-script characters were blocked.",
+          ? "Arabic-script mode is active. Latin letters are allowed; switch to Balōčī mode if you want Latin direction and formatting."
+          : "Latin-script mode is active. Arabic letters are allowed; switch to بلوچی mode if you want RTL direction and formatting.",
       );
     }
   }
 
   function onPaste(event: React.ClipboardEvent<HTMLDivElement>) {
     if (!activeDocument) return;
-    event.preventDefault();
-
     const pasted = event.clipboardData.getData("text/plain");
-    const clean = sanitizeForScript(pasted, activeDocument.script);
 
-    if (clean !== pasted) {
-      setGuardMessage("Mixed-script characters were removed from the pasted text.");
+    if (!scriptAllowed(pasted, activeDocument.script)) {
+      setGuardMessage(
+        "Mixed-script text was pasted. Nothing was removed; the script guide is advisory only.",
+      );
     }
-
-    document.execCommand("insertText", false, clean);
   }
 
   function command(name: string, value?: string) {
@@ -484,11 +480,12 @@ export function ZubanDocsEditor() {
 
   function titleChange(value: string) {
     if (!activeDocument) return;
-    const clean = sanitizeForScript(value, activeDocument.script);
-    if (clean !== value) {
-      setGuardMessage("Document titles follow the selected Balochi script.");
+    if (!scriptAllowed(value, activeDocument.script)) {
+      setGuardMessage(
+        "Mixed-script title detected. It is allowed; the script guide will not remove your text.",
+      );
     }
-    updateActive({ title: clean });
+    updateActive({ title: value });
   }
 
   function createSnapshot() {
@@ -904,7 +901,7 @@ export function ZubanDocsEditor() {
 
         {guardMessage ? (
           <div className="docs-guard-message">
-            <strong>Script guard</strong>
+            <strong>Script guide</strong>
             <span>{guardMessage}</span>
             <button type="button" onClick={() => setGuardMessage("")}>×</button>
           </div>
@@ -997,7 +994,7 @@ export function ZubanDocsEditor() {
           </div>
 
           <div className="docs-inspector-note">
-            <strong>Balochi-only mode</strong>
+            <strong>Script guidance</strong>
             <p>
               Arabic mode can reliably block Latin text. Latin Balochi shares
               the Latin alphabet with other languages, so this inspector checks
