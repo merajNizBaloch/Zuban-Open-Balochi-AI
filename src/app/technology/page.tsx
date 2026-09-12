@@ -3,11 +3,10 @@ import { ModelStatus } from "@/components/model-status";
 import { UiText } from "@/components/ui-text";
 
 const layers = [
-  ["technology.layer.interface", "Interface", "technology.layer.interface.desc", "Chat · Translate · Dictionary · Speech · OCR"],
-  ["technology.layer.adapters", "Model adapters", "technology.layer.adapters.desc", "Text · speech-to-text · text-to-speech · OCR"],
-  ["technology.layer.language", "Language", "technology.layer.language.desc", "Normalization · tokenization · dialect and script metadata"],
-  ["technology.layer.knowledge", "Knowledge", "technology.layer.knowledge.desc", "Dictionary · corpora · verified language resources"],
-  ["technology.layer.research", "Research", "technology.layer.research.desc", "Model cards · evaluations · Zubán Bench"],
+  ["technology.layer.interface", "Use Zubán", "technology.layer.interface.desc", "Chat · Translate · Dictionary · Docs"],
+  ["technology.layer.language", "Language help", "technology.layer.language.desc", "Meanings · spelling · Arabic and Latin writing"],
+  ["technology.layer.knowledge", "Trusted sources", "technology.layer.knowledge.desc", "Dictionary entries and reviewed language examples"],
+  ["technology.layer.research", "Keep improving", "technology.layer.research.desc", "Community corrections, testing and better language data"],
 ];
 
 export default function TechnologyPage() {
@@ -15,16 +14,16 @@ export default function TechnologyPage() {
     <section className="section technology-page">
       <div className="shell">
         <div className="page-intro-center">
-          <p className="eyebrow"><UiText id="page.technology.eyebrow" fallback="TECHNOLOGY" /></p>
-          <h1 className="page-title"><UiText id="page.technology.title" fallback="Modular by design." /></h1>
-          <p className="lead wide"><UiText id="technology.lead" fallback="Zubán keeps the product separate from the underlying models so better open models can replace older ones without rebuilding the interface." /></p>
-          <Link className="button secondary" href="/setup"><UiText id="technology.setup" fallback="Check deployment setup →" /></Link>
+          <p className="eyebrow"><UiText id="page.technology.eyebrow" fallback="HOW IT WORKS" /></p>
+          <h1 className="page-title"><UiText id="page.technology.title" fallback="Simple on the outside." /></h1>
+          <p className="lead wide"><UiText id="technology.lead" fallback="Zubán keeps the experience simple: ask a question, translate a sentence, look up a word or create a document." /></p>
+          <Link className="button secondary" href="/setup"><UiText id="technology.setup" fallback="See what works right now →" /></Link>
         </div>
 
         <div className="technology-status">
           <div className="section-heading centered-section-heading">
-            <div><h2><UiText id="technology.status" fallback="Service status." /></h2></div>
-            <p><UiText id="technology.status.desc" fallback="Live status for the model adapters configured on this deployment." /></p>
+            <div><h2><UiText id="technology.status" fallback="What works right now." /></h2></div>
+            <p><UiText id="technology.status.desc" fallback="A simple view of the features that are ready to use." /></p>
           </div>
           <ModelStatus />
         </div>
@@ -41,15 +40,15 @@ export default function TechnologyPage() {
 
         <div className="two-col">
           <article className="info-card">
-            <h3><UiText id="technology.text" fallback="Text model" /></h3>
+            <h3><UiText id="technology.text" fallback="Chat and translation" /></h3>
             <p>
-              <UiText id="technology.text.desc" fallback="Chat and Translate prefer a configured server model. Without one, Zubán runs a small model locally in the browser: WebGPU when available, otherwise CPU/WASM, with no user login." />
+              <UiText id="technology.text.desc" fallback="Zubán uses its growing Balochi language collection to answer common questions and translate everyday English and Balochi." />
             </p>
           </article>
           <article className="info-card">
-            <h3><UiText id="technology.media" fallback="Media models" /></h3>
+            <h3><UiText id="technology.media" fallback="Speech and images" /></h3>
             <p>
-              <UiText id="technology.media.desc" fallback="Speech and voice use the shared Balochi model server. OCR can use that server or fall back to browser OCR." />
+              <UiText id="technology.media.desc" fallback="Some features can listen to speech, read text aloud or pull writing from a clear image. These features are still growing." />
             </p>
           </article>
         </div>
