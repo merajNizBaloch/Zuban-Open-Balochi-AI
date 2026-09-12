@@ -445,6 +445,11 @@ export function ZubanDocsEditor() {
   const imageRef = useRef<HTMLInputElement>(null);
   const replaceImageRef = useRef<HTMLInputElement>(null);
   const selectionRef = useRef<Range | null>(null);
+  const autoSnapshotRef = useRef<{ documentId: string; at: number; html: string }>({
+    documentId: "",
+    at: Date.now(),
+    html: "",
+  });
   const [documents, setDocuments] = useState<ZubanDocument[]>([]);
   const [activeId, setActiveId] = useState("");
   const [ready, setReady] = useState(false);
@@ -460,6 +465,9 @@ export function ZubanDocsEditor() {
   const [showInspector, setShowInspector] = useState(false);
   const [showCreate, setShowCreate] = useState(false);
   const [showShortcuts, setShowShortcuts] = useState(false);
+  const [showOutline, setShowOutline] = useState(false);
+  const [showCommandPalette, setShowCommandPalette] = useState(false);
+  const [commandQuery, setCommandQuery] = useState("");
   const [showFind, setShowFind] = useState(false);
   const [findText, setFindText] = useState("");
   const [replaceText, setReplaceText] = useState("");
@@ -539,6 +547,11 @@ export function ZubanDocsEditor() {
   useEffect(() => {
     if (!editorRef.current || !activeDocument) return;
     editorRef.current.innerHTML = activeDocument.html;
+    autoSnapshotRef.current = {
+      documentId: activeDocument.id,
+      at: Date.now(),
+      html: activeDocument.html,
+    };
   }, [activeDocument?.id]);
 
   useEffect(() => {
@@ -572,6 +585,12 @@ export function ZubanDocsEditor() {
         ? documentMetrics(activeDocument.html, activeDocument.script)
         : documentMetrics("", "arabic"),
     [activeDocument],
+  );
+
+
+  const outlineItems = useMemo(
+    () => documentOutline(activeDocument?.html ?? ""),
+    [activeDocument?.html],
   );
 
   const charactersForMode =
