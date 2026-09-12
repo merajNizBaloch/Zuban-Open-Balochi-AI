@@ -1,41 +1,37 @@
-name: Arabic corpus analysis
+name: Sentence translation smoke
 
 on:
   pull_request:
 
 jobs:
-  analyze:
+  smoke:
     runs-on: ubuntu-latest
     timeout-minutes: 3
     steps:
-      - name: Analyze corpus sentence coverage
+      - name: Verify basic sentence translation live
         shell: bash
         run: |
           set -euo pipefail
-          URL="https://huggingface.co/datasets/shayak111/Balochi-Multilingual-dataset/resolve/main/Extras/Balochi_english-translation_corpus.json"
-          curl -L -sS --max-time 30 "$URL" -o /tmp/corpus.json
-          python3 - <<'PY'
-          import json,re
-          data=json.load(open("/tmp/corpus.json",encoding="utf-8"))
-          rows=[]
-          for group in data["translation_samples"]:
-              for row in group.get("translations",[]):
-                  if row.get("english") and row.get("balochi"):
-                      rows.append(row)
-          print("rows",len(rows))
-          buckets={"1":0,"2-3":0,"4-7":0,"8+":0}
-          for r in rows:
-              n=len(r["english"].split())
-              if n==1:buckets["1"]+=1
-              elif n<=3:buckets["2-3"]+=1
-              elif n<=7:buckets["4-7"]+=1
-              else:buckets["8+"]+=1
-          print("buckets",buckets)
-          for q in ["how are you","i am fine","where are you going","i want water","thank you","what is your name","i am going home","good morning"]:
-              hits=[r for r in rows if q in r["english"].lower()]
-              print("\nQUERY",q,"hits",len(hits))
-              for r in hits[:8]: print(r["english"],"=>",r["balochi"])
-          print("\nLONG SAMPLES")
-          for r in [r for r in rows if len(r["english"].split())>=5][:25]:
-              print(r["english"],"=>",r["balochi"])
-          PY
+
+          check() {
+            NAME="$1"
+            DATA="$2"
+            EXPECT="$3"
+            BODY="/tmp/$NAME.json"
+            CODE=$(curl -sS -o "$BODY" -w "%{http_code}" --max-time 30 \
+              -X POST "https://zuban.techcraftsolution.com/api/text" \
+              -H "Content-Type: application/json" \
+              --data "$DATA")
+            echo "$NAME HTTP=$CODE"
+            cat "$BODY"
+            echo
+            test "$CODE" = "200"
+            grep -Fq "$EXPECT" "$BODY"
+          }
+
+          check how_are_you '{"mode":"translate","input":"How are you?","source":"English","target":"Balochi"}' 'تو چون ئے'
+          check i_am_fine '{"mode":"translate","input":"I am fine","source":"English","target":"Balochi"}' 'من وشاں'
+          check your_name '{"mode":"translate","input":"What is your name?","source":"English","target":"Balochi"}' 'تئی نام کئے اِنت'
+          check good_morning '{"mode":"translate","input":"Good morning","source":"English","target":"Balochi"}' 'سُہب وش بات'
+          check thanks '{"mode":"translate","input":"Thank you very much","source":"English","target":"Balochi"}' 'تئی باز باز منّت وار'
+          check reverse '{"mode":"translate","input":"تو چون ئے","source":"Balochi","target":"English"}' 'how are you'
