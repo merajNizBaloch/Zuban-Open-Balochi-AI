@@ -17,6 +17,7 @@ export function SiteHeader() {
     "/translate": t("nav.translate", "Translate"),
     "/dictionary": t("nav.dictionary", "Dictionary"),
     "/language": t("nav.language", "Language"),
+    "/docs": t("nav.docs", "Docs"),
     "/community": t("nav.community", "Community"),
     "/research": t("nav.research", "Research"),
   };

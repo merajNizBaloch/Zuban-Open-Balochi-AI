@@ -5,6 +5,7 @@ export const tools = [
   { href: "/language", index: "04", title: "Script Lab", description: "Normalize text and convert Arabic ↔ Latin Balochi.", status: "Beta" },
   { href: "/speech", index: "05", title: "Speech + Voice", description: "Turn Balochi speech into text and text into voice.", status: "Lab" },
   { href: "/ocr", index: "06", title: "OCR", description: "Read printed Balochi from images and pages.", status: "Lab" },
+  { href: "/docs", index: "07", title: "Zuban Docs", description: "Create, format and save Balochi documents.", status: "New" },
 ] as const;
 
 export const primaryNav = [
@@ -12,6 +13,7 @@ export const primaryNav = [
   { href: "/translate", label: "Translate" },
   { href: "/dictionary", label: "Dictionary" },
   { href: "/language", label: "Language" },
+  { href: "/docs", label: "Docs" },
   { href: "/community", label: "Community" },
   { href: "/research", label: "Research" },
 ] as const;
