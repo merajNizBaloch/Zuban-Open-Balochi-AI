@@ -33,6 +33,7 @@ type Snapshot = {
   id: string;
   createdAt: number;
   html: string;
+  source?: "manual" | "auto";
 };
 
 type ZubanDocument = {
@@ -312,6 +313,59 @@ function stripHtml(value: string) {
     .replace(/&amp;/g, "&")
     .replace(/\s+/g, " ")
     .trim();
+}
+
+
+function documentOutline(html: string) {
+  const items: Array<{ level: number; text: string; index: number }> = [];
+  const pattern = /<h([1-3])\b[^>]*>([\s\S]*?)<\/h\1>/gi;
+  let match: RegExpExecArray | null;
+  let index = 0;
+
+  while ((match = pattern.exec(html))) {
+    const text = stripHtml(match[2]);
+    if (text) {
+      items.push({
+        level: Number(match[1]),
+        text,
+        index,
+      });
+    }
+    index += 1;
+  }
+
+  return items;
+}
+
+function sanitizeImportedHtml(value: string) {
+  if (typeof window === "undefined") return value;
+
+  const parser = new DOMParser();
+  const parsed = parser.parseFromString(value, "text/html");
+  parsed
+    .querySelectorAll("script,iframe,object,embed,meta,link,style")
+    .forEach((node) => node.remove());
+
+  parsed.querySelectorAll("*").forEach((node) => {
+    for (const attr of Array.from(node.attributes)) {
+      const name = attr.name.toLocaleLowerCase();
+      const raw = attr.value.trim();
+
+      if (name.startsWith("on")) {
+        node.removeAttribute(attr.name);
+        continue;
+      }
+
+      if (
+        (name === "href" || name === "src") &&
+        /^javascript:/i.test(raw)
+      ) {
+        node.removeAttribute(attr.name);
+      }
+    }
+  });
+
+  return parsed.body.innerHTML;
 }
 
 function scriptAllowed(value: string, script: ScriptMode) {
