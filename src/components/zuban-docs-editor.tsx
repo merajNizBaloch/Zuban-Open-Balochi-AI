@@ -884,14 +884,10 @@ export function ZubanDocsEditor() {
   }
 
   function escapeRegex(value: string) {
-    return value.replace(/[|\\{}()[\]^$+*?.-]/g, "\\  function insertCharacter(character: string) {
-    restoreSelection();
-    editorRef.current?.focus();
-    document.execCommand("insertText", false, character);
-    captureSelection();
-    if (editorRef.current) updateActive({ html: editorRef.current.innerHTML });
-  }
-");
+    return value.replace(
+      /[|\\{}()[\]^$+*?.-]/g,
+      (character) => "\\" + character,
+    );
   }
 
   function replaceWordEverywhere(from: string, to: string) {
