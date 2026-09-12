@@ -16,9 +16,9 @@ export default function ZubanDocsPage() {
             <p className="eyebrow">ZUBAN DOCX · بلوچی نویسگ</p>
             <h1>Write Balochi without fighting your editor.</h1>
             <p className="lead">
-              Zuban DocX is a focused document workspace made for Balochi.
-              Write in Arabic or Latin script, keep local drafts, format long
-              documents, and export your work without switching language tools.
+              Zuban DocX is a Balochi-first word processor. Write in Arabic or
+              Roman Balochi, use Balochi keyboards and fonts, add images and
+              tables, work with Word files, and keep private local drafts.
             </p>
             <div className="hero-actions">
               <Link
@@ -36,6 +36,7 @@ export default function ZubanDocsPage() {
             <div className="docs-hero-meta">
               <span>BALOCHI ONLY</span>
               <span>ARABIC + LATIN SCRIPT</span>
+              <span>WORD .DOCX</span>
               <span>LOCAL AUTOSAVE</span>
               <span>NO ACCOUNT REQUIRED</span>
             </div>
@@ -93,8 +94,8 @@ export default function ZubanDocsPage() {
               <span>02</span>
               <h3>Real document tools</h3>
               <p>
-                Headings, emphasis, lists, alignment, undo/redo, zoom, page
-                layout, focus mode, printing and clean exports.
+                Page sizes, margins, headers, footers, page numbers, tables,
+                images, exact font sizes, colors, Find & Replace and real DOCX.
               </p>
             </article>
             <article>
@@ -124,10 +125,10 @@ export default function ZubanDocsPage() {
             </article>
             <article>
               <span>06</span>
-              <h3>Ready to become its own app</h3>
+              <h3>Balochi tools inside the page</h3>
               <p>
-                Docs is isolated under its own routes and components so it can
-                later move to a dedicated domain without rebuilding the editor.
+                Select text to look up a meaning, translate it, switch Arabic
+                and Roman writing, or check spelling with the Zubán dictionary.
               </p>
             </article>
           </div>
