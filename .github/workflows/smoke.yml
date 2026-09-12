@@ -1,4 +1,4 @@
-name: Lingva Balochi probe
+name: Balochi Space probe
 
 on:
   pull_request:
@@ -6,27 +6,18 @@ on:
 jobs:
   probe:
     runs-on: ubuntu-latest
-    timeout-minutes: 4
+    timeout-minutes: 5
     steps:
-      - name: Probe Lingva Balochi translation
+      - name: Probe Balochi translator Spaces
         shell: bash
         run: |
           set -euo pipefail
-          Q='Hello, how are you? I am going home to drink water.'
-
           for BASE in \
-            "https://lingva.ml" \
-            "https://translate.jae.fi" \
-            "https://translate.dr460nf1r3.org"
+            "https://bakhteyar-english-balochi-translator.hf.space" \
+            "https://bakhteyar-neurolingo-2.hf.space" \
+            "https://bakhteyar-latani-balochi.hf.space"
           do
-            echo "=== $BASE languages ==="
-            curl -sS --max-time 20 "$BASE/api/v1/languages/target" | grep -oiE '.{0,80}(balochi|baluchi|"bal").{0,80}' || true
-            echo
-            echo "=== $BASE translate ==="
-            curl -sS --max-time 25 \
-              -X POST "$BASE/api/v1/en/bal" \
-              -H "Content-Type: application/json" \
-              --data "$(python3 -c 'import json; print(json.dumps({"query": """'"$Q"'"""}))')" \
-              -w "\nHTTP=%{http_code}\n" || true
+            echo "=== $BASE /config ==="
+            curl -sS --max-time 60 "$BASE/config" -w "\nHTTP=%{http_code}\n" | head -c 18000 || true
             echo
           done
