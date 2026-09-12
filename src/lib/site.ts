@@ -5,7 +5,7 @@ export const tools = [
   { href: "/language", index: "04", title: "Script Converter", description: "Switch Balochi between Arabic and Latin writing.", status: "Beta" },
   { href: "/speech", index: "05", title: "Listen & Speak", description: "Turn Balochi speech into text or read text aloud.", status: "Lab" },
   { href: "/ocr", index: "06", title: "Read from Image", description: "Pull Balochi text from a clear photo or scanned page.", status: "Lab" },
-  { href: "/docs", index: "07", title: "Zuban Docs", description: "Create, format and save Balochi documents.", status: "New" },
+  { href: "/docs", index: "07", title: "Zuban DocX", description: "Create, format and save Balochi documents.", status: "New" },
 ] as const;
 
 export const primaryNav = [
@@ -13,7 +13,7 @@ export const primaryNav = [
   { href: "/translate", label: "Translate" },
   { href: "/dictionary", label: "Dictionary" },
   { href: "/language", label: "Language" },
-  { href: "/docs", label: "Docs" },
+  { href: "/docs", label: "DocX" },
   { href: "/community", label: "Community" },
   { href: "/research", label: "Research" },
 ] as const;
