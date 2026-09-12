@@ -1,21 +1,34 @@
-name: HF translator probe
+name: Translation smoke
 
 on:
   pull_request:
 
 jobs:
-  probe:
+  smoke:
     runs-on: ubuntu-latest
     timeout-minutes: 3
     steps:
-      - name: Probe public Balochi translator
+      - name: Verify live translation
         shell: bash
         run: |
           set -euo pipefail
-          BASE="https://bakhteyar-latani-balochi.hf.space"
-          echo "OPENAPI"
-          curl -sS --max-time 30 "$BASE/gradio_api/openapi.json" | head -c 12000
-          echo
-          echo "CONFIG"
-          curl -sS --max-time 30 "$BASE/config" | head -c 12000
-          echo
+
+          post_translate() {
+            NAME="$1"
+            DATA="$2"
+            BODY="/tmp/$NAME.json"
+            CODE=$(curl -sS -o "$BODY" -w "%{http_code}" --max-time 30 \
+              -X POST "https://zuban.techcraftsolution.com/api/text" \
+              -H "Content-Type: application/json" \
+              --data "$DATA")
+            echo "$NAME HTTP=$CODE"
+            cat "$BODY"
+            echo
+            test "$CODE" = "200"
+            test -s "$BODY"
+            ! grep -qi "broader model" "$BODY"
+          }
+
+          post_translate en_word '{"mode":"translate","input":"water","source":"English","target":"Balochi"}'
+          post_translate en_sentence '{"mode":"translate","input":"go home and drink water","source":"English","target":"Balochi"}'
+          post_translate bal_sentence '{"mode":"translate","input":"دوست آپ آس","source":"Balochi","target":"English"}'
