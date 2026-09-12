@@ -572,7 +572,14 @@ export function ZubanDocsEditor() {
     downloadFile(
       "zuban-docs-backup.json",
       JSON.stringify(
-        { version: 1, exportedAt: Date.now(), documents },
+        {
+          version: 1,
+          lastDocumentUpdate: documents.reduce(
+            (latest, document) => Math.max(latest, document.updatedAt),
+            0,
+          ),
+          documents,
+        },
         null,
         2,
       ),
