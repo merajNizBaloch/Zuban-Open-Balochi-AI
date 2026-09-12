@@ -2571,6 +2571,7 @@ export function ZubanDocsEditor() {
             </span>
             <span>{metrics.words} words</span>
             <span>{metrics.characters} characters</span>
+            <span title="Saved in your browser">{storageLabel}</span>
             <span>{metrics.purity}% script purity</span>
             <span>~{metrics.readingMinutes} min</span>
           </div>
