@@ -8721,3 +8721,41 @@ html[data-theme="makran"] .docs-pwa-controls > button {
     display: none;
   }
 }
+
+
+/* Zuban DocX live Balochi spelling */
+::highlight(zuban-spelling) {
+  text-decoration-line: underline;
+  text-decoration-style: wavy;
+  text-decoration-color: #cf6d57;
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 3px;
+}
+
+.docs-status-spelling {
+  min-height: 22px;
+  padding: 2px 7px;
+  border: 1px solid #d8e2e6;
+  border-radius: 999px;
+  background: #f8fbfb;
+  color: #718798;
+  cursor: pointer;
+  font: inherit;
+  font-size: 8px;
+}
+
+.docs-status-spelling:hover {
+  border-color: #99cdd1;
+  color: #067b84;
+}
+
+html[data-theme="makran"] .docs-status-spelling {
+  border-color: #4a425f;
+  background: #28213d;
+  color: #aaa2b3;
+}
+
+html[data-theme="makran"] .docs-status-spelling:hover {
+  border-color: rgba(75, 214, 202, .34);
+  color: #7be6dc;
+}
