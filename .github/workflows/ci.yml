@@ -67,19 +67,44 @@ jobs:
           done
 
 
-      - name: Smoke test production chat
+      - name: Smoke test production free services
         shell: bash
         run: |
           set -euo pipefail
-          BODY_FILE=/tmp/chat-body.txt
-          CODE=$(curl -sS -o "$BODY_FILE" -w "%{http_code}" --max-time 45 \
-            -X POST "https://zuban.techcraftsolution.com/api/chat/stream" \
-            -H "Content-Type: application/json" \
-            --data '{"input":"Salam. Reply briefly in Balochi."}')
-          echo "CHAT_HTTP=$CODE"
-          echo "CHAT_BODY_START"
-          cat "$BODY_FILE"
-          echo
-          echo "CHAT_BODY_END"
-          test "$CODE" = "200"
-          test -s "$BODY_FILE"
+
+          post_json() {
+            NAME="$1"
+            URL="$2"
+            DATA="$3"
+            BODY="/tmp/$NAME.txt"
+            CODE=$(curl -sS -o "$BODY" -w "%{http_code}" --max-time 45 \
+              -X POST "$URL" \
+              -H "Content-Type: application/json" \
+              --data "$DATA")
+            echo "$NAME HTTP=$CODE"
+            cat "$BODY"
+            echo
+            test "$CODE" = "200"
+            test -s "$BODY"
+          }
+
+          post_json chat_lookup \
+            "https://zuban.techcraftsolution.com/api/chat/stream" \
+            '{"input":"What does دوست mean?"}'
+
+          post_json chat_general \
+            "https://zuban.techcraftsolution.com/api/chat/stream" \
+            '{"input":"Tell me about Balochi"}'
+
+          post_json translate_word \
+            "https://zuban.techcraftsolution.com/api/text" \
+            '{"mode":"translate","input":"water","source":"English","target":"Balochi"}'
+
+          post_json translate_sentence \
+            "https://zuban.techcraftsolution.com/api/text" \
+            '{"mode":"translate","input":"water and fire","source":"English","target":"Balochi"}'
+
+          HEALTH=$(curl -sS --max-time 30 "https://zuban.techcraftsolution.com/api/health")
+          echo "health=$HEALTH"
+          echo "$HEALTH" | grep -q '"freeLexiconFallback":true'
+          echo "$HEALTH" | grep -q '"browserFallback":false'
