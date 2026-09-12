@@ -1,3 +1,5 @@
+@import url("https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Lateef:wght@400;700&family=Noto+Naskh+Arabic:wght@400;700&family=Noto+Nastaliq+Urdu:wght@400;700&family=Noto+Sans:wght@400;700&family=Noto+Sans+Arabic:wght@400;700&family=Noto+Serif:wght@400;700&family=Scheherazade+New:wght@400;700&display=swap");
+
 :root {
   --bg: #fefdfd;
   --paper: #ffffff;
@@ -5730,7 +5732,7 @@ html[data-language="bal"] .disclaimer-block > div {
 }
 
 
-/* Zuban Docs */
+/* Zuban DocX */
 .docs-landing {
   --docs-ink: #062e5a;
   --docs-accent: #039fab;
@@ -5943,7 +5945,7 @@ html[data-language="bal"] .disclaimer-block > div {
   border-color: #f4f8f9;
 }
 
-/* Zuban Docs editor */
+/* Zuban DocX editor */
 .docs-app {
   --docs-sidebar: 278px;
   position: relative;
@@ -6722,7 +6724,7 @@ html[data-language="bal"] .disclaimer-block > div {
 }
 
 
-/* Zuban Docs refinement */
+/* Zuban DocX refinement */
 .docs-hidden-input { display: none; }
 
 .docs-sidebar-actions {
@@ -7200,7 +7202,7 @@ html[data-language="bal"] .disclaimer-block > div {
 }
 
 
-/* Zuban Docs Makran Night */
+/* Zuban DocX Makran Night */
 html[data-theme="makran"] .docs-app {
   background: #171425;
   color: #efe3c8;
@@ -7347,7 +7349,7 @@ html[data-theme="makran"] .docs-save-state {
 }
 
 
-/* Standalone Zuban Docs editor */
+/* Standalone Zuban DocX editor */
 .standalone-docs-main {
   min-height: 100dvh;
   height: 100dvh;
@@ -7394,5 +7396,285 @@ html[data-theme="makran"] .docs-save-state {
   .standalone-docs-main .docs-topbar,
   .standalone-docs-main .docs-toolbar {
     top: auto;
+  }
+}
+
+
+/* Zuban DocX writing tools */
+.docs-toolbar select[aria-label="Balochi font"] {
+  max-width: 190px;
+}
+
+.docs-inline-image {
+  margin: 24px auto;
+  text-align: center;
+}
+
+.docs-inline-image img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 0 auto;
+  border-radius: 8px;
+  box-shadow: 0 6px 22px rgba(6, 46, 90, .10);
+}
+
+.docs-inline-image figcaption {
+  margin-top: 8px;
+  color: #758a9a;
+  font-size: 11px;
+  text-align: center;
+  outline: 0;
+}
+
+.docs-keyboard-fab {
+  position: fixed;
+  z-index: 55;
+  right: 22px;
+  bottom: 20px;
+  width: 54px;
+  height: 54px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(255,255,255,.24);
+  border-radius: 50%;
+  background: #062e5a;
+  color: #fff;
+  box-shadow: 0 16px 38px rgba(6,46,90,.28);
+  cursor: pointer;
+  font-size: 23px;
+  transition: transform .15s ease, background .15s ease;
+}
+
+.docs-keyboard-fab:hover,
+.docs-keyboard-fab.active {
+  transform: translateY(-2px);
+  background: #039fab;
+}
+
+.docs-floating-keyboard {
+  position: fixed;
+  z-index: 54;
+  right: 20px;
+  bottom: 84px;
+  width: min(720px, calc(100vw - 40px));
+  padding: 14px;
+  border: 1px solid #cfdce2;
+  border-radius: 16px;
+  background: rgba(250,252,253,.98);
+  box-shadow: 0 26px 70px rgba(6,46,90,.24);
+  backdrop-filter: blur(18px);
+  color: #163d61;
+  direction: ltr;
+}
+
+.docs-keyboard-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.docs-keyboard-head > div {
+  display: grid;
+  gap: 4px;
+}
+
+.docs-keyboard-head strong {
+  font-size: 14px;
+}
+
+.docs-keyboard-head span {
+  color: #6f8494;
+  font-size: 10px;
+  line-height: 1.45;
+}
+
+.docs-keyboard-head > button {
+  width: 30px;
+  height: 30px;
+  border: 0;
+  background: transparent;
+  color: #5c7487;
+  cursor: pointer;
+  font-size: 20px;
+}
+
+.docs-phonetic-toggle {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: 0 0 12px;
+  padding: 9px 11px;
+  border: 1px solid #d9e4e8;
+  border-radius: 9px;
+  background: #f4f8f9;
+  color: #526f84;
+  font-size: 10px;
+}
+
+.docs-latin-specials {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.docs-latin-specials button {
+  min-width: 36px;
+  height: 34px;
+  border: 1px solid #cfdae0;
+  border-radius: 7px;
+  background: #fff;
+  color: #183e61;
+  cursor: pointer;
+  font-family: "Noto Sans", sans-serif;
+  font-size: 15px;
+}
+
+.docs-qwerty {
+  display: grid;
+  gap: 7px;
+}
+
+.docs-qwerty-row {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+}
+
+.docs-qwerty-row > button {
+  width: 52px;
+  min-height: 48px;
+  display: grid;
+  place-items: center;
+  gap: 1px;
+  padding: 5px 4px;
+  border: 1px solid #cdd9df;
+  border-radius: 8px;
+  background: #fff;
+  color: #153d61;
+  cursor: pointer;
+  box-shadow: 0 2px 0 #c7d3d9;
+  user-select: none;
+}
+
+.docs-qwerty-row > button:active {
+  transform: translateY(1px);
+  box-shadow: 0 1px 0 #c7d3d9;
+}
+
+.docs-qwerty-row > button span {
+  font-size: 18px;
+  line-height: 1;
+}
+
+.docs-qwerty-row > button small {
+  color: #8394a0;
+  font-size: 8px;
+  line-height: 1;
+}
+
+.docs-qwerty-actions > button {
+  width: auto;
+}
+
+.docs-qwerty-actions .wide {
+  min-width: 74px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.docs-qwerty-actions .space {
+  flex: 1;
+  max-width: 330px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.docs-qwerty-actions button.active {
+  border-color: #039fab;
+  background: #e9f7f8;
+  color: #067b84;
+}
+
+html[data-theme="makran"] .docs-floating-keyboard {
+  background: rgba(33,28,51,.98);
+  border-color: #3d3652;
+  color: #efe3c8;
+}
+
+html[data-theme="makran"] .docs-keyboard-head span,
+html[data-theme="makran"] .docs-qwerty-row > button small {
+  color: #aaa2b3;
+}
+
+html[data-theme="makran"] .docs-phonetic-toggle {
+  background: #28213d;
+  border-color: #3d3652;
+  color: #d5cdd9;
+}
+
+html[data-theme="makran"] .docs-latin-specials button,
+html[data-theme="makran"] .docs-qwerty-row > button {
+  background: #28213d;
+  border-color: #4a425f;
+  color: #efe3c8;
+  box-shadow: 0 2px 0 #171425;
+}
+
+html[data-theme="makran"] .docs-qwerty-actions button.active {
+  background: rgba(75,214,202,.14);
+  border-color: rgba(75,214,202,.36);
+  color: #7be6dc;
+}
+
+html[data-theme="makran"] .docs-inline-image figcaption {
+  color: #aaa2b3;
+}
+
+@media (max-width: 720px) {
+  .docs-keyboard-fab {
+    right: 14px;
+    bottom: 14px;
+    width: 50px;
+    height: 50px;
+  }
+
+  .docs-floating-keyboard {
+    right: 8px;
+    bottom: 72px;
+    width: calc(100vw - 16px);
+    padding: 10px;
+    border-radius: 13px;
+  }
+
+  .docs-qwerty-row {
+    gap: 4px;
+  }
+
+  .docs-qwerty-row > button {
+    width: min(9vw, 42px);
+    min-width: 28px;
+    min-height: 44px;
+    padding: 4px 2px;
+  }
+
+  .docs-qwerty-row > button span {
+    font-size: 16px;
+  }
+
+  .docs-qwerty-actions .wide {
+    min-width: 58px;
+  }
+}
+
+@media print {
+  .docs-keyboard-fab,
+  .docs-floating-keyboard {
+    display: none !important;
   }
 }
