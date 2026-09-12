@@ -37,10 +37,18 @@ type TemplateId =
   | "assignment";
 type LibraryView = "all" | "recent" | "favorites";
 type KeyboardLayout = "phonetic" | "traditional";
+type Annotation = {
+  id: string;
+  quote: string;
+  note: string;
+  createdAt: number;
+};
+
 type CommandId =
   | "new"
   | "find"
   | "outline"
+  | "notes"
   | "page"
   | "balochi"
   | "image"
@@ -79,6 +87,7 @@ type ZubanDocument = {
   showPageNumbers?: boolean;
   showDate?: boolean;
   paragraphSpacing?: number;
+  annotations?: Annotation[];
 };
 
 type Template = {
@@ -181,6 +190,7 @@ const commandCatalog: Array<{
   { id: "new", label: "New document", hint: "Create a new Balochi document", icon: "＋" },
   { id: "find", label: "Find & Replace", hint: "Search inside this document", icon: "⌕" },
   { id: "outline", label: "Document outline", hint: "Jump between headings", icon: "☷" },
+  { id: "notes", label: "Private notes", hint: "Attach notes to selected passages", icon: "✎" },
   { id: "page", label: "Page setup", hint: "Size, margins, header and footer", icon: "▤" },
   { id: "balochi", label: "Balochi tools", hint: "Meaning, script conversion, spelling", icon: "ب" },
   { id: "image", label: "Insert image", hint: "Add a compressed image", icon: "▧" },
@@ -366,6 +376,7 @@ function makeDocument(
     showPageNumbers: false,
     showDate: false,
     paragraphSpacing: 18,
+    annotations: [],
   };
 }
 
@@ -531,6 +542,9 @@ export function ZubanDocsEditor() {
   const [showCreate, setShowCreate] = useState(false);
   const [showShortcuts, setShowShortcuts] = useState(false);
   const [showOutline, setShowOutline] = useState(false);
+  const [showNotes, setShowNotes] = useState(false);
+  const [noteQuote, setNoteQuote] = useState("");
+  const [noteDraft, setNoteDraft] = useState("");
   const [showCommandPalette, setShowCommandPalette] = useState(false);
   const [commandQuery, setCommandQuery] = useState("");
   const [showFind, setShowFind] = useState(false);
@@ -766,6 +780,7 @@ export function ZubanDocsEditor() {
         setShowPageSetup(false);
         setShowLanguageTools(false);
         setShowOutline(false);
+        setShowNotes(false);
         setSelectedImage(null);
       }
     }
@@ -1033,6 +1048,67 @@ export function ZubanDocsEditor() {
     setNotice("Formatting cleared from the selection.");
   }
 
+
+  function openNoteComposer() {
+    captureSelection();
+    restoreSelection();
+    const quote = window.getSelection()?.toString().trim() ?? "";
+    setNoteQuote(quote);
+    setNoteDraft("");
+    setShowNotes(true);
+  }
+
+  function savePrivateNote() {
+    if (!activeDocument) return;
+    const note = noteDraft.trim();
+    if (!note) {
+      setNotice("Write a note first.");
+      return;
+    }
+
+    const annotation: Annotation = {
+      id: makeId(),
+      quote: noteQuote.trim(),
+      note,
+      createdAt: Date.now(),
+    };
+
+    updateActive({
+      annotations: [annotation, ...(activeDocument.annotations ?? [])],
+    });
+    setNoteDraft("");
+    setNoteQuote("");
+    setNotice("Private note saved.");
+  }
+
+  function deletePrivateNote(id: string) {
+    if (!activeDocument) return;
+    updateActive({
+      annotations: (activeDocument.annotations ?? []).filter(
+        (annotation) => annotation.id !== id,
+      ),
+    });
+    setNotice("Note deleted.");
+  }
+
+  function jumpToAnnotation(annotation: Annotation) {
+    if (!annotation.quote) return;
+    const ranges = findRanges(annotation.quote);
+    const range = ranges[0];
+    if (!range) {
+      setNotice("The quoted text has changed or was removed.");
+      return;
+    }
+
+    const selection = window.getSelection();
+    selection?.removeAllRanges();
+    selection?.addRange(range);
+    selectionRef.current = range.cloneRange();
+    range.startContainer.parentElement?.scrollIntoView({
+      behavior: "smooth",
+      block: "center",
+    });
+  }
 
   function scrollToOutlineItem(index: number) {
     const heading = editorRef.current?.querySelectorAll("h1,h2,h3")[index] as
@@ -2183,6 +2259,7 @@ export function ZubanDocsEditor() {
     if (id === "new") openCreateDialog();
     if (id === "find") setShowFind(true);
     if (id === "outline") setShowOutline(true);
+    if (id === "notes") openNoteComposer();
     if (id === "page") setShowPageSetup(true);
     if (id === "balochi") setShowLanguageTools(true);
     if (id === "image") chooseImage();
@@ -2481,6 +2558,17 @@ export function ZubanDocsEditor() {
               title="Outline · Ctrl/⌘ + Shift + O"
             >
               Outline
+            </button>
+            <button
+              type="button"
+              onMouseDown={captureSelection}
+              onClick={openNoteComposer}
+              title="Add a private note to selected text"
+            >
+              Notes
+              {(activeDocument.annotations ?? []).length
+                ? " (" + (activeDocument.annotations ?? []).length + ")"
+                : ""}
             </button>
             <button
               type="button"
@@ -3052,6 +3140,74 @@ export function ZubanDocsEditor() {
               <div className="docs-outline-empty">
                 <strong>No headings yet</strong>
                 <span>Use Title, Heading or Subheading to build an outline.</span>
+              </div>
+            )}
+          </div>
+        </aside>
+      ) : null}
+
+      {showNotes ? (
+        <aside className="docs-tool-panel docs-notes-panel">
+          <div className="docs-panel-head">
+            <div>
+              <strong>Private notes</strong>
+              <span>Saved only with this local document.</span>
+            </div>
+            <button type="button" onClick={() => setShowNotes(false)}>×</button>
+          </div>
+
+          <div className="docs-note-composer">
+            {noteQuote ? (
+              <blockquote>{noteQuote}</blockquote>
+            ) : (
+              <span className="docs-note-no-quote">
+                No text selected — this note will apply to the document.
+              </span>
+            )}
+            <textarea
+              value={noteDraft}
+              onChange={(event) => setNoteDraft(event.target.value)}
+              placeholder="Write a private note…"
+              rows={4}
+            />
+            <button type="button" onClick={savePrivateNote}>
+              Save note
+            </button>
+          </div>
+
+          <div className="docs-note-list">
+            {(activeDocument.annotations ?? []).length ? (
+              (activeDocument.annotations ?? []).map((annotation) => (
+                <article key={annotation.id}>
+                  <div>
+                    <time>
+                      {new Date(annotation.createdAt).toLocaleString()}
+                    </time>
+                    <button
+                      type="button"
+                      onClick={() => deletePrivateNote(annotation.id)}
+                      aria-label="Delete note"
+                    >
+                      ×
+                    </button>
+                  </div>
+                  {annotation.quote ? (
+                    <button
+                      className="docs-note-quote"
+                      type="button"
+                      onClick={() => jumpToAnnotation(annotation)}
+                    >
+                      “{annotation.quote.slice(0, 180)}
+                      {annotation.quote.length > 180 ? "…" : ""}”
+                    </button>
+                  ) : null}
+                  <p>{annotation.note}</p>
+                </article>
+              ))
+            ) : (
+              <div className="docs-outline-empty">
+                <strong>No private notes yet</strong>
+                <span>Select text and click Notes to attach context.</span>
               </div>
             )}
           </div>
