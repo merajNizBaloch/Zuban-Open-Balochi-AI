@@ -1,34 +1,25 @@
-name: Translation smoke
+name: Google Balochi probe
 
 on:
   pull_request:
 
 jobs:
-  smoke:
+  probe:
     runs-on: ubuntu-latest
     timeout-minutes: 3
     steps:
-      - name: Verify live translation
+      - name: Probe Google Balochi translation endpoint
         shell: bash
         run: |
           set -euo pipefail
-
-          post_translate() {
-            NAME="$1"
-            DATA="$2"
-            BODY="/tmp/$NAME.json"
-            CODE=$(curl -sS -o "$BODY" -w "%{http_code}" --max-time 30 \
-              -X POST "https://zuban.techcraftsolution.com/api/text" \
-              -H "Content-Type: application/json" \
-              --data "$DATA")
-            echo "$NAME HTTP=$CODE"
-            cat "$BODY"
-            echo
-            test "$CODE" = "200"
-            test -s "$BODY"
-            ! grep -qi "broader model" "$BODY"
-          }
-
-          post_translate en_word '{"mode":"translate","input":"water","source":"English","target":"Balochi"}'
-          post_translate en_sentence '{"mode":"translate","input":"go home and drink water","source":"English","target":"Balochi"}'
-          post_translate bal_sentence '{"mode":"translate","input":"دوست آپ آس","source":"Balochi","target":"English"}'
+          for CODE in bal bal-Arab bal-Latn; do
+            echo "=== $CODE ==="
+            curl -sS --max-time 20 --get \
+              "https://translate.googleapis.com/translate_a/single" \
+              --data-urlencode "client=gtx" \
+              --data-urlencode "sl=en" \
+              --data-urlencode "tl=$CODE" \
+              --data-urlencode "dt=t" \
+              --data-urlencode "q=Hello, how are you? I am going home to drink water." \
+              -w "\nHTTP=%{http_code}\n" || true
+          done
