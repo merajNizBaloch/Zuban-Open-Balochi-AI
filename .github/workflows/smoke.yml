@@ -1,4 +1,4 @@
-name: Balochi Space probe
+name: HF corpus search probe
 
 on:
   pull_request:
@@ -6,18 +6,27 @@ on:
 jobs:
   probe:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 3
     steps:
-      - name: Probe Balochi translator Spaces
+      - name: Probe parallel corpus search
         shell: bash
         run: |
           set -euo pipefail
-          for BASE in \
-            "https://bakhteyar-english-balochi-translator.hf.space" \
-            "https://bakhteyar-neurolingo-2.hf.space" \
-            "https://bakhteyar-latani-balochi.hf.space"
+          for Q in \
+            "How are you?" \
+            "I am going home." \
+            "I want to drink water." \
+            "Where are you going?" \
+            "Thank you very much."
           do
-            echo "=== $BASE /config ==="
-            curl -sS --max-time 60 "$BASE/config" -w "\nHTTP=%{http_code}\n" | head -c 18000 || true
-            echo
+            echo "=== $Q ==="
+            curl -sS --max-time 20 --get \
+              "https://datasets-server.huggingface.co/search" \
+              --data-urlencode "dataset=Aynkader/Balochi-dataset" \
+              --data-urlencode "config=default" \
+              --data-urlencode "split=train" \
+              --data-urlencode "query=$Q" \
+              --data-urlencode "offset=0" \
+              --data-urlencode "length=10" \
+              -w "\nHTTP=%{http_code}\n"
           done
