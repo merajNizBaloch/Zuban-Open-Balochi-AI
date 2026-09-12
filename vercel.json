@@ -8,7 +8,7 @@
     }
   },
   "framework": "nextjs",
-  "buildCommand": "ROOT=\"$(git rev-parse --show-toplevel)\" && cd \"$ROOT\" && npm run build && rm -rf services/balochi-model-server/.next services/balochi-model-server/public && cp -R .next services/balochi-model-server/.next && cp -R public services/balochi-model-server/public",
+  "buildCommand": "bash scripts/vercel-build.sh",
   "outputDirectory": ".next",
-  "installCommand": "cd \"$(git rev-parse --show-toplevel)\" && npm install"
+  "installCommand": "npm install"
 }
