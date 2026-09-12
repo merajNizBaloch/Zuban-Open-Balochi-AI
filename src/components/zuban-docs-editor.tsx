@@ -872,30 +872,64 @@ export function ZubanDocsEditor() {
     );
   }
 
-  function exportDoc() {
+  async function exportDocx() {
     if (!activeDocument) return;
-    const direction = activeDocument.script === "arabic" ? "rtl" : "ltr";
-    const body = editorRef.current?.innerHTML ?? activeDocument.html;
-    const file =
-      "<html xmlns:o=\"urn:schemas-microsoft-com:office:office\" xmlns:w=\"urn:schemas-microsoft-com:office:word\" dir=\"" +
-      direction +
-      "\"><head><meta charset=\"utf-8\"><style>body{font-family:Arial,sans-serif;font-size:14pt;line-height:1.8}</style></head><body>" +
-      body +
-      "</body></html>";
+    setNotice("Creating Word file…");
 
+    try {
+      const { createDocxBlob } = await import("@/lib/docx-file");
+      const blob = await createDocxBlob(
+        editorRef.current?.innerHTML ?? activeDocument.html,
+        {
+          title: activeDocument.title,
+          script: activeDocument.script,
+          fontFamily: currentFont,
+          pageSize: activeDocument.pageSize ?? "a4",
+          orientation: activeDocument.orientation ?? "portrait",
+          marginMm: activeDocument.marginMm ?? 20,
+          headerText: activeDocument.headerText ?? "",
+          footerText: activeDocument.footerText ?? "",
+          showPageNumbers: Boolean(activeDocument.showPageNumbers),
+          showDate: Boolean(activeDocument.showDate),
+        },
+      );
+      downloadBlob((activeDocument.title || "zuban-document") + ".docx", blob);
+      setNotice("Word document downloaded.");
+    } catch {
+      setNotice("I couldn’t create the Word file. Please try again.");
+    }
+  }
+
+  function exportZdocx(document: ZubanDocument = activeDocument) {
+    if (!document) return;
     downloadFile(
-      (activeDocument.title || "zuban-document") + ".doc",
-      file,
-      "application/msword;charset=utf-8",
+      (document.title || "zuban-document") + ".zdocx",
+      JSON.stringify(
+        {
+          format: "zuban-docx",
+          version: 2,
+          exportedAt: Date.now(),
+          document: {
+            ...document,
+            html: editorRef.current?.innerHTML ?? document.html,
+          },
+        },
+        null,
+        2,
+      ),
+      "application/vnd.zuban.docx+json;charset=utf-8",
     );
+    setNotice("Zuban DocX file downloaded.");
   }
 
   function exportLibraryBackup() {
     downloadFile(
-      "zuban-docx-backup.json",
+      "zuban-docx-library.zdocx",
       JSON.stringify(
         {
-          version: 1,
+          format: "zuban-docx-library",
+          version: 2,
+          exportedAt: Date.now(),
           lastDocumentUpdate: documents.reduce(
             (latest, document) => Math.max(latest, document.updatedAt),
             0,
@@ -905,19 +939,51 @@ export function ZubanDocsEditor() {
         null,
         2,
       ),
-      "application/json;charset=utf-8",
+      "application/vnd.zuban.docx+json;charset=utf-8",
     );
-    setNotice("Local library backup exported.");
+    setNotice("Your DocX library backup is ready.");
   }
 
-  function downloadFile(name: string, content: string, type: string) {
-    const blob = new Blob([content], { type });
+  function downloadBlob(name: string, blob: Blob) {
     const url = URL.createObjectURL(blob);
     const link = window.document.createElement("a");
     link.href = url;
     link.download = name.replace(/[\\/:*?\"<>|]/g, "-");
     link.click();
-    URL.revokeObjectURL(url);
+    window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+
+  function downloadFile(name: string, content: string, type: string) {
+    downloadBlob(name, new Blob([content], { type }));
+  }
+
+  function makeImportedDocument(
+    title: string,
+    html: string,
+    script: ScriptMode,
+  ): ZubanDocument {
+    const now = Date.now();
+    return {
+      id: makeId(),
+      title:
+        title ||
+        (script === "arabic" ? "درآمد بوتگ دستاویز" : "Imported document"),
+      html,
+      script,
+      createdAt: now,
+      updatedAt: now,
+      snapshots: [],
+      template: "blank",
+      favorite: false,
+      pageSize: "a4",
+      orientation: "portrait",
+      marginMm: 20,
+      headerText: "",
+      footerText: "",
+      showPageNumbers: false,
+      showDate: false,
+      paragraphSpacing: 18,
+    };
   }
 
   async function importDocument(event: ChangeEvent<HTMLInputElement>) {
@@ -925,35 +991,107 @@ export function ZubanDocsEditor() {
     event.target.value = "";
     if (!file) return;
 
-    if (file.size > 2_000_000) {
-      setGuardMessage("Import is limited to 2 MB per document.");
+    const extension = file.name.split(".").pop()?.toLocaleLowerCase() ?? "";
+    const largerFile = extension === "docx" || extension === "zdocx";
+    if (file.size > (largerFile ? 15_000_000 : 2_000_000)) {
+      setGuardMessage(
+        largerFile
+          ? "Please choose a DOCX or ZDOCX file smaller than 15 MB."
+          : "Please choose a text document smaller than 2 MB.",
+      );
+      return;
+    }
+
+    if (extension === "zdocx") {
+      try {
+        const parsed = JSON.parse(await file.text()) as {
+          format?: string;
+          document?: ZubanDocument;
+          documents?: ZubanDocument[];
+        };
+
+        if (parsed.format === "zuban-docx" && parsed.document) {
+          const imported = {
+            ...makeDocument(parsed.document.script ?? "arabic"),
+            ...parsed.document,
+            id: makeId(),
+            createdAt: Date.now(),
+            updatedAt: Date.now(),
+          };
+          setDocuments((current) => [imported, ...current]);
+          setActiveId(imported.id);
+          setSaved(false);
+          setNotice("Zuban DocX document restored.");
+          return;
+        }
+
+        if (parsed.format === "zuban-docx-library" && Array.isArray(parsed.documents)) {
+          const restored = parsed.documents.map((document) => ({
+            ...makeDocument(document.script ?? "arabic"),
+            ...document,
+            id: makeId(),
+            updatedAt: Date.now(),
+          }));
+          if (restored.length) {
+            setDocuments((current) => [...restored, ...current]);
+            setActiveId(restored[0].id);
+            setSaved(false);
+            setNotice(restored.length + " documents restored.");
+            return;
+          }
+        }
+
+        setNotice("That ZDOCX file doesn’t look valid.");
+      } catch {
+        setNotice("I couldn’t open that ZDOCX file.");
+      }
+      return;
+    }
+
+    if (extension === "docx") {
+      setNotice("Opening Word document…");
+      try {
+        const { importDocxToHtml } = await import("@/lib/docx-file");
+        const result = await importDocxToHtml(await file.arrayBuffer());
+        const text = stripHtml(result.html);
+        const arabicCount =
+          (text.match(/[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF]/gu) ?? [])
+            .length;
+        const latinCount = (text.match(/[A-Za-zÀ-ž]/gu) ?? []).length;
+        const script: ScriptMode = arabicCount >= latinCount ? "arabic" : "latin";
+        const title = file.name.replace(/\.docx$/i, "") || "Imported document";
+        const document = makeImportedDocument(title, result.html, script);
+        setDocuments((current) => [document, ...current]);
+        setActiveId(document.id);
+        setSaved(false);
+        setNotice("Word document imported.");
+      } catch {
+        setNotice("I couldn’t open that Word document.");
+      }
       return;
     }
 
     const raw = await file.text();
     const htmlLike = /<\/?[a-z][\s\S]*>/i.test(raw);
     const text = htmlLike ? stripHtml(raw) : raw;
-    const script = activeDocument?.script ?? "arabic";
+    const arabicCount =
+      (text.match(/[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF]/gu) ?? []).length;
+    const latinCount = (text.match(/[A-Za-zÀ-ž]/gu) ?? []).length;
+    const script: ScriptMode =
+      arabicCount || latinCount
+        ? arabicCount >= latinCount
+          ? "arabic"
+          : "latin"
+        : activeDocument?.script ?? "arabic";
 
-    if (!scriptAllowed(text, script)) {
-      setGuardMessage(
-        "The imported file contains characters outside the current Balochi script mode. Change script mode or clean the file first.",
-      );
-      return;
-    }
-
-    const now = Date.now();
-    const titleFromFile = file.name.replace(/\.(txt|html?|md)$/i, "") || "Imported document";
-    const document: ZubanDocument = {
-      id: makeId(),
-      title: sanitizeForScript(titleFromFile, script) || (script === "arabic" ? "درآمد بوتگ دستاویز" : "Import botag dastāvēz"),
-      html: htmlLike ? raw : textToHtml(raw),
+    const titleFromFile =
+      file.name.replace(/\.(txt|html?|md)$/i, "") || "Imported document";
+    const document = makeImportedDocument(
+      sanitizeForScript(titleFromFile, script) ||
+        (script === "arabic" ? "درآمد بوتگ دستاویز" : "Imported document"),
+      htmlLike ? raw : textToHtml(raw),
       script,
-      createdAt: now,
-      updatedAt: now,
-      snapshots: [],
-      template: "blank",
-    };
+    );
 
     setDocuments((current) => [document, ...current]);
     setActiveId(document.id);
@@ -1040,7 +1178,7 @@ export function ZubanDocsEditor() {
         ref={importRef}
         className="docs-hidden-input"
         type="file"
-        accept=".txt,.md,.html,.htm,text/plain,text/html"
+        accept=".txt,.md,.html,.htm,.docx,.zdocx,text/plain,text/html,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
         onChange={importDocument}
       />
 
@@ -1198,7 +1336,8 @@ export function ZubanDocsEditor() {
               <div>
                 <button type="button" onClick={exportTxt}>Plain text (.txt)</button>
                 <button type="button" onClick={exportHtml}>Web document (.html)</button>
-                <button type="button" onClick={exportDoc}>Word-compatible (.doc)</button>
+                <button type="button" onClick={exportDocx}>Microsoft Word (.docx)</button>
+                <button type="button" onClick={() => exportZdocx()}>Zuban DocX (.zdocx)</button>
                 <button type="button" onClick={copyDocument}>Copy all text</button>
               </div>
             </details>
