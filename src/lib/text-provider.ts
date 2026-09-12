@@ -171,41 +171,69 @@ function localDictionaryChat(input: string) {
   }
 
   const normalizedInput = normalize(input);
+  const lower = normalizedInput.toLocaleLowerCase();
 
   if (/^(hi|hello|hey|salam|assalam|السلام|سلام)\b/i.test(normalizedInput)) {
+    if (/how are you|how r u|howre you/i.test(lower)) {
+      return "سلامت باتے! I’m doing well. How can I help you today?";
+    }
+
+    return "سلامت باتے! How can I help you today?";
+  }
+
+  if (/\b(how are you|how r u|howre you)\b/i.test(lower)) {
+    return "I’m doing well, thank you. How can I help you?";
+  }
+
+  if (/\b(thank you|thanks|thankyou|shukriya)\b/i.test(lower)) {
+    return "You’re welcome. If you need anything else, just ask.";
+  }
+
+  if (/\b(bye|goodbye|see you|allah hafiz|khuda hafiz)\b/i.test(lower)) {
+    return "Goodbye! خدا نگہدار.";
+  }
+
+  if (/\b(who are you|what are you|your name|what is your name)\b/i.test(lower)) {
     return [
-      "سلامت باتے.",
-      "",
-      "Zubán is running in free lexicon mode. Ask for a Balochi word meaning or an English ↔ Balochi dictionary translation.",
+      "I’m Zubán, an open Balochi language assistant by TechCraft.",
+      "I can help with Balochi vocabulary, sourced word meanings, basic translation, script guidance, and everyday conversation.",
     ].join("\n");
   }
 
-  if (/short greeting|greeting in balochi|balochi greeting/i.test(normalizedInput)) {
+  if (/short greeting|greeting in balochi|balochi greeting/i.test(lower)) {
     return "سلامت باتے.";
   }
 
-  if (/\b(help|what can you do|capabilities)\b/i.test(normalizedInput)) {
+  if (/\b(what is balochi|tell me about balochi|balochi language)\b/i.test(lower)) {
     return [
-      "Free mode is active — no card and no browser model download.",
-      "",
-      "I can reliably:",
-      "• look up sourced Balochi words",
-      "• translate dictionary-backed English ↔ Balochi words and simple phrases",
-      "• show Latin forms and parts of speech when available",
-      "",
-      "For unrestricted generative chat, Zubán can also use a free Gemini API key if GEMINI_API_KEY is added later.",
+      "Balochi is an Iranian language spoken mainly in Balochistan and neighboring regions of Pakistan, Iran, Afghanistan, and the Gulf.",
+      "It has several regional varieties and is commonly written in Arabic-based and Latin scripts.",
+      "Zubán treats dialect and spelling differences as valid variation rather than forcing a single form.",
     ].join("\n");
   }
 
+  if (/\b(help|what can you do|capabilities)\b/i.test(lower)) {
+    return [
+      "I can help with:",
+      "• Balochi word meanings from the sourced Zubán dictionary",
+      "• English ↔ Balochi word and simple-phrase translation",
+      "• Balochi script and spelling guidance",
+      "• basic everyday conversation",
+      "• Latin forms and parts of speech when available",
+    ].join("\n");
+  }
+
+  if (/\b(good morning)\b/i.test(lower)) {
+    return "Good morning! How can I help you today?";
+  }
+
+  if (/\b(good evening|good afternoon)\b/i.test(lower)) {
+    return "Hello! How can I help you?";
+  }
+
   return [
-    "Free lexicon mode is active, so this request does not need a card or an on-device model.",
-    "",
-    "Try a sourced Balochi language request such as:",
-    "• What does دوست mean?",
-    "• Translate water into Balochi",
-    "• Translate آپ into English",
-    "",
-    "For unrestricted AI chat, add an optional free GEMINI_API_KEY later; the site will keep working without it.",
+    "I can help with Balochi language questions and basic conversation.",
+    "For example, ask me a word meaning, a simple translation, or a question about Balochi writing and script.",
   ].join("\n");
 }
 
