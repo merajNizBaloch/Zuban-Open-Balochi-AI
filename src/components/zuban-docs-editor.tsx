@@ -514,6 +514,45 @@ function documentMetrics(html: string, script: ScriptMode) {
   };
 }
 
+function compareDocumentText(beforeHtml: string, afterHtml: string) {
+  const before = stripHtml(beforeHtml).split(/\s+/).filter(Boolean);
+  const after = stripHtml(afterHtml).split(/\s+/).filter(Boolean);
+
+  let prefix = 0;
+  while (
+    prefix < before.length &&
+    prefix < after.length &&
+    before[prefix] === after[prefix]
+  ) {
+    prefix += 1;
+  }
+
+  let suffix = 0;
+  while (
+    suffix < before.length - prefix &&
+    suffix < after.length - prefix &&
+    before[before.length - 1 - suffix] === after[after.length - 1 - suffix]
+  ) {
+    suffix += 1;
+  }
+
+  const beforeEnd = suffix ? before.length - suffix : before.length;
+  const afterEnd = suffix ? after.length - suffix : after.length;
+  const removed = before.slice(prefix, beforeEnd);
+  const added = after.slice(prefix, afterEnd);
+
+  return {
+    beforeWords: before.length,
+    afterWords: after.length,
+    contextBefore: before.slice(Math.max(0, prefix - 20), prefix),
+    removed: removed.slice(0, 220),
+    added: added.slice(0, 220),
+    contextAfter: after.slice(afterEnd, Math.min(after.length, afterEnd + 20)),
+    removedMore: removed.length > 220,
+    addedMore: added.length > 220,
+  };
+}
+
 export function ZubanDocsEditor() {
   const editorRef = useRef<HTMLDivElement>(null);
   const importRef = useRef<HTMLInputElement>(null);
@@ -538,6 +577,7 @@ export function ZubanDocsEditor() {
   const [guardMessage, setGuardMessage] = useState("");
   const [notice, setNotice] = useState("");
   const [showSnapshots, setShowSnapshots] = useState(false);
+  const [compareSnapshot, setCompareSnapshot] = useState<Snapshot | null>(null);
   const [showInspector, setShowInspector] = useState(false);
   const [showCreate, setShowCreate] = useState(false);
   const [showShortcuts, setShowShortcuts] = useState(false);
@@ -820,6 +860,15 @@ export function ZubanDocsEditor() {
   const outlineItems = useMemo(
     () => documentOutline(activeDocument?.html ?? ""),
     [activeDocument?.html],
+  );
+
+
+  const versionDiff = useMemo(
+    () =>
+      compareSnapshot && activeDocument
+        ? compareDocumentText(compareSnapshot.html, activeDocument.html)
+        : null,
+    [compareSnapshot, activeDocument?.html],
   );
 
 
@@ -1985,6 +2034,7 @@ export function ZubanDocsEditor() {
     if (!activeDocument) return;
     updateActive({ html: snapshot.html });
     if (editorRef.current) editorRef.current.innerHTML = snapshot.html;
+    setCompareSnapshot(null);
     setShowSnapshots(false);
     setNotice("Earlier version restored.");
   }
@@ -3567,20 +3617,73 @@ export function ZubanDocsEditor() {
           <button className="button secondary" type="button" onClick={createSnapshot}>
             Save checkpoint
           </button>
+          {versionDiff && compareSnapshot ? (
+            <div className="docs-version-compare">
+              <div className="docs-version-compare-head">
+                <div>
+                  <strong>Compare version</strong>
+                  <span>{new Date(compareSnapshot.createdAt).toLocaleString()}</span>
+                </div>
+                <button type="button" onClick={() => setCompareSnapshot(null)}>×</button>
+              </div>
+              <div className="docs-version-stats">
+                <span>Earlier · {versionDiff.beforeWords} words</span>
+                <span>Current · {versionDiff.afterWords} words</span>
+              </div>
+              <div className="docs-diff-preview">
+                {versionDiff.contextBefore.length ? (
+                  <span>{versionDiff.contextBefore.join(" ")} </span>
+                ) : null}
+                {versionDiff.removed.length ? (
+                  <del>
+                    {versionDiff.removed.join(" ")}
+                    {versionDiff.removedMore ? " …" : ""}
+                  </del>
+                ) : null}
+                {versionDiff.added.length ? (
+                  <ins>
+                    {versionDiff.added.join(" ")}
+                    {versionDiff.addedMore ? " …" : ""}
+                  </ins>
+                ) : null}
+                {versionDiff.contextAfter.length ? (
+                  <span> {versionDiff.contextAfter.join(" ")}</span>
+                ) : null}
+              </div>
+              <button
+                className="button secondary"
+                type="button"
+                onClick={() => restoreSnapshot(compareSnapshot)}
+              >
+                Restore this version
+              </button>
+            </div>
+          ) : null}
+
           <div className="docs-version-list">
             {activeDocument.snapshots.length ? (
               activeDocument.snapshots.map((snapshot) => (
-                <button
-                  type="button"
-                  key={snapshot.id}
-                  onClick={() => restoreSnapshot(snapshot)}
-                >
+                <article key={snapshot.id}>
                   <div className="docs-version-meta">
                     <strong>{new Date(snapshot.createdAt).toLocaleString()}</strong>
                     <em>{snapshot.source === "auto" ? "Auto recovery" : "Manual"}</em>
                   </div>
                   <span>{stripHtml(snapshot.html).slice(0, 90) || "Empty snapshot"}</span>
-                </button>
+                  <div className="docs-version-actions">
+                    <button
+                      type="button"
+                      onClick={() => setCompareSnapshot(snapshot)}
+                    >
+                      Compare
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => restoreSnapshot(snapshot)}
+                    >
+                      Restore
+                    </button>
+                  </div>
+                </article>
               ))
             ) : (
               <p>No versions yet. Manual checkpoints and automatic recovery points will appear here.</p>
