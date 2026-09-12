@@ -116,29 +116,39 @@ export function ZubanDocsEditor() {
     documents.find((document) => document.id === activeId) ?? documents[0];
 
   useEffect(() => {
-    let nextDocuments: ZubanDocument[] = [];
+    let cancelled = false;
 
-    try {
-      const raw = window.localStorage.getItem(STORAGE_KEY);
-      if (raw) {
-        const parsed = JSON.parse(raw) as ZubanDocument[];
-        if (Array.isArray(parsed)) nextDocuments = parsed;
+    queueMicrotask(() => {
+      if (cancelled) return;
+
+      let nextDocuments: ZubanDocument[] = [];
+
+      try {
+        const raw = window.localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw) as ZubanDocument[];
+          if (Array.isArray(parsed)) nextDocuments = parsed;
+        }
+      } catch {
+        nextDocuments = [];
       }
-    } catch {
-      nextDocuments = [];
-    }
 
-    if (!nextDocuments.length) nextDocuments = [makeDocument()];
+      if (!nextDocuments.length) nextDocuments = [makeDocument()];
 
-    const storedActive = window.localStorage.getItem(ACTIVE_KEY);
-    const nextActive =
-      storedActive && nextDocuments.some((item) => item.id === storedActive)
-        ? storedActive
-        : nextDocuments[0].id;
+      const storedActive = window.localStorage.getItem(ACTIVE_KEY);
+      const nextActive =
+        storedActive && nextDocuments.some((item) => item.id === storedActive)
+          ? storedActive
+          : nextDocuments[0].id;
 
-    setDocuments(nextDocuments);
-    setActiveId(nextActive);
-    setReady(true);
+      setDocuments(nextDocuments);
+      setActiveId(nextActive);
+      setReady(true);
+    });
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   useEffect(() => {
@@ -594,6 +604,7 @@ export function ZubanDocsEditor() {
               ref={editorRef}
               className="docs-content"
               contentEditable
+              spellCheck={false}
               suppressContentEditableWarning
               role="textbox"
               aria-multiline="true"
