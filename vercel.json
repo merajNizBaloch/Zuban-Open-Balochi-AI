@@ -6,5 +6,7 @@
       "zuban-docs": false,
       "zuban-docs-polish": false
     }
-  }
+  },
+  "framework": "nextjs",
+  "buildCommand": "npm run build"
 }
