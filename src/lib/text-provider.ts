@@ -34,7 +34,7 @@ type ProviderConfig = {
   endpoint: string;
   model: string;
   apiKey?: string;
-  provider: "custom" | "huggingface" | "ollama" | "vercel";
+  provider: "custom" | "huggingface" | "ollama" | "vercel" | "gemini";
 };
 
 function resolveProvider(): ProviderConfig | null {
@@ -44,6 +44,18 @@ function resolveProvider(): ProviderConfig | null {
       model: process.env.ZUBAN_TEXT_MODEL,
       apiKey: process.env.ZUBAN_TEXT_API_KEY,
       provider: "custom",
+    };
+  }
+
+  if (process.env.GEMINI_API_KEY) {
+    return {
+      endpoint:
+        "https://generativelanguage.googleapis.com/v1beta/models/" +
+        (process.env.ZUBAN_GEMINI_MODEL || "gemini-2.5-flash-lite") +
+        ":generateContent?key=" +
+        encodeURIComponent(process.env.GEMINI_API_KEY),
+      model: process.env.ZUBAN_GEMINI_MODEL || "gemini-2.5-flash-lite",
+      provider: "gemini",
     };
   }
 
@@ -142,21 +154,99 @@ function localDictionaryChat(input: string) {
   if (balochi) return formatEntry(balochi);
 
   const english = englishEntries(candidate);
-  if (!english.length) return "";
+  if (english.length) {
+    return [
+      candidate +
+        " → " +
+        english
+          .slice(0, 6)
+          .map((entry) => {
+            const latin = entry.latin?.[0] ? " (" + entry.latin[0] + ")" : "";
+            return entry.word + latin;
+          })
+          .join(" / "),
+      "",
+      "Source: Zubán dictionary · exact English meaning match.",
+    ].join("\n");
+  }
+
+  const normalizedInput = normalize(input);
+
+  if (/^(hi|hello|hey|salam|assalam|السلام|سلام)\b/i.test(normalizedInput)) {
+    return [
+      "سلامت باتے.",
+      "",
+      "Zubán is running in free lexicon mode. Ask for a Balochi word meaning or an English ↔ Balochi dictionary translation.",
+    ].join("\n");
+  }
+
+  if (/short greeting|greeting in balochi|balochi greeting/i.test(normalizedInput)) {
+    return "سلامت باتے.";
+  }
+
+  if (/\b(help|what can you do|capabilities)\b/i.test(normalizedInput)) {
+    return [
+      "Free mode is active — no card and no browser model download.",
+      "",
+      "I can reliably:",
+      "• look up sourced Balochi words",
+      "• translate dictionary-backed English ↔ Balochi words and simple phrases",
+      "• show Latin forms and parts of speech when available",
+      "",
+      "For unrestricted generative chat, Zubán can also use a free Gemini API key if GEMINI_API_KEY is added later.",
+    ].join("\n");
+  }
 
   return [
-    candidate +
-      " → " +
-      english
-        .slice(0, 6)
-        .map((entry) => {
-          const latin = entry.latin?.[0] ? " (" + entry.latin[0] + ")" : "";
-          return entry.word + latin;
-        })
-        .join(" / "),
+    "Free lexicon mode is active, so this request does not need a card or an on-device model.",
     "",
-    "Source: Zubán dictionary · exact English meaning match.",
+    "Try a sourced Balochi language request such as:",
+    "• What does دوست mean?",
+    "• Translate water into Balochi",
+    "• Translate آپ into English",
+    "",
+    "For unrestricted AI chat, add an optional free GEMINI_API_KEY later; the site will keep working without it.",
   ].join("\n");
+}
+
+function englishTokenToBalochi(token: string) {
+  const q = normalize(token);
+  if (!q) return "";
+
+  const exact = englishEntries(q);
+  if (exact.length) return exact[0].word;
+
+  const loose = dictionaryEntries.find((entry) =>
+    entry.meanings.some((meaning) => {
+      const words = normalize(meaning).split(/\s+/);
+      return words.includes(q);
+    }),
+  );
+
+  return loose?.word ?? "";
+}
+
+function balochiTokenToEnglish(token: string) {
+  return exactBalochiEntry(token)?.meanings[0] ?? "";
+}
+
+function translateTokens(
+  input: string,
+  translateToken: (token: string) => string,
+) {
+  let translated = 0;
+
+  const output = input.replace(
+    /[\p{L}\p{M}]+/gu,
+    (token) => {
+      const replacement = translateToken(token);
+      if (!replacement) return token;
+      translated += 1;
+      return replacement;
+    },
+  );
+
+  return translated ? output : "";
 }
 
 function localDictionaryTranslation(
@@ -167,21 +257,27 @@ function localDictionaryTranslation(
   const from = source?.toLocaleLowerCase();
   const to = target?.toLocaleLowerCase();
 
+  if (from === to) return input;
+
   if (from === "balochi" && to === "english") {
-    return exactBalochiEntry(input)?.meanings.join(", ") ?? "";
+    const exact = exactBalochiEntry(input)?.meanings.join(", ");
+    if (exact) return exact;
+    return translateTokens(input, balochiTokenToEnglish);
   }
 
   if (from === "english" && to === "balochi") {
     const matches = englishEntries(input);
-    if (!matches.length) return "";
+    if (matches.length) {
+      return matches
+        .slice(0, 8)
+        .map((entry) => {
+          const latin = entry.latin?.[0] ? " (" + entry.latin[0] + ")" : "";
+          return entry.word + latin;
+        })
+        .join(" / ");
+    }
 
-    return matches
-      .slice(0, 8)
-      .map((entry) => {
-        const latin = entry.latin?.[0] ? " (" + entry.latin[0] + ")" : "";
-        return entry.word + latin;
-      })
-      .join(" / ");
+    return translateTokens(input, englishTokenToBalochi);
   }
 
   return "";
@@ -323,12 +419,67 @@ export async function runTextModel(request: TextRequest) {
     }
 
     return {
-      configured: false,
+      configured: true,
       output: "",
       message:
         request.mode === "translate"
-          ? "No AI model is connected. Exact English ↔ Balochi dictionary words work offline, but sentence translation needs HF_TOKEN, a custom endpoint, or Ollama."
-          : "No AI model is connected. You can still ask for meanings of words in the Zubán dictionary. Full chat needs HF_TOKEN, a custom endpoint, or Ollama.",
+          ? "Free lexicon mode currently supports sourced English ↔ Balochi translation. This request needs a broader model; no payment is required if you later connect a Gemini Free Tier API key."
+          : "Free lexicon mode is active. Ask for Balochi word meanings or English ↔ Balochi dictionary translation.",
+      provider: "dictionary",
+      model: "Zubán Lexicon",
+    };
+  }
+
+  if (provider.provider === "gemini") {
+    const prompt = [
+      systemPrompt(request),
+      "",
+      ...conversationFor(request).map(
+        (message) =>
+          (message.role === "assistant" ? "Assistant: " : "User: ") +
+          message.content,
+      ),
+    ].join("\n");
+
+    const response = await fetch(provider.endpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{ role: "user", parts: [{ text: prompt }] }],
+        generationConfig: {
+          temperature: request.mode === "translate" ? 0.1 : 0.25,
+          maxOutputTokens: request.mode === "translate" ? 700 : 900,
+        },
+      }),
+      cache: "no-store",
+      signal: AbortSignal.timeout(35_000),
+    });
+
+    if (!response.ok) {
+      const detail = await response.text().catch(() => "");
+      throw new Error(
+        `Gemini returned ${response.status}${detail ? ": " + detail.slice(0, 180) : ""}`,
+      );
+    }
+
+    const data = (await response.json()) as {
+      candidates?: Array<{
+        content?: { parts?: Array<{ text?: string }> };
+      }>;
+    };
+    const output = data.candidates?.[0]?.content?.parts
+      ?.map((part) => part.text ?? "")
+      .join("")
+      .trim();
+
+    if (!output) throw new Error("Gemini returned no text.");
+
+    return {
+      configured: true,
+      output,
+      message: "",
+      provider: "gemini",
+      model: provider.model,
     };
   }
 
