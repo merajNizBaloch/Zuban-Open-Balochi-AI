@@ -9,7 +9,6 @@ import {
 } from "react";
 import { ZubanLogo } from "@/components/zuban-logo";
 import { useExperience } from "@/components/experience-provider";
-import { puterChat } from "@/lib/puter-ai";
 
 type ChatMessage = {
   id: string;
@@ -131,41 +130,6 @@ export function ZubanChat() {
     textarea.style.height = Math.min(textarea.scrollHeight, 180) + "px";
   }, [input]);
 
-  async function runFreeConversation(nextMessages: ChatMessage[]) {
-    const assistantId = messageId();
-    setStreamingId(assistantId);
-    setMessages((current) => [
-      ...current,
-      { id: assistantId, role: "assistant", content: "" },
-    ]);
-
-    const system = [
-      "You are Zubán, a friendly Balochi language assistant.",
-      "Answer normal everyday conversation naturally and concisely.",
-      "When the user asks about Balochi vocabulary, grammar, translation, or dialect, be careful about uncertainty and regional variation.",
-      "Do not claim a Balochi form is universal when dialects may differ.",
-      dialect === "auto"
-        ? "Dialect preference: auto."
-        : "Preferred Balochi dialect: " + dialect + ".",
-      scriptPreference === "auto"
-        ? "Follow the user's script when practical."
-        : "Preferred Balochi script: " + scriptPreference + ".",
-    ].join("\n");
-
-    const text = await puterChat([
-      { role: "system", content: system },
-      ...nextMessages.slice(-12).map(({ role, content }) => ({ role, content })),
-    ]);
-
-    setMessages((current) =>
-      current.map((message) =>
-        message.id === assistantId
-          ? { ...message, content: text }
-          : message,
-      ),
-    );
-  }
-
   async function sendPrompt(prompt: string) {
     const trimmed = prompt.trim();
     if (!trimmed || loading) return;
@@ -219,28 +183,6 @@ export function ZubanChat() {
 
       if (!response.body) {
         throw new Error("The response stream is unavailable.");
-      }
-
-      const provider = response.headers.get("x-zuban-provider") ?? "";
-
-      if (provider === "dictionary") {
-        const dictionaryText = (await response.text()).trim();
-        const sourcedLexiconAnswer =
-          dictionaryText.includes("Source: Zubán dictionary");
-
-        if (sourcedLexiconAnswer) {
-          setMessages((current) => [
-            ...current,
-            {
-              id: messageId(),
-              role: "assistant",
-              content: dictionaryText,
-            },
-          ]);
-        } else {
-          await runFreeConversation(nextMessages);
-        }
-        return;
       }
 
       const assistantId = messageId();
@@ -303,23 +245,18 @@ export function ZubanChat() {
         return;
       }
 
-      try {
-        await runFreeConversation(nextMessages);
-        return;
-      } catch {
-        setMessages((current) => [
-          ...current,
-          {
-            id: messageId(),
-            role: "assistant",
-            content: t(
-              "tool.chat.unreachable",
-              "Free conversation could not start. Please allow the Puter sign-in popup and try again.",
-            ),
-            error: true,
-          },
-        ]);
-      }
+      setMessages((current) => [
+        ...current,
+        {
+          id: messageId(),
+          role: "assistant",
+          content: t(
+            "tool.chat.unreachable",
+            "The Zubán service could not be reached. Please try again.",
+          ),
+          error: true,
+        },
+      ]);
     } finally {
       abortRef.current = null;
       setStreamingId("");
