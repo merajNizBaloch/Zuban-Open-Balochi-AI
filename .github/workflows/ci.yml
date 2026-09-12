@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: ["main"]
+    branches: ["main", "infra-diagnose"]
   pull_request:
 
 jobs:
@@ -65,3 +65,21 @@ jobs:
             echo
             echo
           done
+
+
+      - name: Smoke test production chat
+        shell: bash
+        run: |
+          set -euo pipefail
+          BODY_FILE=/tmp/chat-body.txt
+          CODE=$(curl -sS -o "$BODY_FILE" -w "%{http_code}" --max-time 45 \
+            -X POST "https://zuban.techcraftsolution.com/api/chat/stream" \
+            -H "Content-Type: application/json" \
+            --data '{"input":"Salam. Reply briefly in Balochi."}')
+          echo "CHAT_HTTP=$CODE"
+          echo "CHAT_BODY_START"
+          cat "$BODY_FILE"
+          echo
+          echo "CHAT_BODY_END"
+          test "$CODE" = "200"
+          test -s "$BODY_FILE"
