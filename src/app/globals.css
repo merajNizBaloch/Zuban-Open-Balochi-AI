@@ -7198,3 +7198,150 @@ html[data-language="bal"] .disclaimer-block > div {
     border-radius: 12px;
   }
 }
+
+
+/* Zuban Docs Makran Night */
+html[data-theme="makran"] .docs-app {
+  background: #171425;
+  color: #efe3c8;
+}
+
+html[data-theme="makran"] :where(
+  .docs-sidebar,
+  .docs-topbar,
+  .docs-toolbar,
+  .docs-character-bar,
+  .docs-statusbar,
+  .docs-version-panel,
+  .docs-inspector,
+  .docs-create-dialog,
+  .docs-export-menu > div
+) {
+  background: #211c33;
+  border-color: #3d3652;
+  color: #efe3c8;
+}
+
+html[data-theme="makran"] .docs-canvas-wrap {
+  background:
+    radial-gradient(circle at 50% 0%, rgba(75,214,202,.05), transparent 28rem),
+    #171425;
+}
+
+html[data-theme="makran"] .docs-paper {
+  background: #211c33;
+  box-shadow: 0 12px 42px rgba(0,0,0,.34);
+}
+
+html[data-theme="makran"] .docs-content {
+  color: #efe3c8;
+  caret-color: #4bd6ca;
+}
+
+html[data-theme="makran"] .docs-content blockquote {
+  color: #aaa2b3;
+  border-inline-start-color: #4bd6ca;
+}
+
+html[data-theme="makran"] :where(
+  .docs-icon-button,
+  .docs-search,
+  .docs-top-actions > button,
+  .docs-export-menu > summary,
+  .docs-character-bar button,
+  .docs-sidebar-actions button,
+  .docs-create-dialog button,
+  .docs-create-option,
+  .docs-inspector button,
+  .docs-version-list > button
+) {
+  background: #28213d;
+  border-color: #3d3652;
+  color: #efe3c8;
+}
+
+html[data-theme="makran"] :where(
+  .docs-search input,
+  .docs-title-block input,
+  .docs-toolbar button,
+  .docs-toolbar select,
+  .docs-statusbar button,
+  .docs-export-menu button
+) {
+  color: #efe3c8;
+}
+
+html[data-theme="makran"] .docs-toolbar select,
+html[data-theme="makran"] .docs-toolbar option {
+  background: #211c33;
+}
+
+html[data-theme="makran"] .docs-library-item {
+  color: #efe3c8;
+}
+
+html[data-theme="makran"] .docs-library-item:hover {
+  background: #28213d;
+}
+
+html[data-theme="makran"] .docs-library-item.active {
+  background: rgba(75,214,202,.11);
+  box-shadow: inset 3px 0 0 #4bd6ca;
+}
+
+html[data-theme="makran"] :where(
+  .docs-library-item span,
+  .docs-sidebar-foot,
+  .docs-app-brand small,
+  .docs-character-bar > span,
+  .docs-statusbar,
+  .docs-version-head span,
+  .docs-version-list span,
+  .docs-version-list p,
+  .docs-document-meta span,
+  .docs-inspector-note p
+) {
+  color: #aaa2b3;
+}
+
+html[data-theme="makran"] .docs-app-brand > span {
+  background: #4bd6ca;
+  color: #171425;
+}
+
+html[data-theme="makran"] .docs-script-toggle button.active {
+  background: rgba(75,214,202,.14);
+  color: #7be6dc;
+  border-color: rgba(75,214,202,.32);
+}
+
+html[data-theme="makran"] .docs-guard-message {
+  background: rgba(207,148,113,.10);
+  border-color: rgba(207,148,113,.22);
+  color: #e6cda7;
+}
+
+html[data-theme="makran"] .docs-purity-card,
+html[data-theme="makran"] .docs-metric-grid > div,
+html[data-theme="makran"] .docs-inspector-note,
+html[data-theme="makran"] .docs-document-meta {
+  background: #28213d;
+  border-color: #3d3652;
+  color: #efe3c8;
+}
+
+html[data-theme="makran"] .docs-purity-track {
+  background: #171425;
+}
+
+html[data-theme="makran"] .docs-purity-track i {
+  background: #4bd6ca;
+}
+
+html[data-theme="makran"] .docs-save-state.saved {
+  color: #7be6dc;
+}
+
+html[data-theme="makran"] .docs-save-state {
+  color: #e6cda7;
+}
