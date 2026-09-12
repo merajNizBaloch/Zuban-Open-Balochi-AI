@@ -1,0 +1,39 @@
+name: Production smoke
+
+on:
+  pull_request:
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Verify no-card production chat and translation
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          BODY=/tmp/chat.txt
+          CODE=$(curl -sS -o "$BODY" -w "%{http_code}" --max-time 30 \
+            -X POST "https://zuban.techcraftsolution.com/api/chat/stream" \
+            -H "Content-Type: application/json" \
+            --data '{"input":"What does دوست mean?"}')
+          echo "chat HTTP=$CODE"
+          cat "$BODY"
+          test "$CODE" = "200"
+          grep -qi "friend" "$BODY"
+
+          BODY=/tmp/translate.txt
+          CODE=$(curl -sS -o "$BODY" -w "%{http_code}" --max-time 30 \
+            -X POST "https://zuban.techcraftsolution.com/api/text" \
+            -H "Content-Type: application/json" \
+            --data '{"mode":"translate","input":"water and fire","source":"English","target":"Balochi"}')
+          echo "translate HTTP=$CODE"
+          cat "$BODY"
+          test "$CODE" = "200"
+          grep -q 'آپ and آس' "$BODY"
+
+          HEALTH=$(curl -sS --max-time 30 "https://zuban.techcraftsolution.com/api/health")
+          echo "$HEALTH"
+          echo "$HEALTH" | grep -q '"freeLexiconFallback":true'
+          echo "$HEALTH" | grep -q '"browserFallback":false'
