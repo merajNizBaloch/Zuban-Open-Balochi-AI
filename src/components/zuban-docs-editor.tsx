@@ -1034,6 +1034,169 @@ export function ZubanDocsEditor() {
     setNotice("Font changed.");
   }
 
+  function applyInlineStyle(styles: Partial<CSSStyleDeclaration>) {
+    restoreSelection();
+    const selection = window.getSelection();
+    if (!selection?.rangeCount || selection.isCollapsed) {
+      setNotice("Select some text first.");
+      return;
+    }
+
+    const range = selection.getRangeAt(0);
+    const span = window.document.createElement("span");
+    Object.assign(span.style, styles);
+    span.appendChild(range.extractContents());
+    range.insertNode(span);
+    range.selectNodeContents(span);
+    selection.removeAllRanges();
+    selection.addRange(range);
+    selectionRef.current = range.cloneRange();
+    if (editorRef.current) updateActive({ html: editorRef.current.innerHTML });
+  }
+
+  function setParagraphSpacing(spacing: number) {
+    const editor = editorRef.current;
+    if (!editor) return;
+    editor
+      .querySelectorAll<HTMLElement>("p,li,blockquote,h1,h2,h3")
+      .forEach((block) => {
+        block.style.marginBottom = spacing + "px";
+      });
+    updateActive({
+      html: editor.innerHTML,
+      paragraphSpacing: spacing,
+    });
+    setNotice("Paragraph spacing updated.");
+  }
+
+  function insertPageBreak() {
+    restoreSelection();
+    document.execCommand(
+      "insertHTML",
+      false,
+      '<div class="docs-page-break" contenteditable="false"><span>Page break</span></div><p><br></p>',
+    );
+    if (editorRef.current) updateActive({ html: editorRef.current.innerHTML });
+  }
+
+  function insertTable(rows = 3, columns = 3) {
+    restoreSelection();
+    const body = Array.from({ length: rows }, () =>
+      "<tr>" +
+      Array.from({ length: columns }, () => "<td><br></td>").join("") +
+      "</tr>",
+    ).join("");
+    document.execCommand(
+      "insertHTML",
+      false,
+      '<table class="docs-table"><tbody>' + body + "</tbody></table><p><br></p>",
+    );
+    if (editorRef.current) updateActive({ html: editorRef.current.innerHTML });
+    setNotice(rows + " × " + columns + " table added.");
+  }
+
+  function currentTableContext() {
+    const selection = window.getSelection();
+    const node = selection?.anchorNode;
+    const element =
+      node instanceof HTMLElement ? node : node?.parentElement ?? null;
+    const cell = element?.closest("td,th") as HTMLTableCellElement | null;
+    const row = cell?.closest("tr") as HTMLTableRowElement | null;
+    const table = cell?.closest("table") as HTMLTableElement | null;
+    return { cell, row, table };
+  }
+
+  function changeTable(action: "row" | "column" | "delete-row" | "delete-column" | "merge" | "borders") {
+    const { cell, row, table } = currentTableContext();
+    if (!cell || !row || !table) {
+      setNotice("Place the cursor inside a table first.");
+      return;
+    }
+
+    if (action === "row") {
+      const clone = row.cloneNode(true) as HTMLTableRowElement;
+      clone.querySelectorAll("td,th").forEach((item) => {
+        item.innerHTML = "<br>";
+      });
+      row.insertAdjacentElement("afterend", clone);
+    }
+
+    if (action === "column") {
+      const index = cell.cellIndex + 1;
+      Array.from(table.rows).forEach((tableRow) => {
+        const next = tableRow.insertCell(Math.min(index, tableRow.cells.length));
+        next.innerHTML = "<br>";
+      });
+    }
+
+    if (action === "delete-row") {
+      row.remove();
+    }
+
+    if (action === "delete-column") {
+      const index = cell.cellIndex;
+      Array.from(table.rows).forEach((tableRow) => {
+        if (tableRow.cells[index]) tableRow.deleteCell(index);
+      });
+    }
+
+    if (action === "merge") {
+      const next = cell.nextElementSibling as HTMLTableCellElement | null;
+      if (!next) {
+        setNotice("There isn’t another cell to merge with.");
+        return;
+      }
+      cell.colSpan = (cell.colSpan || 1) + (next.colSpan || 1);
+      const extra = next.innerHTML.trim();
+      if (extra && extra !== "<br>") {
+        cell.innerHTML += " " + extra;
+      }
+      next.remove();
+    }
+
+    if (action === "borders") {
+      table.dataset.borderless =
+        table.dataset.borderless === "true" ? "false" : "true";
+    }
+
+    updateActive({ html: editorRef.current?.innerHTML ?? activeDocument.html });
+    setNotice("Table updated.");
+  }
+
+  async function prepareImage(file: File) {
+    if (!file.type.startsWith("image/")) return "";
+    if (file.size > 8_000_000) return "";
+
+    const source = await new Promise<string>((resolve) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result ?? ""));
+      reader.onerror = () => resolve("");
+      reader.readAsDataURL(file);
+    });
+
+    if (!source) return "";
+
+    return new Promise<string>((resolve) => {
+      const image = new Image();
+      image.onload = () => {
+        const maxWidth = 1400;
+        const scale = Math.min(1, maxWidth / Math.max(1, image.width));
+        const canvas = window.document.createElement("canvas");
+        canvas.width = Math.max(1, Math.round(image.width * scale));
+        canvas.height = Math.max(1, Math.round(image.height * scale));
+        const context = canvas.getContext("2d");
+        if (!context) {
+          resolve("");
+          return;
+        }
+        context.drawImage(image, 0, 0, canvas.width, canvas.height);
+        resolve(canvas.toDataURL("image/webp", 0.82));
+      };
+      image.onerror = () => resolve("");
+      image.src = source;
+    });
+  }
+
   function chooseImage() {
     captureSelection();
     imageRef.current?.click();
@@ -1044,63 +1207,106 @@ export function ZubanDocsEditor() {
     event.target.value = "";
     if (!file) return;
 
-    if (!file.type.startsWith("image/")) {
-      setNotice("Choose an image file.");
+    const compressed = await prepareImage(file);
+    if (!compressed) {
+      setNotice("Please choose a supported image smaller than 8 MB.");
       return;
     }
 
-    if (file.size > 8_000_000) {
-      setNotice("Please choose an image smaller than 8 MB.");
+    const safeAlt = escapeHtml(file.name.replace(/\.[^.]+$/, ""));
+    restoreSelection();
+    document.execCommand(
+      "insertHTML",
+      false,
+      '<figure class="docs-inline-image" data-align="center">' +
+        '<img src="' +
+        compressed +
+        '" alt="' +
+        safeAlt +
+        '" style="width:75%" data-align="center">' +
+        '<figcaption contenteditable="true">Add a caption…</figcaption>' +
+        "</figure><p><br></p>",
+    );
+    captureSelection();
+    if (editorRef.current) updateActive({ html: editorRef.current.innerHTML });
+    setNotice("Image added.");
+  }
+
+  function handleEditorClick(event: React.MouseEvent<HTMLDivElement>) {
+    const target = event.target as HTMLElement;
+    const image =
+      target instanceof HTMLImageElement
+        ? target
+        : (target.closest("img") as HTMLImageElement | null);
+    setSelectedImage(image);
+    captureSelection();
+  }
+
+  function updateSelectedImage(
+    options: { width?: number; align?: "left" | "center" | "right"; wrap?: boolean },
+  ) {
+    if (!selectedImage) {
+      setNotice("Select an image first.");
       return;
     }
 
-    const source = await new Promise<string>((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(String(reader.result ?? ""));
-      reader.onerror = () => reject(new Error("read"));
-      reader.readAsDataURL(file);
-    }).catch(() => "");
+    const figure = selectedImage.closest("figure") as HTMLElement | null;
+    if (options.width) selectedImage.style.width = options.width + "%";
 
-    if (!source) {
-      setNotice("I couldn’t add that image.");
-      return;
-    }
-
-    const image = new Image();
-    image.onload = () => {
-      const maxWidth = 1400;
-      const scale = Math.min(1, maxWidth / Math.max(1, image.width));
-      const canvas = window.document.createElement("canvas");
-      canvas.width = Math.max(1, Math.round(image.width * scale));
-      canvas.height = Math.max(1, Math.round(image.height * scale));
-      const context = canvas.getContext("2d");
-
-      if (!context) {
-        setNotice("I couldn’t add that image.");
-        return;
+    if (options.align) {
+      selectedImage.dataset.align = options.align;
+      if (figure) {
+        figure.dataset.align = options.align;
+        figure.style.textAlign = options.align;
       }
+    }
 
-      context.drawImage(image, 0, 0, canvas.width, canvas.height);
-      const compressed = canvas.toDataURL("image/webp", 0.82);
-      const safeAlt = escapeHtml(file.name.replace(/\.[^.]+$/, ""));
+    if (options.wrap !== undefined && figure) {
+      if (options.wrap) {
+        const align = selectedImage.dataset.align === "right" ? "right" : "left";
+        figure.style.float = align;
+        figure.style.width = selectedImage.style.width || "50%";
+        figure.style.margin =
+          align === "right" ? "12px 0 18px 24px" : "12px 24px 18px 0";
+      } else {
+        figure.style.float = "";
+        figure.style.width = "";
+        figure.style.margin = "24px auto";
+      }
+    }
 
-      restoreSelection();
-      document.execCommand(
-        "insertHTML",
-        false,
-        '<figure class="docs-inline-image"><img src="' +
-          compressed +
-          '" alt="' +
-          safeAlt +
-          '"><figcaption contenteditable="true">Add a caption…</figcaption></figure><p><br></p>',
-      );
+    updateActive({ html: editorRef.current?.innerHTML ?? activeDocument.html });
+  }
 
-      captureSelection();
-      if (editorRef.current) updateActive({ html: editorRef.current.innerHTML });
-      setNotice("Image added.");
-    };
-    image.onerror = () => setNotice("I couldn’t add that image.");
-    image.src = source;
+  function deleteSelectedImage() {
+    if (!selectedImage) return;
+    selectedImage.closest("figure")?.remove();
+    setSelectedImage(null);
+    updateActive({ html: editorRef.current?.innerHTML ?? activeDocument.html });
+    setNotice("Image removed.");
+  }
+
+  function chooseReplacementImage() {
+    if (!selectedImage) {
+      setNotice("Select an image first.");
+      return;
+    }
+    replaceImageRef.current?.click();
+  }
+
+  async function replaceSelectedImage(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file || !selectedImage) return;
+    const compressed = await prepareImage(file);
+    if (!compressed) {
+      setNotice("Please choose a supported image smaller than 8 MB.");
+      return;
+    }
+    selectedImage.src = compressed;
+    selectedImage.alt = file.name.replace(/\.[^.]+$/, "");
+    updateActive({ html: editorRef.current?.innerHTML ?? activeDocument.html });
+    setNotice("Image replaced.");
   }
 
   function titleChange(value: string) {
