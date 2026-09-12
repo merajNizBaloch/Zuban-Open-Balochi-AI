@@ -8,7 +8,6 @@ import {
   useState,
 } from "react";
 import { ZubanLogo } from "@/components/zuban-logo";
-import { browserAiStream, isMissingServerModelMessage, stopBrowserAiGeneration } from "@/lib/browser-ai";
 import { useExperience } from "@/components/experience-provider";
 
 type ChatMessage = {
@@ -52,7 +51,6 @@ export function ZubanChat() {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const abortRef = useRef<AbortController | null>(null);
   const streamTextRef = useRef("");
-  const cancelledRef = useRef(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -147,7 +145,6 @@ export function ZubanChat() {
     setInput("");
     setLoading(true);
     setStreamingId("");
-    cancelledRef.current = false;
 
     const controller = new AbortController();
     abortRef.current = controller;
@@ -173,96 +170,6 @@ export function ZubanChat() {
           data.message ||
           data.error ||
           "Zubán could not answer that message.";
-
-        if (isMissingServerModelMessage(serverMessage)) {
-          const assistantId = messageId();
-          setStreamingId(assistantId);
-          setMessages((current) => [
-            ...current,
-            { id: assistantId, role: "assistant", content: "" },
-          ]);
-
-          const system = [
-            "You are Zubán, a Balochi language assistant.",
-            "Help with Balochi writing, translation, language learning, and everyday questions.",
-            "Respect dialect and orthographic variation. Do not present one regional form as universally correct.",
-            "If you are uncertain about a Balochi word or grammar point, say so instead of inventing it.",
-            dialect === "auto"
-              ? "Dialect preference: auto."
-              : "Dialect preference: " + dialect + ".",
-            scriptPreference === "auto"
-              ? "Script preference: follow the user's script when possible."
-              : "Use " + scriptPreference + " script for Balochi unless the user asks otherwise.",
-          ].join("\n");
-
-          try {
-            await browserAiStream(
-              [
-                { role: "system", content: system },
-                ...nextMessages.slice(-16).map(({ role, content }) => ({ role, content })),
-              ],
-              (streamedText) => {
-                if (cancelledRef.current) return;
-                setMessages((current) =>
-                  current.map((message) =>
-                    message.id === assistantId
-                      ? { ...message, content: streamedText }
-                      : message,
-                  ),
-                );
-              },
-              {
-                temperature: 0.25,
-                maxTokens: 320,
-                onProgress: ({ progress, text }) => {
-                  if (cancelledRef.current) return;
-                  const percent = Math.round(progress * 100);
-                  setMessages((current) =>
-                    current.map((message) =>
-                      message.id === assistantId
-                        ? {
-                            ...message,
-                            content:
-                              t("tool.chat.preparing", "Preparing private on-device AI…") + " " +
-                              (percent > 0 ? percent + "%\n" : "") +
-                              text,
-                          }
-                        : message,
-                    ),
-                  );
-                },
-              },
-            );
-          } catch (browserError) {
-            if (
-              cancelledRef.current ||
-              (browserError instanceof DOMException && browserError.name === "AbortError")
-            ) {
-              return;
-            }
-
-            const detail =
-              browserError instanceof Error
-                ? browserError.message
-                : "Browser AI is unavailable.";
-
-            setMessages((current) =>
-              current.map((message) =>
-                message.id === assistantId
-                  ? {
-                      ...message,
-                      content:
-                        t("tool.chat.localError", "Zubán could not start local AI. No login or GPU is required; Zubán can fall back to CPU/WASM in the browser.") +
-                        (detail ? " " + detail : ""),
-                      error: true,
-                    }
-                  : message,
-              ),
-            );
-          }
-
-          return;
-        }
 
         setMessages((current) => [
           ...current,
@@ -357,9 +264,7 @@ export function ZubanChat() {
   }
 
   function stopGeneration() {
-    cancelledRef.current = true;
     abortRef.current?.abort();
-    stopBrowserAiGeneration();
     setStreamingId("");
     setLoading(false);
   }
@@ -378,7 +283,6 @@ export function ZubanChat() {
 
   function newChat() {
     abortRef.current?.abort();
-    stopBrowserAiGeneration();
     setMessages([]);
     setInput("");
 
