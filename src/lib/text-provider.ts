@@ -214,16 +214,7 @@ function englishTokenToBalochi(token: string) {
   if (!q) return "";
 
   const exact = englishEntries(q);
-  if (exact.length) return exact[0].word;
-
-  const loose = dictionaryEntries.find((entry) =>
-    entry.meanings.some((meaning) => {
-      const words = normalize(meaning).split(/\s+/);
-      return words.includes(q);
-    }),
-  );
-
-  return loose?.word ?? "";
+  return exact[0]?.word ?? "";
 }
 
 function balochiTokenToEnglish(token: string) {
