@@ -1091,28 +1091,65 @@ export function ZubanDocsEditor() {
           />
         </label>
 
+        <div className="docs-library-tabs" aria-label="Document views">
+          <button
+            className={libraryView === "all" ? "active" : ""}
+            type="button"
+            onClick={() => setLibraryView("all")}
+          >
+            All
+          </button>
+          <button
+            className={libraryView === "recent" ? "active" : ""}
+            type="button"
+            onClick={() => setLibraryView("recent")}
+          >
+            Recent
+          </button>
+          <button
+            className={libraryView === "favorites" ? "active" : ""}
+            type="button"
+            onClick={() => setLibraryView("favorites")}
+          >
+            ★ Favorites
+          </button>
+        </div>
+
         <div className="docs-library">
           {filteredDocuments.map((document) => (
-            <button
+            <div
               className={
                 document.id === activeDocument.id
-                  ? "docs-library-item active"
-                  : "docs-library-item"
+                  ? "docs-library-row active"
+                  : "docs-library-row"
               }
               key={document.id}
-              type="button"
-              onClick={() => {
-                setActiveId(document.id);
-                setGuardMessage("");
-              }}
-              dir={document.script === "arabic" ? "rtl" : "ltr"}
             >
-              <strong>{document.title || "Untitled"}</strong>
-              <span>
-                {new Date(document.updatedAt).toLocaleDateString()} ·{" "}
-                {stripHtml(document.html).slice(0, 42) || "Empty document"}
-              </span>
-            </button>
+              <button
+                className="docs-library-item"
+                type="button"
+                onClick={() => {
+                  setActiveId(document.id);
+                  setGuardMessage("");
+                }}
+                dir={document.script === "arabic" ? "rtl" : "ltr"}
+              >
+                <strong>{document.title || "Untitled"}</strong>
+                <span>
+                  {new Date(document.updatedAt).toLocaleDateString()} ·{" "}
+                  {stripHtml(document.html).slice(0, 42) || "Empty document"}
+                </span>
+              </button>
+              <button
+                className={document.favorite ? "docs-favorite active" : "docs-favorite"}
+                type="button"
+                onClick={() => toggleFavorite(document.id)}
+                aria-label={document.favorite ? "Remove from favorites" : "Add to favorites"}
+                title={document.favorite ? "Remove from favorites" : "Add to favorites"}
+              >
+                ★
+              </button>
+            </div>
           ))}
 
           {!filteredDocuments.length ? (
@@ -1353,14 +1390,32 @@ export function ZubanDocsEditor() {
           </div>
 
           {activeDocument.script === "arabic" ? (
-            <label className="docs-phonetic-toggle">
-              <input
-                type="checkbox"
-                checked={phoneticTyping}
-                onChange={(event) => setPhoneticTyping(event.target.checked)}
-              />
-              <span>Use my physical English keyboard for Balochi</span>
-            </label>
+            <>
+              <div className="docs-keyboard-layouts">
+                <button
+                  className={keyboardLayout === "phonetic" ? "active" : ""}
+                  type="button"
+                  onClick={() => setKeyboardLayout("phonetic")}
+                >
+                  Phonetic QWERTY
+                </button>
+                <button
+                  className={keyboardLayout === "traditional" ? "active" : ""}
+                  type="button"
+                  onClick={() => setKeyboardLayout("traditional")}
+                >
+                  Traditional
+                </button>
+              </div>
+              <label className="docs-phonetic-toggle">
+                <input
+                  type="checkbox"
+                  checked={phoneticTyping}
+                  onChange={(event) => setPhoneticTyping(event.target.checked)}
+                />
+                <span>Use my physical English keyboard for Balochi</span>
+              </label>
+            </>
           ) : (
             <div className="docs-latin-specials">
               {latinCharacters.map((character) => (
