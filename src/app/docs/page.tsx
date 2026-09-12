@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Zuban Docs — Balochi Document Editor",
+  title: "Zuban DocX — Balochi Document Editor",
   description:
     "A Balochi-first document workspace for writing, formatting, saving and exporting Balochi documents.",
 };
@@ -13,10 +13,10 @@ export default function ZubanDocsPage() {
       <section className="docs-hero section">
         <div className="shell docs-hero-grid">
           <div className="docs-hero-copy">
-            <p className="eyebrow">ZUBAN DOCS · بلوچی نویسگ</p>
+            <p className="eyebrow">ZUBAN DOCX · بلوچی نویسگ</p>
             <h1>Write Balochi without fighting your editor.</h1>
             <p className="lead">
-              Zuban Docs is a focused document workspace made for Balochi.
+              Zuban DocX is a focused document workspace made for Balochi.
               Write in Arabic or Latin script, keep local drafts, format long
               documents, and export your work without switching language tools.
             </p>
@@ -27,7 +27,7 @@ export default function ZubanDocsPage() {
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                Open Zuban Docs ↗
+                Open Zuban DocX ↗
               </Link>
               <a className="button secondary" href="#features">
                 Explore features
@@ -41,10 +41,10 @@ export default function ZubanDocsPage() {
             </div>
           </div>
 
-          <div className="docs-preview" aria-label="Zuban Docs editor preview">
+          <div className="docs-preview" aria-label="Zuban DocX editor preview">
             <div className="docs-preview-top">
               <span className="docs-preview-dot" />
-              <strong>زُبان ڈاکس</strong>
+              <strong>زُبان DocX</strong>
               <span>Saved</span>
             </div>
             <div className="docs-preview-toolbar">
@@ -55,7 +55,7 @@ export default function ZubanDocsPage() {
               <small>بلوچی · عربی رسم الخط</small>
               <h2>مئے زبان، مئے نویسگ</h2>
               <p>
-                بلوچی نویسگ ءَ یک سادہ، صاف و آرامیں جاگہے۔ زُبان ڈاکس ءَ
+                بلوچی نویسگ ءَ یک سادہ، صاف و آرامیں جاگہے۔ زُبان DocX ءَ
                 نوشتگ، سنبھالگ و دگہ کاراں ءِ واستہ جوڑ کنگ بوتگ۔
               </p>
               <p>
@@ -83,7 +83,7 @@ export default function ZubanDocsPage() {
           <div className="docs-feature-grid">
             <article>
               <span>01</span>
-              <h3>Balochi script guard</h3>
+              <h3>Balochi keyboards</h3>
               <p>
                 Keep a document in Arabic-script Balochi or Latin-script
                 Balochi. Mixed-script text is flagged before it becomes a mess.
@@ -99,7 +99,7 @@ export default function ZubanDocsPage() {
             </article>
             <article>
               <span>03</span>
-              <h3>Balochi character palette</h3>
+              <h3>Balochi fonts</h3>
               <p>
                 Insert commonly needed extended Arabic or Latin characters
                 without changing your operating-system keyboard.
@@ -107,7 +107,7 @@ export default function ZubanDocsPage() {
             </article>
             <article>
               <span>04</span>
-              <h3>Private local drafts</h3>
+              <h3>Images in your documents</h3>
               <p>
                 Documents autosave in your browser. Create, duplicate, search,
                 checkpoint and restore drafts without an account.
@@ -117,7 +117,7 @@ export default function ZubanDocsPage() {
               <span>05</span>
               <h3>Dialect-respectful</h3>
               <p>
-                Zuban Docs does not force one regional spelling as the only
+                Zuban DocX does not force one regional spelling as the only
                 valid form. The editor focuses on script consistency, not
                 policing dialect.
               </p>
