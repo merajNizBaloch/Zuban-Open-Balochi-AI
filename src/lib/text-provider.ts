@@ -66,10 +66,11 @@ function resolveProvider(): ProviderConfig | null {
 
   const gatewayToken =
     process.env.AI_GATEWAY_API_KEY || process.env.VERCEL_OIDC_TOKEN;
-  const isVercelRuntime =
-    process.env.VERCEL === "1" || Boolean(process.env.VERCEL_ENV);
 
-  if (gatewayToken || isVercelRuntime) {
+  // Do not auto-enable AI Gateway just because the app runs on Vercel.
+  // Zubán must remain usable without billing/card setup. Gateway is used
+  // only when an explicit credential is actually available.
+  if (gatewayToken) {
     return {
       endpoint: "https://ai-gateway.vercel.sh/v1/chat/completions",
       model:
