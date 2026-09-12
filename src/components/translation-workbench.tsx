@@ -16,8 +16,6 @@ type ApiResult = {
 const languages = [
   ["Balochi", "translate.lang.balochi"],
   ["English", "translate.lang.english"],
-  ["Urdu", "translate.lang.urdu"],
-  ["Persian", "translate.lang.persian"],
 ] as const;
 
 export function TranslationWorkbench() {
