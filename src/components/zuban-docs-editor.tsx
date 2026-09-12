@@ -712,7 +712,49 @@ export function ZubanDocsEditor() {
   }
 
   function onEditorInput(event: FormEvent<HTMLDivElement>) {
-    updateActive({ html: event.currentTarget.innerHTML });
+    const html = event.currentTarget.innerHTML;
+
+    if (activeDocument) {
+      const tracker = autoSnapshotRef.current;
+      const now = Date.now();
+
+      if (
+        tracker.documentId === activeDocument.id &&
+        tracker.html &&
+        tracker.html !== html &&
+        now - tracker.at >= 180_000
+      ) {
+        const snapshot: Snapshot = {
+          id: makeId(),
+          createdAt: now,
+          html: tracker.html,
+          source: "auto",
+        };
+
+        updateActive({
+          html,
+          snapshots: [snapshot, ...activeDocument.snapshots].slice(0, 18),
+        });
+
+        autoSnapshotRef.current = {
+          documentId: activeDocument.id,
+          at: now,
+          html,
+        };
+        setGuardMessage("");
+        return;
+      }
+
+      if (tracker.documentId !== activeDocument.id) {
+        autoSnapshotRef.current = {
+          documentId: activeDocument.id,
+          at: now,
+          html,
+        };
+      }
+    }
+
+    updateActive({ html });
     setGuardMessage("");
   }
 
@@ -732,7 +774,18 @@ export function ZubanDocsEditor() {
 
   function onPaste(event: React.ClipboardEvent<HTMLDivElement>) {
     if (!activeDocument) return;
+
     const pasted = event.clipboardData.getData("text/plain");
+    const pastedHtml = event.clipboardData.getData("text/html");
+
+    if (pastedHtml) {
+      event.preventDefault();
+      const safeHtml = sanitizeImportedHtml(pastedHtml);
+      document.execCommand("insertHTML", false, safeHtml);
+      if (editorRef.current) {
+        updateActive({ html: editorRef.current.innerHTML });
+      }
+    }
 
     if (!scriptAllowed(pasted, activeDocument.script)) {
       setGuardMessage(
@@ -750,6 +803,70 @@ export function ZubanDocsEditor() {
   function clearFormatting() {
     command("removeFormat");
     setNotice("Formatting cleared from the selection.");
+  }
+
+
+  function scrollToOutlineItem(index: number) {
+    const heading = editorRef.current?.querySelectorAll("h1,h2,h3")[index] as
+      | HTMLElement
+      | undefined;
+
+    if (!heading) return;
+    heading.scrollIntoView({ behavior: "smooth", block: "center" });
+    heading.animate(
+      [
+        { backgroundColor: "rgba(3,159,171,.18)" },
+        { backgroundColor: "transparent" },
+      ],
+      { duration: 900, easing: "ease-out" },
+    );
+  }
+
+  function insertLink() {
+    captureSelection();
+    restoreSelection();
+
+    const selection = window.getSelection();
+    const selectedText = selection?.toString().trim() ?? "";
+    const rawUrl = window.prompt("Paste a web or email link:");
+    if (!rawUrl?.trim()) return;
+
+    let href = rawUrl.trim();
+    if (/^[\w.+-]+@[\w.-]+\.[a-z]{2,}$/i.test(href)) {
+      href = "mailto:" + href;
+    } else if (!/^(https?:|mailto:)/i.test(href)) {
+      href = "https://" + href;
+    }
+
+    if (!/^(https?:|mailto:)/i.test(href)) {
+      setNotice("Please use a valid web or email link.");
+      return;
+    }
+
+    if (selectedText) {
+      document.execCommand("createLink", false, href);
+      const anchor = editorRef.current?.querySelector(
+        'a[href="' + CSS.escape(href) + '"]',
+      ) as HTMLAnchorElement | null;
+      if (anchor) {
+        anchor.target = "_blank";
+        anchor.rel = "noopener noreferrer";
+      }
+    } else {
+      const label = window.prompt("Link text:", href) || href;
+      document.execCommand(
+        "insertHTML",
+        false,
+        '<a href="' +
+          escapeHtml(href) +
+          '" target="_blank" rel="noopener noreferrer">' +
+          escapeHtml(label) +
+          "</a>",
+      );
+    }
+
+    if (editorRef.current) updateActive({ html: editorRef.current.innerHTML });
+    setNotice("Link added.");
   }
 
   function captureSelection() {
@@ -1394,10 +1511,11 @@ export function ZubanDocsEditor() {
       id: makeId(),
       createdAt: Date.now(),
       html: editorRef.current?.innerHTML ?? activeDocument.html,
+      source: "manual",
     };
 
     updateActive({
-      snapshots: [snapshot, ...activeDocument.snapshots].slice(0, 12),
+      snapshots: [snapshot, ...activeDocument.snapshots].slice(0, 18),
     });
     setShowSnapshots(true);
     setNotice("Checkpoint saved.");
@@ -1664,7 +1782,7 @@ export function ZubanDocsEditor() {
     const document = makeImportedDocument(
       sanitizeForScript(titleFromFile, script) ||
         (script === "arabic" ? "درآمد بوتگ دستاویز" : "Imported document"),
-      htmlLike ? raw : textToHtml(raw),
+      htmlLike ? sanitizeImportedHtml(raw) : textToHtml(raw),
       script,
     );
 
