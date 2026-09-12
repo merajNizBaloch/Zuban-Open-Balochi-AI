@@ -8,7 +8,7 @@ export default function TranslatePage() {
         <div className="page-intro-center compact-page-intro">
           <p className="eyebrow"><UiText id="page.translate.eyebrow" fallback="TRANSLATE" /></p>
           <h1 className="page-title"><UiText id="page.translate.title" fallback="Translate Balochi." /></h1>
-          <p className="lead"><UiText id="page.translate.lead" fallback="Balochi, English, Urdu and Persian in one workspace." /></p>
+          <p className="lead"><UiText id="page.translate.lead" fallback="Translate between English and Balochi." /></p>
         </div>
         <TranslationWorkbench />
       </div>
