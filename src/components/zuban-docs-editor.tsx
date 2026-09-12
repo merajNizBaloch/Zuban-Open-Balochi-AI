@@ -28,6 +28,21 @@ type TemplateId =
   | "assignment";
 type LibraryView = "all" | "recent" | "favorites";
 type KeyboardLayout = "phonetic" | "traditional";
+type CommandId =
+  | "new"
+  | "find"
+  | "outline"
+  | "page"
+  | "balochi"
+  | "image"
+  | "table"
+  | "link"
+  | "page-break"
+  | "checkpoint"
+  | "focus"
+  | "keyboard"
+  | "docx"
+  | "print";
 
 type Snapshot = {
   id: string;
@@ -146,6 +161,46 @@ const latinFonts = [
   ["Verdana", "Verdana, sans-serif"],
   ["Tahoma", "Tahoma, sans-serif"],
 ] as const;
+
+
+const commandCatalog: Array<{
+  id: CommandId;
+  label: string;
+  hint: string;
+  icon: string;
+}> = [
+  { id: "new", label: "New document", hint: "Create a new Balochi document", icon: "＋" },
+  { id: "find", label: "Find & Replace", hint: "Search inside this document", icon: "⌕" },
+  { id: "outline", label: "Document outline", hint: "Jump between headings", icon: "☷" },
+  { id: "page", label: "Page setup", hint: "Size, margins, header and footer", icon: "▤" },
+  { id: "balochi", label: "Balochi tools", hint: "Meaning, script conversion, spelling", icon: "ب" },
+  { id: "image", label: "Insert image", hint: "Add a compressed image", icon: "▧" },
+  { id: "table", label: "Insert 3 × 3 table", hint: "Add an editable table", icon: "▦" },
+  { id: "link", label: "Insert link", hint: "Link selected text or add a new link", icon: "↗" },
+  { id: "page-break", label: "Insert page break", hint: "Start a new printed page", icon: "↵" },
+  { id: "checkpoint", label: "Save checkpoint", hint: "Keep a recoverable version", icon: "◷" },
+  { id: "focus", label: "Toggle focus mode", hint: "Hide distractions", icon: "◉" },
+  { id: "keyboard", label: "Balochi keyboard", hint: "Open the floating keyboard", icon: "⌨" },
+  { id: "docx", label: "Export Word DOCX", hint: "Download a Microsoft Word file", icon: "W" },
+  { id: "print", label: "Print / Save PDF", hint: "Open the browser print view", icon: "⎙" },
+];
+
+function templateIcon(id: TemplateId) {
+  const icons: Record<TemplateId, string> = {
+    blank: "□",
+    essay: "¶",
+    letter: "✉",
+    story: "◈",
+    notes: "≡",
+    poem: "❧",
+    cv: "CV",
+    application: "↗",
+    "official-letter": "▤",
+    research: "⌕",
+    assignment: "A",
+  };
+  return icons[id];
+}
 
 const templates: Template[] = [
   {
@@ -592,6 +647,15 @@ export function ZubanDocsEditor() {
     () => documentOutline(activeDocument?.html ?? ""),
     [activeDocument?.html],
   );
+
+
+  const filteredCommands = useMemo(() => {
+    const query = commandQuery.trim().toLocaleLowerCase();
+    if (!query) return commandCatalog;
+    return commandCatalog.filter((item) =>
+      (item.label + " " + item.hint).toLocaleLowerCase().includes(query),
+    );
+  }, [commandQuery]);
 
   const charactersForMode =
     activeDocument?.script === "latin" ? latinCharacters : arabicCharacters;
