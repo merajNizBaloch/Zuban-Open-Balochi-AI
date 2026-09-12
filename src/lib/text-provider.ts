@@ -114,22 +114,25 @@ function exactBalochiEntry(value: string) {
 }
 
 function meaningForms(value: string) {
-  const normalized = normalize(value);
-  const forms = new Set<string>([normalized]);
+  const forms = new Set<string>();
+  const rawParts = [value, ...value.split(/[,;/]/g)];
 
-  for (const part of normalized.split(/[,;/]/g)) {
-    const clean = part
-      .replace(/^to\s+/, "")
+  for (const rawPart of rawParts) {
+    const withoutNotes = rawPart.replace(/\([^)]*\)/g, " ");
+    const normalized = normalize(withoutNotes);
+
+    if (!normalized) continue;
+
+    forms.add(normalized);
+
+    const withoutTo = normalized.replace(/^to\s+/, "").trim();
+    if (withoutTo) forms.add(withoutTo);
+
+    const withoutArticle = normalized
       .replace(/^(a|an|the)\s+/, "")
-      .replace(/\s*\([^)]*\)\s*/g, " ")
-      .replace(/\s+/g, " ")
       .trim();
-
-    if (clean) forms.add(clean);
+    if (withoutArticle) forms.add(withoutArticle);
   }
-
-  const withoutTo = normalized.replace(/^to\s+/, "").trim();
-  if (withoutTo) forms.add(withoutTo);
 
   return forms;
 }
